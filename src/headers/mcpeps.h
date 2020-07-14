@@ -44,8 +44,8 @@ class MCKPEPS{
 			for(int i = 0; i < _Nx; i++){
 				for(int j = 0; j < _Ny; j++){
 					for(int k = 0; k < UNIT_CELL_SIZE; k++){
-						combined_tensor *= _site_tensors[i][j][k];
-						combined_tensor *= other._site_tensors[i][j][k];
+						brute_force_combined_tensor *= _site_tensors[i][j][k];
+						brute_force_combined_tensor *= other._site_tensors[i][j][k];
 					}
 				}
 			}
@@ -100,7 +100,7 @@ class MCKPEPS{
 
 			//Join the link indices of the combined tensors
 			for(int site_i = 0; site_i < _num_sites; site_i++){
-				for(int site_j = site_i, site_j < _num_sites; site_j++){
+				for(int site_j = site_i; site_j < _num_sites; site_j++){
 					int link_index = pair_to_link_index(site_i, site_j);
 					if(_link_indices.count(link_index) > 0){
 						//For link (site_i, site_j), create a combiner tensor and apply it to both
@@ -109,8 +109,8 @@ class MCKPEPS{
 						itensor::Index original_link_1 = _link_indices[link_index];
 						itensor::Index original_link_2 = other._link_indices[link_index];
 						auto [Combiner_link, combined_index] = itensor::combiner(original_link_1, original_link_2);
-						combined_tensors[site_i_x, site_i_y, site_i_z] *= Combiner_link;
-						combined_tensors[site_j_x, site_j_y, site_j_z] *= Combiner_link;
+						combined_tensors[site_i_x][site_i_y][site_i_z] *= Combiner_link;
+						combined_tensors[site_j_x][site_j_y][site_j_z] *= Combiner_link;
 						//combined_link_indices.insert(std::pair<int, itensor::Index>(link_index, combined_index));
 					}
 				}
@@ -152,7 +152,7 @@ class MCKPEPS{
 				for(int j = 0; j < _Ny-1; j++){
 					itensor::Index left_upper_link = itensor::commonIndex(row_tensors[j], combined_tensors[i-1][j][2]);
 					//itensor::Index left_upper_link = combined_link_indices[pair_to_link_index(site_index_from_position(i,j,0),site_index_from_position(i,j,2))];
-					iitensor::ITensor left_tensor, sing_vals, right_tensor;
+					itensor::ITensor left_tensor, sing_vals, right_tensor;
 					if(j > 0){
 						itensor::Index left_link = itensor::commonIndex(row_tensors[j], combined_tensors[i-1][j+1][1]);
 						//itensor::Index left_link = combined_link_indices[pair_to_link_index(site_index_from_position(i,j,0),site_index_from_position(i,j-1,0))];
@@ -197,8 +197,8 @@ class MCKPEPS{
 					//Now truncate the k=2 site (j=0 case not special)
 					if(j != _Ny-1){
 						link_up = itensor::commonIndex(combined_tensors[i-1][j][2], combined_tensors[i-1][j][0]);
-						links_left = itensor::commonIndex(combined_tensors[i-1][j][1], combined_tensors[i-1][j][2]);
-						left_tensor = itensor::ITensor(link_up, links_left);
+						links_left_2 = itensor::commonIndex(combined_tensors[i-1][j][1], combined_tensors[i-1][j][2]);
+						left_tensor = itensor::ITensor(link_up, links_left_2);
 						//TODO: Check that this doesn't modify the data on combined_tensors[i-1][j][1/2]?
 						itensor::svd(combined_tensors[i-1][j][2], left_tensor, sing_vals, right_tensor, {"Maxm", Dc});
 						combined_tensors[i-1][j][2] = left_tensor;
@@ -259,6 +259,7 @@ class MCKPEPS{
 		int _Ny;
 		int _num_sites;
 		int _D;
+		std::string _log_file;
 		int pair_to_link_index(int i, int j){
 			if(i < j){
 				return i*_num_sites + j;
@@ -291,11 +292,13 @@ class MCKPEPS{
 			return pair_to_link_index(site_index_from_position(i1, j1, k1), site_index_from_position(i2, j2, k2));
 		}
 		int lifp(int i1, int j1, int k1, int i2, int j2, int k2){
-			return linke_index_from_position(i1, j1, k1, i2, j2, k2);
+			return link_index_from_position(i1, j1, k1, i2, j2, k2);
 		}
 
 		void create_link_index(int i1, int j1, int k1, int i2, int j2, int k2){
-			_link_indices[lifp(i1, j1, k1, i2, j2, k2)] = itensor::Index(std::format("link, l={},{},{}-{},{},{}",i1,j1,k1,i2,j2,k2),_D);
+			std::string link_name = "lin, l="+std::to_string(i1)+","+std::to_string(j1)+","+std::to_string(k1);
+			link_name += "-"+std::to_string(i2)+","+std::to_string(j2)+","+std::to_string(k2);
+			_link_indices[lifp(i1, j1, k1, i2, j2, k2)] = itensor::Index(link_name,_D);
 		}
 
 		void create_link_indices(itensor::SiteSet &sites){
@@ -328,7 +331,7 @@ class MCKPEPS{
 						for(int other_site = 0; other_site < _num_sites; other_site++){
 							auto possible_link = _link_indices.find(pair_to_link_index(other_site, parent_index));
 							if(possible_link != _link_indices.end()){
-								indices.push_back(_link_indices->second);
+								indices.push_back(possible_link->second);
 							}
 						}
 						indices.push_back(sites(parent_index+1));
