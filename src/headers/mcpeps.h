@@ -310,7 +310,7 @@ class MCKPEPS{
 			std::cerr << "Created link #" << lifp(i1, j1, k1, i2, j2, k2) << std::endl;
 		}
 
-		void create_link_indices(itensor::SiteSet &sites){
+		void create_link_indices(itensor::IndexSet &sites){
 			for(int i = 0; i < _Nx; i++){
 				for(int j = 0; j < _Ny; j++){
 					create_link_index(i,j,0,i,j,1);
