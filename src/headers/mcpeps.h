@@ -65,7 +65,7 @@ class MCKPEPS{
 				std::cout.rdbuf(log_file_stream.rdbuf());
 				std::cout << "Contracting the proper way..." << std::endl;
 			}
-			if(other.dimensions() != dimensions()){
+			if((_Nx != other._Nx) || (_Ny != other._Ny)){
 				std::cerr << "ERROR: Can't contract PEPS of incompatible dimensions" << std::endl;
 			}
 			//Contract the tensors on the two KPEPS together
@@ -239,9 +239,9 @@ class MCKPEPS{
 			return itensor::norm(contracted_tensor);
 
 		}
-		std::vector<int> dimensions(){
+		/*std::vector<int> dimensions(){
 			return {_Nx, _Ny};
-		}
+		}*/
 
 		void print_self(){
 			std::cout << "TENSOR DATA:" << std::endl;
