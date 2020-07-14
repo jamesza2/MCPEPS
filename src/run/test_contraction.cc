@@ -29,7 +29,11 @@ int main(int argc, char *argv[]){
 	int max_truncation_dims = input.testInteger("Dc", 4);
 
 	int num_sites = Nx*Ny*UNIT_CELL_SIZE;
-	itensor::SiteSet sites = itensor::SpinHalf(num_sites);
+	std::vector<itensor::Index> sites_vector(num_sites);
+	for(int i = 0; i < num_sites; i++){
+		sites_vector[i] = itensor::Index("Site "+std::to_string(i), 2, itensor::Site);
+	}
+	itensor::IndexSet sites(sites_vector);
 	auto PEPS1 = MCKPEPS(sites, Nx, Ny, standard_dims, max_truncation_dims);
 	auto PEPS2 = MCKPEPS(sites, Nx, Ny, standard_dims, max_truncation_dims);
 	PEPS1.set_log_file(log_file);

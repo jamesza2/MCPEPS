@@ -19,7 +19,7 @@ const int UNIT_CELL_SIZE = 3;
 class MCKPEPS{
 	public:
 		int Dc;
-		MCKPEPS(itensor::SiteSet &sites,
+		MCKPEPS(itensor::IndexSet &sites,
 			int input_Nx,
 			int input_Ny,
 			int input_max_bd,
@@ -329,7 +329,7 @@ class MCKPEPS{
 			}
 
 		}
-		void create_site_tensors(itensor::SiteSet &sites){
+		void create_site_tensors(itensor::IndexSet &sites){
 			for(int i = 0; i < _Nx; i++){
 				std::vector<std::vector<itensor::ITensor>> _site_tensors_2D;
 				for(int j = 0; j < _Ny; j++){
@@ -361,7 +361,7 @@ class MCKPEPS{
 
 		std::vector<std::vector<std::vector<itensor::ITensor>>> _site_tensors;
 		std::map<int, itensor::Index> _link_indices;
-		itensor::SiteSet _site_indices;
+		//itensor::IndexSet _site_indices;
 
 
 };
