@@ -346,8 +346,11 @@ class MCKPEPS{
 							}
 						}
 						indices.push_back(sites(parent_index+1));
+						std::cerr << "  Finishing tensor creation..." << std::endl;
 						itensor::ITensor new_site_tensor(indices);
+						std::cerr << "  Randomizing tensor..." << std::endl;
 						new_site_tensor.randomize();
+						std::cerr << "  Pushing back tensor..." << std::endl;
 						_site_tensors_1D.push_back(new_site_tensor);
 					}
 					_site_tensors_2D.push_back(_site_tensors_1D);
