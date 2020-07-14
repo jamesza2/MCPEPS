@@ -63,9 +63,9 @@ class MCKPEPS{
 			if(_log){
 				std::ofstream log_file_stream(_log_file);
 				std::cout.rdbuf(log_file_stream.rdbuf());
-				std::cout << "Performing efficient contraction...\n" << std::flush;
+				std::cout << "Performing efficient contraction...\n";
 			}
-			std::cout << "Checking dimensions..." << std::endl;
+			std::cout << "Checking dimensions...\n";
 			if((_Nx != other._Nx) || (_Ny != other._Ny)){
 				std::cout << "ERROR: Can't contract PEPS of incompatible dimensions" << std::endl;
 			}
@@ -74,9 +74,9 @@ class MCKPEPS{
 			//std::map<int, itensor::Index> combined_link_indices;
 			
 			if(_log){
-				std::cout << "PEPS 1: " << std::endl;
+				std::cout << "PEPS 1: \n";
 				print_self();
-				std::cout << "PEPS 2: " << std::endl;
+				std::cout << "PEPS 2: \n";
 				other.print_self();
 			}
 
