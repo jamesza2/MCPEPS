@@ -31,7 +31,7 @@ int main(int argc, char *argv[]){
 	int num_sites = Nx*Ny*UNIT_CELL_SIZE;
 	std::vector<itensor::Index> sites_vector(num_sites);
 	for(int i = 0; i < num_sites; i++){
-		sites_vector[i] = itensor::Index("Site "+std::to_string(i), 2);
+		sites_vector[i] = itensor::Index(2);
 	}
 	itensor::IndexSet sites(sites_vector);
 	auto PEPS1 = MCKPEPS(sites, Nx, Ny, standard_dims, max_truncation_dims);
