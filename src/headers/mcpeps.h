@@ -197,7 +197,7 @@ class MCKPEPS{
 					//Now truncate the k=2 site (j=0 case not special)
 					if(j != _Ny-1){
 						link_up = itensor::commonIndex(combined_tensors[i-1][j][2], combined_tensors[i-1][j][0]);
-						links_left_2 = itensor::commonIndex(combined_tensors[i-1][j][1], combined_tensors[i-1][j][2]);
+						auto links_left_2 = itensor::commonIndex(combined_tensors[i-1][j][1], combined_tensors[i-1][j][2]);
 						left_tensor = itensor::ITensor(link_up, links_left_2);
 						//TODO: Check that this doesn't modify the data on combined_tensors[i-1][j][1/2]?
 						itensor::svd(combined_tensors[i-1][j][2], left_tensor, sing_vals, right_tensor, {"Maxm", Dc});
