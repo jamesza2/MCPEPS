@@ -7,7 +7,6 @@
 #include <cmath>
 #include <complex>
 #include <map>
-#include <format>
 
 //Normal: Uses the previous 2 total weights to estimate energy, then attempts to make the total walker weight num_walkers
 //Constant: Uses a single estimate for the energy and nothing else
