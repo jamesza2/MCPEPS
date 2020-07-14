@@ -6,7 +6,6 @@
 #include <ctime>
 #include <cmath>
 #include <complex>
-#include <math>
 #include <map>
 #include <format>
 
