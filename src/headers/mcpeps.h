@@ -298,7 +298,7 @@ class MCKPEPS{
 		void create_link_index(int i1, int j1, int k1, int i2, int j2, int k2){
 			//std::string link_name = "lin, l="+std::to_string(i1)+","+std::to_string(j1)+","+std::to_string(k1);
 			//link_name += "-"+std::to_string(i2)+","+std::to_string(j2)+","+std::to_string(k2);
-			_link_indices[lifp(i1, j1, k1, i2, j2, k2)] = itensor::Index(link_name,_D);
+			//_link_indices[lifp(i1, j1, k1, i2, j2, k2)] = itensor::Index(link_name,_D);
 			_link_indices[lifp(i1, j1, k1, i2, j2, k2)] = itensor::Index(_D);
 		}
 
