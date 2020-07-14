@@ -307,6 +307,7 @@ class MCKPEPS{
 			//link_name += "-"+std::to_string(i2)+","+std::to_string(j2)+","+std::to_string(k2);
 			//_link_indices[lifp(i1, j1, k1, i2, j2, k2)] = itensor::Index(link_name,_D);
 			_link_indices[lifp(i1, j1, k1, i2, j2, k2)] = itensor::Index(_D);
+			std::cerr << "Created link #" << lifp(i1, j1, k1, i2, j2, k2) << std::endl;
 		}
 
 		void create_link_indices(itensor::SiteSet &sites){
@@ -334,11 +335,13 @@ class MCKPEPS{
 				for(int j = 0; j < _Ny; j++){
 					std::vector<itensor::ITensor> _site_tensors_1D;
 					for(int k = 0; k < UNIT_CELL_SIZE; k++){
-						int parent_index = site_index_from_position(i,j,k);
+						int parent_index = site_index_from_position(i,j,k); 
+						std::cerr << "Creating tensor #" << parent_index << std::endl;
 						std::vector<itensor::Index> indices;
 						for(int other_site = 0; other_site < _num_sites; other_site++){
 							auto possible_link = _link_indices.find(pair_to_link_index(other_site, parent_index));
 							if(possible_link != _link_indices.end()){
+								std::cerr << "Found link at " << other_site << ", " << parent_index << std::endl;
 								indices.push_back(possible_link->second);
 							}
 						}
