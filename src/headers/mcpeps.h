@@ -65,8 +65,9 @@ class MCKPEPS{
 				std::cout.rdbuf(log_file_stream.rdbuf());
 				std::cout << "Contracting the proper way..." << std::endl;
 			}
+			std::cout << "Checking dimensions..." << std::endl;
 			if((_Nx != other._Nx) || (_Ny != other._Ny)){
-				std::cerr << "ERROR: Can't contract PEPS of incompatible dimensions" << std::endl;
+				std::cout << "ERROR: Can't contract PEPS of incompatible dimensions" << std::endl;
 			}
 			//Contract the tensors on the two KPEPS together
 			std::vector<std::vector<std::vector<itensor::ITensor>>> combined_tensors;
