@@ -38,6 +38,7 @@ int main(int argc, char *argv[]){
 	auto PEPS2 = MCKPEPS(sites, Nx, Ny, standard_dims, max_truncation_dims);
 	PEPS1.set_log_file(log_file);
 	double brute_force_inner_product = PEPS1.brute_force_inner_product(PEPS2);
+	std::cerr << "Performing efficient inner product..." << std::endl;
 	double inner_product = PEPS1.inner_product(PEPS2);
 	std::cerr << "Inner Product: " << inner_product << std::endl;
 	std::cerr << "Brute Force Inner Product: " << brute_force_inner_product << std::endl;

@@ -63,7 +63,7 @@ class MCKPEPS{
 			if(_log){
 				std::ofstream log_file_stream(_log_file);
 				std::cout.rdbuf(log_file_stream.rdbuf());
-				std::cout << "Contracting the proper way..." << std::endl;
+				std::cout << "Performing efficient contraction...\n" << std::flush;
 			}
 			std::cout << "Checking dimensions..." << std::endl;
 			if((_Nx != other._Nx) || (_Ny != other._Ny)){
