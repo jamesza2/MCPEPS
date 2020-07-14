@@ -32,7 +32,9 @@ class MCKPEPS{
 			_log_file = "";
 			Dc = input_max_truncation_bd;
 
+			std::cerr << "Creating link indices..." << std::endl;
 			create_link_indices(sites);
+			std::cerr << "Creating site tensors..." << std::endl;
 			create_site_tensors(sites);
 		}
 		void set_log_file(string log_file){
@@ -40,12 +42,14 @@ class MCKPEPS{
 		}
 
 		double brute_force_inner_product(MCKPEPS &other){
+			std::cerr << "Brute force contraction..." << std::endl;
 			itensor::ITensor brute_force_combined_tensor(1);
 			for(int i = 0; i < _Nx; i++){
 				for(int j = 0; j < _Ny; j++){
 					for(int k = 0; k < UNIT_CELL_SIZE; k++){
 						brute_force_combined_tensor *= _site_tensors[i][j][k];
 						brute_force_combined_tensor *= other._site_tensors[i][j][k];
+						std::cerr << "Combined tensor at site " << i << ", " << j << ", " << k << std::endl;
 					}
 				}
 			}
@@ -55,17 +59,20 @@ class MCKPEPS{
 
 		double inner_product(MCKPEPS &other){
 			bool _log = (_log_file != "");
+			std::streambuf *coutbuf = std::cout.rdbuf();
+			if(_log){
+				std::ofstream log_file_stream(_log_file);
+				std::cout.rdbuf(log_file_stream.rdbuf());
+				std::cout << "Contracting the proper way..." << std::endl;
+			}
 			if(other.dimensions() != dimensions()){
 				std::cerr << "ERROR: Can't contract PEPS of incompatible dimensions" << std::endl;
 			}
 			//Contract the tensors on the two KPEPS together
 			std::vector<std::vector<std::vector<itensor::ITensor>>> combined_tensors;
 			//std::map<int, itensor::Index> combined_link_indices;
-			std::streambuf *coutbuf = std::cout.rdbuf();
+			
 			if(_log){
-				std::ofstream log_file_stream(_log_file);
-				std::cout.rdbuf(log_file_stream.rdbuf());
-
 				std::cout << "PEPS 1: " << std::endl;
 				print_self();
 				std::cout << "PEPS 2: " << std::endl;
@@ -337,7 +344,7 @@ class MCKPEPS{
 						}
 						indices.push_back(sites(parent_index+1));
 						itensor::ITensor new_site_tensor(indices);
-						itensor::randomize(new_site_tensor);
+						new_site_tensor.randomize();
 						_site_tensors_1D.push_back(new_site_tensor);
 					}
 					_site_tensors_2D.push_back(_site_tensors_1D);
