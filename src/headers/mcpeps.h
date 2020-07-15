@@ -60,12 +60,13 @@ class MCKPEPS{
 		double inner_product(MCKPEPS &other){
 			bool _log = (_log_file != "");
 			std::streambuf *coutbuf = std::cout.rdbuf();
+			std::ofstream log_file_stream(_log_file);
+			std::cerr << "Performing efficient contraction..." << std::endl;
 			if(_log){
-				std::ofstream log_file_stream(_log_file);
 				std::cout.rdbuf(log_file_stream.rdbuf());
-				std::cout << "Performing efficient";
-				std::cout << " contraction...";
-				std::cout << "\na";
+				//std::cout << "Performing efficient";
+				//std::cout << " contraction...";
+				//std::cout << "\na";
 			}
 			std::cout << "Checking dimensions...\n";
 			if((_Nx != other._Nx) || (_Ny != other._Ny)){
