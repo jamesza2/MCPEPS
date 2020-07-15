@@ -207,13 +207,13 @@ class MCKPEPS{
 						left_tensor = itensor::ITensor(link_up);
 					}
 					else{
-						auto links_left = itensor::commonInds(combined_tensors[i-1][j][1], combined_tensors[i-1][j][2]);
+						auto links_left = itensor::commonInds(combined_tensors[i-1][j][1], combined_tensors[i-1][j-1][2]);
 						left_tensor = itensor::ITensor(itensor::unionInds(links_left, link_up));
 					}
 					itensor::svd(combined_tensors[i-1][j][1], left_tensor, sing_vals, right_tensor, {"MaxDim", Dc});
 					combined_tensors[i-1][j][1] = left_tensor;
 					combined_tensors[i-1][j][2] *= (sing_vals*right_tensor);
-					//Now truncate the k=2 site (j=0 case not special)
+					//Now truncate the k=2 site (j=0 case not special) (No truncation for j=Ny-1 case necessary)
 					if(j != _Ny-1){
 						link_up = itensor::commonIndex(combined_tensors[i-1][j][2], combined_tensors[i-1][j][0]);
 						auto links_left_2 = itensor::commonIndex(combined_tensors[i-1][j][1], combined_tensors[i-1][j][2]);
