@@ -163,12 +163,14 @@ class MCKPEPS{
 				for(int j = 0; j < _Ny-1; j++){
 					itensor::Index left_upper_link = itensor::commonIndex(row_tensors[j], combined_tensors[i-1][j][2]);
 					//itensor::Index left_upper_link = combined_link_indices[pair_to_link_index(site_index_from_position(i,j,0),site_index_from_position(i,j,2))];
-					itensor::ITensor left_tensor, sing_vals, right_tensor;
-					
-					itensor::Index left_link = itensor::commonIndex(row_tensors[j], combined_tensors[i-1][j+1][1]);
-					//itensor::Index left_link = combined_link_indices[pair_to_link_index(site_index_from_position(i,j,0),site_index_from_position(i,j-1,0))];
-					left_tensor = itensor::ITensor(left_upper_link, left_link);
-					
+					itensor::ITensor sing_vals, right_tensor;
+					itensor::ITensor left_tensor(left_upper_link);
+
+					if(j>0){
+						itensor::Index left_link = itensor::commonIndex(row_tensors[j], row_tensors[j-1]);
+						//itensor::Index left_link = combined_link_indices[pair_to_link_index(site_index_from_position(i,j,0),site_index_from_position(i,j-1,0))];
+						left_tensor = itensor::ITensor(left_upper_link, left_link);
+					}
 					
 					itensor::svd(row_tensors[j], left_tensor, sing_vals, right_tensor, {"MaxDim", Dc});
 					left_tensor *= sing_vals;
