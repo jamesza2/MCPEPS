@@ -164,11 +164,11 @@ class MCKPEPS{
 					itensor::Index left_upper_link = itensor::commonIndex(row_tensors[j], combined_tensors[i-1][j][2]);
 					//itensor::Index left_upper_link = combined_link_indices[pair_to_link_index(site_index_from_position(i,j,0),site_index_from_position(i,j,2))];
 					itensor::ITensor left_tensor, sing_vals, right_tensor;
-					if(j > 0){
-						itensor::Index left_link = itensor::commonIndex(row_tensors[j], combined_tensors[i-1][j+1][1]);
-						//itensor::Index left_link = combined_link_indices[pair_to_link_index(site_index_from_position(i,j,0),site_index_from_position(i,j-1,0))];
-						left_tensor = itensor::ITensor(left_upper_link, left_link);
-					}
+					
+					itensor::Index left_link = itensor::commonIndex(row_tensors[j], combined_tensors[i-1][j+1][1]);
+					//itensor::Index left_link = combined_link_indices[pair_to_link_index(site_index_from_position(i,j,0),site_index_from_position(i,j-1,0))];
+					left_tensor = itensor::ITensor(left_upper_link, left_link);
+					
 					
 					itensor::svd(row_tensors[j], left_tensor, sing_vals, right_tensor, {"Maxm", Dc});
 					left_tensor *= sing_vals;
