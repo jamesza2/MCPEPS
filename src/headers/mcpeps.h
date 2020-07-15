@@ -173,6 +173,8 @@ class MCKPEPS{
 					}
 					
 					itensor::svd(row_tensors[j], left_tensor, sing_vals, right_tensor, {"MaxDim", Dc});
+					std::cout << "SVD Error: " << itensor::sqr(itensor::norm(row_tensors[j]-left_tensor*sing_vals*right_tensor)/itensor::norm(row_tensors[j])) << std::endl;
+					
 					left_tensor *= sing_vals;
 
 					if(_log){
@@ -211,6 +213,8 @@ class MCKPEPS{
 						left_tensor = itensor::ITensor(itensor::unionInds(links_left, link_up));
 					}
 					itensor::svd(combined_tensors[i-1][j][1], left_tensor, sing_vals, right_tensor, {"MaxDim", Dc});
+					std::cout << "SVD Error: " << itensor::sqr(itensor::norm(combined_tensors[i-1][j][1]-left_tensor*sing_vals*right_tensor)/itensor::norm(combined_tensors[i-1][j][1])) << std::endl;
+					
 					combined_tensors[i-1][j][1] = left_tensor;
 					combined_tensors[i-1][j][2] *= (sing_vals*right_tensor);
 					//Now truncate the k=2 site (j=0 case not special) (No truncation for j=Ny-1 case necessary)
@@ -220,6 +224,7 @@ class MCKPEPS{
 						left_tensor = itensor::ITensor(link_up, links_left_2);
 						//TODO: Check that this doesn't modify the data on combined_tensors[i-1][j][1/2]?
 						itensor::svd(combined_tensors[i-1][j][2], left_tensor, sing_vals, right_tensor, {"MaxDim", Dc});
+						std::cout << "SVD Error: " << itensor::sqr(itensor::norm(combined_tensors[i-1][j][2]-left_tensor*sing_vals*right_tensor)/itensor::norm(combined_tensors[i-1][j][2])) << std::endl;
 						combined_tensors[i-1][j][2] = left_tensor;
 						combined_tensors[i-1][j+1][1] *= (sing_vals*right_tensor);
 					}
