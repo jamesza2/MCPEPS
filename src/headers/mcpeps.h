@@ -170,8 +170,14 @@ class MCKPEPS{
 					left_tensor = itensor::ITensor(left_upper_link, left_link);
 					
 					
-					itensor::svd(row_tensors[j], left_tensor, sing_vals, right_tensor, {"Maxm", Dc});
+					itensor::svd(row_tensors[j], left_tensor, sing_vals, right_tensor, {"MaxDim", Dc});
 					left_tensor *= sing_vals;
+
+					if(_log){
+						std::cout << "Split tensors at i=" << i << ", j=" << j << std::endl;
+						Print(left_tensor);
+						Print(right_tensor);
+					}
 					combined_tensors[i-1][j][2] *= left_tensor;
 
 					combined_tensors[i-1][j+1][1] *= right_tensor;
@@ -181,7 +187,7 @@ class MCKPEPS{
 				if(_log){
 					std::cout << "Untruncated layer " << i-1 << ": " << std::endl;
 					for(int j = 0; j < _Ny; j++){
-						std::cout << "Site " << j << std::endl;
+						std::cout << "j=" << j << std::endl;
 						Print(combined_tensors[i-1][j][1]);
 						Print(combined_tensors[i-1][j][2]);
 					}
@@ -202,7 +208,7 @@ class MCKPEPS{
 						auto links_left = itensor::commonInds(combined_tensors[i-1][j][1], combined_tensors[i-1][j][2]);
 						left_tensor = itensor::ITensor(itensor::unionInds(links_left, link_up));
 					}
-					itensor::svd(combined_tensors[i-1][j][1], left_tensor, sing_vals, right_tensor, {"Maxm", Dc});
+					itensor::svd(combined_tensors[i-1][j][1], left_tensor, sing_vals, right_tensor, {"MaxDim", Dc});
 					combined_tensors[i-1][j][1] = left_tensor;
 					combined_tensors[i-1][j][2] *= (sing_vals*right_tensor);
 					//Now truncate the k=2 site (j=0 case not special)
@@ -211,7 +217,7 @@ class MCKPEPS{
 						auto links_left_2 = itensor::commonIndex(combined_tensors[i-1][j][1], combined_tensors[i-1][j][2]);
 						left_tensor = itensor::ITensor(link_up, links_left_2);
 						//TODO: Check that this doesn't modify the data on combined_tensors[i-1][j][1/2]?
-						itensor::svd(combined_tensors[i-1][j][2], left_tensor, sing_vals, right_tensor, {"Maxm", Dc});
+						itensor::svd(combined_tensors[i-1][j][2], left_tensor, sing_vals, right_tensor, {"MaxDim", Dc});
 						combined_tensors[i-1][j][2] = left_tensor;
 						combined_tensors[i-1][j+1][1] *= (sing_vals*right_tensor);
 					}
@@ -220,7 +226,7 @@ class MCKPEPS{
 				if(_log){
 					std::cout << "Truncated layer " << i-1 << ": " << std::endl;
 					for(int j = 0; j < _Ny; j++){
-						std::cout << "Site " << j << std::endl;
+						std::cout << "j=" << j << std::endl;
 						Print(combined_tensors[i-1][j][1]);
 						Print(combined_tensors[i-1][j][2]);
 					}
