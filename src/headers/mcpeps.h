@@ -285,9 +285,9 @@ class MCKPEPS{
 					Print(brute_force_product);
 				}
 			}
-			itensor::ITensor contracted_tensor = combined_tensors[0][0][0];
-			contracted_tensor *= combined_tensors[0][0][1];
-			contracted_tensor *= combined_tensors[0][0][2];
+			itensor::ITensor contracted_tensor(1);
+			//contracted_tensor *= combined_tensors[0][0][1];
+			//contracted_tensor *= combined_tensors[0][0][2];
 			//Contract the i=0 layer
 			for(int j = 0; j < _Ny; j++){
 				for(int k = 0; k < UNIT_CELL_SIZE; k++){
