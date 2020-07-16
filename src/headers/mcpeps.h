@@ -41,7 +41,37 @@ class MCKPEPS{
 			_log_file = log_file;
 		}
 
+		//First combines the three sites in each size-3 unit cell, then combines the unit cell tensors
+		//O(D^8 + D^2Ny+2)
 		double brute_force_inner_product(MCKPEPS &other){
+			std::cerr << "Brute force contraction..." << std::endl;
+			std::vector<std::vector<itensor::ITensor>> cell_tensors;
+			for(int i = 0; i < _Nx; i++){
+				std::vector<itensor::ITensor> cell_tensors_in_row;
+				for(int j = 0; j < _Ny; j++){
+					itensor::ITensor cell_tensor(1);
+					for(int k = 0; k < UNIT_CELL_SIZE; k++){
+						cell_tensor *= _site_tensors[i][j][k];
+						cell_tensor *= other._site_tensors[i][j][k];
+					}
+					std::cerr << "Combined tensors at cell " << i << ", " << j << std::endl;
+					cell_tensors_in_row.push_back(cell_tensor);
+				}
+				cell_tensors.push_back(cell_tensors_in_row);
+			}
+
+			itensor::ITensor brute_force_combined_tensor(1);
+			for(int i = 0; i < _Nx; i++){
+				for(int j = 0; j < _Ny; j++){
+					brute_force_combined_tensor *= cell_tensors[i][j];
+					std::cerr << "Combined cell " << i << ", " << j << std::endl;
+				}
+			}
+			Print(brute_force_combined_tensor);
+			return itensor::norm(brute_force_combined_tensor);
+		}
+
+		double brute_force_inner_product_old(MCKPEPS &other){
 			std::cerr << "Brute force contraction..." << std::endl;
 			itensor::ITensor brute_force_combined_tensor(1);
 			for(int i = 0; i < _Nx; i++){
