@@ -413,6 +413,7 @@ class MCKPEPS{
 						itensor::ITensor new_site_tensor(indices);
 						std::cerr << "  Randomizing tensor..." << std::endl;
 						new_site_tensor.randomize();
+						new_site_tensor.normalize();
 						std::cerr << "  Pushing back tensor..." << std::endl;
 						_site_tensors_1D.push_back(new_site_tensor);
 					}
