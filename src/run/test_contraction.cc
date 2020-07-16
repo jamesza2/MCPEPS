@@ -37,10 +37,14 @@ int main(int argc, char *argv[]){
 	auto PEPS1 = MCKPEPS(sites, Nx, Ny, standard_dims, max_truncation_dims);
 	auto PEPS2 = MCKPEPS(sites, Nx, Ny, standard_dims, max_truncation_dims);
 	PEPS1.set_log_file(log_file);
+	auto timestart = std::time(NULL);
 	double brute_force_inner_product = PEPS1.brute_force_inner_product(PEPS2);
+	double brute_force_time = std::difftime(std::time(NULL), time1);
+	timestart = std::time(NULL);
 	std::cerr << "Performing efficient inner product..." << std::endl;
 	double inner_product = PEPS1.inner_product(PEPS2);
-	std::cerr << "Inner Product: " << inner_product << std::endl;
-	std::cerr << "Brute Force Inner Product: " << brute_force_inner_product << std::endl;
+	double efficient_time = std::difftime(std::time(NULL), timestart);
+	std::cerr << "Inner Product: " << inner_product << " (" << efficient_time << "s)" << std::endl;
+	std::cerr << "Brute Force Inner Product: " << brute_force_inner_product << " (" << brute_force_time << "s)" << std::endl;
 	return 0;
 }
