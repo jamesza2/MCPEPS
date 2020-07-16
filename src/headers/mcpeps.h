@@ -109,6 +109,8 @@ class MCKPEPS{
 			}
 
 
+
+
 			//Join the link indices of the combined tensors
 			for(int site_i = 0; site_i < _num_sites; site_i++){
 				for(int site_j = site_i; site_j < _num_sites; site_j++){
@@ -137,6 +139,16 @@ class MCKPEPS{
 						}
 					}
 				}
+				itensor::ITensor brute_force_product(1);
+				for(int i = 0; i < _Nx; i++){
+					for(int j = 0; j < _Ny; j++){
+						for(int k = 0; k < UNIT_CELL_SIZE; k++){
+							brute_force_product *= combined_tensors[i][j][k];
+						}
+					}
+				}
+				Print(brute_force_product);
+				//std::cout << "CURRENT BRUTE FORCE PRODUCT: " << itensor::norm(brute_force_product) << std::endl;
 			}
 
 			//Contract the resulting KPEPS
@@ -152,12 +164,26 @@ class MCKPEPS{
 				}
 
 				if(_log){
-					std::cout << "Row tensor: " << std::endl;
+					std::cout << "ROW TENSOR: " << std::endl;
 					for(int row_tensor_index = 0; row_tensor_index < row_tensors.size(); row_tensor_index++){
 						std::cout << "Site " << row_tensor_index << std::endl;
 						Print(row_tensors[row_tensor_index]);
 					}
+					itensor::ITensor brute_force_product(1);
+					for(int i_bfp = 0; i_bfp < i; i_bfp++){
+						for(int j = 0; j < _Ny; j++){
+							for(int k = 0; k < UNIT_CELL_SIZE; k++){
+								brute_force_product *= combined_tensors[i_bfp][j][k];
+							}
+						}
+					}
+					for(itensor::ITensor row_tensor : row_tensors){
+						brute_force_product *= row_tensor;
+					}
+					//std::cout << "CURRENT BRUTE FORCE PRODUCT: " << std::endl;
+					Print(brute_force_product);
 				}
+
 				//Second layer: Split each row tensor into two copies using truncated SVD, then combine those copies with the tensors above
 				//Need to include j=0 case later
 				for(int j = 0; j < _Ny-1; j++){
@@ -189,12 +215,22 @@ class MCKPEPS{
 				combined_tensors[i-1][_Ny-1][2] *= row_tensors[_Ny-1];
 
 				if(_log){
-					std::cout << "Untruncated layer " << i-1 << ": " << std::endl;
+					std::cout << "UNTRUNCATED LAYER " << i-1 << ": " << std::endl;
 					for(int j = 0; j < _Ny; j++){
 						std::cout << "j=" << j << std::endl;
 						Print(combined_tensors[i-1][j][1]);
 						Print(combined_tensors[i-1][j][2]);
 					}
+					itensor::ITensor brute_force_product(1);
+					for(int i_bfp = 0; i_bfp < i; i_bfp++){
+						for(int j = 0; j < _Ny; j++){
+							for(int k = 0; k < UNIT_CELL_SIZE; k++){
+								brute_force_product *= combined_tensors[i_bfp][j][k];
+							}
+						}
+					}
+					//std::cout << "CURRENT BRUTE FORCE PRODUCT: " << itensor::norm(brute_force_product) << std::endl;
+					Print(brute_force_product);
 				}
 
 				//Truncate indices
@@ -231,12 +267,22 @@ class MCKPEPS{
 
 				}
 				if(_log){
-					std::cout << "Truncated layer " << i-1 << ": " << std::endl;
+					std::cout << "TRUNCATED LAYER " << i-1 << ": " << std::endl;
 					for(int j = 0; j < _Ny; j++){
 						std::cout << "j=" << j << std::endl;
 						Print(combined_tensors[i-1][j][1]);
 						Print(combined_tensors[i-1][j][2]);
 					}
+					itensor::ITensor brute_force_product(1);
+					for(int i_bfp = 0; i_bfp < i; i_bfp++){
+						for(int j = 0; j < _Ny; j++){
+							for(int k = 0; k < UNIT_CELL_SIZE; k++){
+								brute_force_product *= combined_tensors[i_bfp][j][k];
+							}
+						}
+					}
+					//std::cout << "CURRENT BRUTE FORCE PRODUCT: " << itensor::norm(brute_force_product) << std::endl;
+					Print(brute_force_product);
 				}
 			}
 			itensor::ITensor contracted_tensor = combined_tensors[0][0][0];
