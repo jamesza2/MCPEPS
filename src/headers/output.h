@@ -62,6 +62,6 @@ class Output
 			}
 		}
 
-}
+};
 
 #endif

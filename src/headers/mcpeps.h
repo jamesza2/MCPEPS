@@ -18,28 +18,35 @@ const int UNIT_CELL_SIZE = 3;
 //Kagome Lattice PEPS that uses Monte Carlo to evaluate itself
 class MCKPEPS{
 	public:
-		int Dc;
+		
 		MCKPEPS(itensor::IndexSet &sites,
 			int input_Nx,
 			int input_Ny,
 			int input_max_bd,
-			int input_max_truncation_bd)
+			int input_max_truncation_bd,
+			itensor::Args const& args = itensor::Args::global())
 		{
 			_num_sites = input_Nx*input_Ny*UNIT_CELL_SIZE;
 			_Nx = input_Nx;
 			_Ny = input_Ny;
 			_D = input_max_bd;
 			_log_file = "";
-			Dc = input_max_truncation_bd;
+			_Dc = input_max_truncation_bd;
+			_site_indices = sites;
+			bool randomize = args.getBool("RandomizeSites", true);
 
 			std::cerr << "Creating link indices..." << std::endl;
 			create_link_indices(sites);
 			std::cerr << "Creating site tensors..." << std::endl;
-			create_site_tensors(sites);
+			create_site_tensors(sites, randomize);
 		}
 		void set_log_file(string log_file){
 			_log_file = log_file;
 		}
+
+		int size(){ return _num_sites; }
+		int physical_dims(){ return sites(1).dim(); }
+		int Dc(){ return _Dc; }
 
 		//First combines the three sites in each size-3 unit cell, then combines the unit cell tensors
 		//O(D^8 + D^2Ny+2)
@@ -91,7 +98,7 @@ class MCKPEPS{
 			bool _log = (_log_file != "");
 			std::streambuf *coutbuf = std::cout.rdbuf();
 			std::ofstream log_file_stream(_log_file);
-			std::cerr << "Performing efficient contraction..." << std::endl;
+			//std::cerr << "Performing efficient contraction..." << std::endl;
 			if(_log){
 				std::cout.rdbuf(log_file_stream.rdbuf());
 				//std::cout << "Performing efficient";
@@ -228,7 +235,7 @@ class MCKPEPS{
 						left_tensor = itensor::ITensor(left_upper_link, left_link);
 					}
 					
-					itensor::svd(row_tensors[j], left_tensor, sing_vals, right_tensor, {"MaxDim", Dc});
+					itensor::svd(row_tensors[j], left_tensor, sing_vals, right_tensor, {"MaxDim", _Dc});
 					std::cout << "SVD Error: " << itensor::sqr(itensor::norm(row_tensors[j]-left_tensor*sing_vals*right_tensor)/itensor::norm(row_tensors[j])) << std::endl;
 					
 					left_tensor *= sing_vals;
@@ -278,7 +285,7 @@ class MCKPEPS{
 						auto links_left = itensor::commonInds(combined_tensors[i-1][j][1], combined_tensors[i-1][j-1][2]);
 						left_tensor = itensor::ITensor(itensor::unionInds(links_left, link_up));
 					}
-					itensor::svd(combined_tensors[i-1][j][1], left_tensor, sing_vals, right_tensor, {"MaxDim", Dc});
+					itensor::svd(combined_tensors[i-1][j][1], left_tensor, sing_vals, right_tensor, {"MaxDim", _Dc});
 					std::cout << "SVD Error: " << itensor::sqr(itensor::norm(combined_tensors[i-1][j][1]-left_tensor*sing_vals*right_tensor)/itensor::norm(combined_tensors[i-1][j][1])) << std::endl;
 					
 					combined_tensors[i-1][j][1] = left_tensor;
@@ -289,7 +296,7 @@ class MCKPEPS{
 						auto links_left_2 = itensor::commonIndex(combined_tensors[i-1][j][1], combined_tensors[i-1][j][2]);
 						left_tensor = itensor::ITensor(link_up, links_left_2);
 						//TODO: Check that this doesn't modify the data on combined_tensors[i-1][j][1/2]?
-						itensor::svd(combined_tensors[i-1][j][2], left_tensor, sing_vals, right_tensor, {"MaxDim", Dc});
+						itensor::svd(combined_tensors[i-1][j][2], left_tensor, sing_vals, right_tensor, {"MaxDim", _Dc});
 						std::cout << "SVD Error: " << itensor::sqr(itensor::norm(combined_tensors[i-1][j][2]-left_tensor*sing_vals*right_tensor)/itensor::norm(combined_tensors[i-1][j][2])) << std::endl;
 						combined_tensors[i-1][j][2] = left_tensor;
 						combined_tensors[i-1][j+1][1] *= (sing_vals*right_tensor);
@@ -354,11 +361,25 @@ class MCKPEPS{
 			}
 		}
 
+		MCKPEPS get_spin_config(){//Get a random spin configuration with the same sites and dimensions
+			return MCKPEPS(_site_indices, _Nx, _Ny, 1, _Dc);
+		}
+
+		std::tuple<int, int, int> position_of_site(int site_index){
+			int k = site_index % UNIT_CELL_SIZE;
+			site_index = (site_index - k)/UNIT_CELL_SIZE;
+			int j = site_index % _Ny;
+			site_index = (site_index - j)/_Ny;
+			int i = site_index % _Nx;
+			return std::make_tuple(i, j, k);
+		}
+
 	private:
 		int _Nx;
 		int _Ny;
 		int _num_sites;
 		int _D;
+		int _Dc;
 		std::string _log_file;
 		int pair_to_link_index(int i, int j){
 			if(i < j){
@@ -379,14 +400,7 @@ class MCKPEPS{
 			return i*_Ny*UNIT_CELL_SIZE + j*UNIT_CELL_SIZE + k;
 		}
 
-		std::tuple<int, int, int> position_of_site(int site_index){
-			int k = site_index % UNIT_CELL_SIZE;
-			site_index = (site_index - k)/UNIT_CELL_SIZE;
-			int j = site_index % _Ny;
-			site_index = (site_index - j)/_Ny;
-			int i = site_index % _Nx;
-			return std::make_tuple(i, j, k);
-		}
+		
 
 		int link_index_from_position(int i1, int j1, int k1, int i2, int j2, int k2){
 			return pair_to_link_index(site_index_from_position(i1, j1, k1), site_index_from_position(i2, j2, k2));
@@ -422,7 +436,7 @@ class MCKPEPS{
 			}
 
 		}
-		void create_site_tensors(itensor::IndexSet &sites){
+		void create_site_tensors(itensor::IndexSet &sites, bool randomize = true){
 			for(int i = 0; i < _Nx; i++){
 				std::vector<std::vector<itensor::ITensor>> _site_tensors_2D;
 				for(int j = 0; j < _Ny; j++){
@@ -442,8 +456,11 @@ class MCKPEPS{
 						//std::cerr << "  Finishing tensor creation..." << std::endl;
 						itensor::ITensor new_site_tensor(indices);
 						//std::cerr << "  Randomizing tensor..." << std::endl;
-						new_site_tensor.randomize();
-						new_site_tensor /= itensor::norm(new_site_tensor);
+						if(randomize){
+							new_site_tensor.randomize();
+							new_site_tensor /= itensor::norm(new_site_tensor);
+						}
+						
 						//std::cerr << "  Pushing back tensor..." << std::endl;
 						_site_tensors_1D.push_back(new_site_tensor);
 					}
@@ -455,9 +472,49 @@ class MCKPEPS{
 
 		std::vector<std::vector<std::vector<itensor::ITensor>>> _site_tensors;
 		std::map<int, itensor::Index> _link_indices;
-		//itensor::IndexSet _site_indices;
+		itensor::IndexSet _site_indices;
 
 
 };
+
+class SpinConfigPEPS : private MCKPEPS
+{
+	public:
+		SpinConfigPEPS(itensor::IndexSet &sites,
+			int input_Nx,
+			int input_Ny) : MCKPEPS(sites, input_Nx, input_Ny, 1, 1, {"RandomizeSites",false}){
+		}
+
+		SpinConfigPEPS(MCKPEPS &base_state) : MCKPEPS(base_state._site_indices, base_state._Nx, base_state._Ny, 1, 1, {"RandomizeSites",false}){
+		}
+
+		void set_spin(int i , int j, int k, int spin_value){
+			int site_index = site_index_from_position(i,j,k);
+			_site_tensors[i][j][k] = itensor::ITensor(_site_tensors[i][j][k].inds());
+			std::vector<itensor::IndexVal> config;
+			for(itensor::Index ind : _site_tensors[i][j][k].inds()){
+				if(ind.dim() > 1){
+					config.push_back(ind(spin_value+1));
+				}
+				else{
+					config.push_back(ind(1));
+				}
+			}
+			_site_tensors[i][j][k].set(config, 1.0);
+		}
+
+		void set_spin(int site_index, int spin_value){
+			auto ijk = position_of_site(site_index);
+			set_spin(std::get<0>(ijk), std::get<1>(ijk), std::get<2>(ijk),spin_value);
+		}
+
+		void set_spins(std::vector<int> &spin_config){
+			for(int spin_index = 0; spin_index < spin_config.size(); spin_index ++){
+				set_spin(spin_index, spin_config);
+			}
+		}
+
+
+}
 
 #endif

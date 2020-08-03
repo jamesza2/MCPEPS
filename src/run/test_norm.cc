@@ -50,15 +50,15 @@ int main(int argc, char *argv[]){
 
 	std::cerr << "Performing Monte Carlo inner product..." << std::endl;
 	std::vector<double> wavefunctions;
-	mc_norm(state, wavefunctions, num_trials);
+	mc_norm(PEPS1, wavefunctions, num_trials);
 
 	double mc_time = std::difftime(std::time(NULL), timestart);
 	
 	Output out;
 	out.addInteger("NX", Nx);
 	out.addInteger("NY", Ny);
-	out.addInteger("D", D);
-	out.addInteger("CHI", Dc);
+	out.addInteger("D", standard_dims);
+	out.addInteger("CHI", max_truncation_dims);
 	out.addInteger("NUM_TRIALS", num_trials);
 	out.addDouble("DIRECT_INNER_PRODUCT", inner_product);
 	out.addVector("WAVEFUNCTIONS", wavefunctions);

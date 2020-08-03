@@ -7,10 +7,8 @@
 
 double wavefunction(std::vector<int> &spin_config, MCKPEPS &state){
 	SpinConfigPEPS spins(state);
-	for(int spin_index = 0; spin_index < spin_config.size(); spin_index ++){
-		spins.set_spin(spin_index, spin_config);
-	}
-	return state.inner_product(spin_config);
+	spins.set_spins(spin_config);
+	return state.inner_product(spins);
 }
 
 void randomize(std::vector<int> &spin_config, int spin_max, std::mt19937 &generator, std::uniform_real_distribution<double> &distribution){
@@ -88,12 +86,12 @@ void mc_norm(MCKPEPS &state, std::vector<double> &wavefunctions, int num_trials 
 	//Test if you will move to the new spin with metropolis probability
 	for(int i = 0; i < num_trials; i++){
 		std::vector<int> new_spin_config(spin_config);
-		flip_spins(new_spin_config, state.physical_dims(), generator, distribution,);
+		flip_spins(new_spin_config, state.physical_dims(), generator, distribution,num_spins_to_flip);
 		double new_wavefn = wavefunction(new_spin_config, state);
-		bool switch = true;
+		bool switch_to_new_config = true;
 		if(std::abs(new_wavefn) < std::abs(old_wavefn)){
 			if((new_wavefn*new_wavefn)/(old_wavefn*old_wavefn) < distribution(generator)){
-				switch = false;
+				switch_to_new_config = false;
 			}
 		}
 		std::cerr << "Spin config (";
@@ -101,7 +99,7 @@ void mc_norm(MCKPEPS &state, std::vector<double> &wavefunctions, int num_trials 
 			std::cerr << spin << " ";
 		}
 		std::cerr << ") with wavefunction " << new_wavefn;
-		if(switch){
+		if(switch_to_new_config){
 			std::cerr << " accepted over old wavefunction ";
 			old_wavefn = new_wavefn;
 			spin_config = new_spin_config;
