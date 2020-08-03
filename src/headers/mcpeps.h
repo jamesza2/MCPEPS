@@ -32,7 +32,7 @@ class MCKPEPS{
 			_D = input_max_bd;
 			_log_file = "";
 			_Dc = input_max_truncation_bd;
-			_site_indices = sites;
+			site_indices = itensor::IndexSet(sites);
 			bool randomize = args.getBool("RandomizeSites", true);
 
 			std::cerr << "Creating link indices..." << std::endl;
@@ -45,11 +45,10 @@ class MCKPEPS{
 		}
 
 		int size(){ return _num_sites; }
-		int physical_dims(){ return _site_indices(1).dim(); }
+		int physical_dims(){ return site_indices(1).dim(); }
 		int Dc(){ return _Dc; }
 		int Nx(){ return _Nx; }
 		int Ny(){ return _Ny; }
-		itensor::IndexSet sites(){ return itensor::IndexSet(_site_indices); }
 
 		//First combines the three sites in each size-3 unit cell, then combines the unit cell tensors
 		//O(D^8 + D^2Ny+2)
@@ -365,7 +364,7 @@ class MCKPEPS{
 		}
 
 		MCKPEPS get_spin_config(){//Get a random spin configuration with the same sites and dimensions
-			return MCKPEPS(_site_indices, _Nx, _Ny, 1, _Dc);
+			return MCKPEPS(site_indices, _Nx, _Ny, 1, _Dc);
 		}
 
 		std::tuple<int, int, int> position_of_site(int site_index){
@@ -376,6 +375,7 @@ class MCKPEPS{
 			int i = site_index % _Nx;
 			return std::make_tuple(i, j, k);
 		}
+	itensor::IndexSet site_indices;
 
 	protected:
 		int _Nx;
@@ -475,7 +475,7 @@ class MCKPEPS{
 
 		std::vector<std::vector<std::vector<itensor::ITensor>>> _site_tensors;
 		std::map<int, itensor::Index> _link_indices;
-		itensor::IndexSet _site_indices;
+		
 
 
 };
@@ -488,7 +488,7 @@ class SpinConfigPEPS : public MCKPEPS
 			int input_Ny) : MCKPEPS(sites, input_Nx, input_Ny, 1, 1, {"RandomizeSites",false}){
 		}
 
-		SpinConfigPEPS(MCKPEPS &base_state) : MCKPEPS(base_state.sites(), base_state.Nx(), base_state.Ny(), 1, 1, {"RandomizeSites",false}){
+		SpinConfigPEPS(MCKPEPS &base_state) : MCKPEPS(base_state.site_indices, base_state.Nx(), base_state.Ny(), 1, 1, {"RandomizeSites",false}){
 		}
 
 		void set_spin(int i , int j, int k, int spin_value){
