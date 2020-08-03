@@ -74,6 +74,13 @@ class MCKPEPS{
 			for(auto link_iterator = _link_indices.begin(); link_iterator != _link_indices.end(); link_iterator++){
 				link_iterator->second.prime(inc);
 			}
+			for(int i = 0; i < _site_tensors.size(); i++){
+				for(int j = 0; j < _site_tensors[i].size(); j++){
+					for(int k = 0; k < _site_tensors[i][j].size(); k++){
+						_site_tensors[i][j][k].primeExcept(site_indices(site_index_from_position(i,j,k)+1), inc);
+					}
+				}
+			}
 		}
 
 		//First combines the three sites in each size-3 unit cell, then combines the unit cell tensors
@@ -492,11 +499,6 @@ class MCKPEPS{
 				_site_tensors.push_back(_site_tensors_2D);
 			}
 		}
-
-		
-		
-
-
 };
 
 class SpinConfigPEPS : public MCKPEPS
