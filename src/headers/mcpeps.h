@@ -47,6 +47,9 @@ class MCKPEPS{
 		int size(){ return _num_sites; }
 		int physical_dims(){ return _site_indices(1).dim(); }
 		int Dc(){ return _Dc; }
+		int Nx(){ return _Nx; }
+		int Ny(){ return _Ny; }
+		itensor::IndexSet sites(){ return _site_indices; }
 
 		//First combines the three sites in each size-3 unit cell, then combines the unit cell tensors
 		//O(D^8 + D^2Ny+2)
@@ -485,7 +488,7 @@ class SpinConfigPEPS : public MCKPEPS
 			int input_Ny) : MCKPEPS(sites, input_Nx, input_Ny, 1, 1, {"RandomizeSites",false}){
 		}
 
-		SpinConfigPEPS(MCKPEPS &base_state) : MCKPEPS(base_state._site_indices, base_state._Nx, base_state._Ny, 1, 1, {"RandomizeSites",false}){
+		SpinConfigPEPS(MCKPEPS &base_state) : MCKPEPS(base_state.sites(), base_state.Nx(), base_state.Ny(), 1, 1, {"RandomizeSites",false}){
 		}
 
 		void set_spin(int i , int j, int k, int spin_value){
