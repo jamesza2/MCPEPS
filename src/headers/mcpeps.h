@@ -77,7 +77,7 @@ class MCKPEPS{
 			for(int i = 0; i < _site_tensors.size(); i++){
 				for(int j = 0; j < _site_tensors[i].size(); j++){
 					for(int k = 0; k < _site_tensors[i][j].size(); k++){
-						_site_tensors[i][j][k].primeExcept(site_indices(site_index_from_position(i,j,k)+1), inc);
+						_site_tensors[i][j][k].prime(inc, "Link");
 					}
 				}
 			}
@@ -443,7 +443,8 @@ class MCKPEPS{
 			//std::string link_name = "lin, l="+std::to_string(i1)+","+std::to_string(j1)+","+std::to_string(k1);
 			//link_name += "-"+std::to_string(i2)+","+std::to_string(j2)+","+std::to_string(k2);
 			//_link_indices[lifp(i1, j1, k1, i2, j2, k2)] = itensor::Index(link_name,_D);
-			_link_indices[lifp(i1, j1, k1, i2, j2, k2)] = itensor::Index(_D);
+			std::string link_name = "Link,n1=" + std::to_string(site_index_from_position(i1, j1, k1)+1) + ",n2=" + std::to_string(site_index_from_position(i2, j2, k2)+1);
+			_link_indices[lifp(i1, j1, k1, i2, j2, k2)] = itensor::Index(_D, link_name);
 			//std::cerr << "Created link #" << lifp(i1, j1, k1, i2, j2, k2) << std::endl;
 		}
 
