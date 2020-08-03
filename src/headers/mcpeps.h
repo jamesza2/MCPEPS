@@ -17,7 +17,17 @@ const int UNIT_CELL_SIZE = 3;
 
 //Kagome Lattice PEPS that uses Monte Carlo to evaluate itself
 class MCKPEPS{
+	protected:
+		int _Nx;
+		int _Ny;
+		int _num_sites;
+		int _D;
+		int _Dc;
+		std::string _log_file;
+		std::vector<std::vector<std::vector<itensor::ITensor>>> _site_tensors;
+		std::map<int, itensor::Index> _link_indices;
 	public:
+		itensor::IndexSet site_indices;
 		
 		MCKPEPS(itensor::IndexSet &sites,
 			int input_Nx,
@@ -40,6 +50,13 @@ class MCKPEPS{
 			std::cerr << "Creating site tensors..." << std::endl;
 			create_site_tensors(sites, randomize);
 		}
+
+		/*MCKPEPS(MCKPEPS &to_copy){
+			_Nx = to_copy._Nx;
+			_Ny = to_copy._Ny;
+			_num_sites = to_copy._num_sites;
+			_D = to
+		}*/
 		void set_log_file(string log_file){
 			_log_file = log_file;
 		}
@@ -49,6 +66,15 @@ class MCKPEPS{
 		int Dc(){ return _Dc; }
 		int Nx(){ return _Nx; }
 		int Ny(){ return _Ny; }
+
+		
+
+		//Prime all the link indices
+		void prime(int inc = 1){
+			for(auto link_iterator = _link_indices.begin(); link_iterator = _link_indices.end(); link_iterator++){
+				link_iterator->second.prime(inc);
+			}
+		}
 
 		//First combines the three sites in each size-3 unit cell, then combines the unit cell tensors
 		//O(D^8 + D^2Ny+2)
@@ -375,15 +401,9 @@ class MCKPEPS{
 			int i = site_index % _Nx;
 			return std::make_tuple(i, j, k);
 		}
-	itensor::IndexSet site_indices;
-
+	
 	protected:
-		int _Nx;
-		int _Ny;
-		int _num_sites;
-		int _D;
-		int _Dc;
-		std::string _log_file;
+		
 		int pair_to_link_index(int i, int j){
 			if(i < j){
 				return i*_num_sites + j;
@@ -473,8 +493,7 @@ class MCKPEPS{
 			}
 		}
 
-		std::vector<std::vector<std::vector<itensor::ITensor>>> _site_tensors;
-		std::map<int, itensor::Index> _link_indices;
+		
 		
 
 

@@ -40,11 +40,13 @@ int main(int argc, char *argv[]){
 	}
 	itensor::IndexSet sites(sites_vector);
 	auto PEPS1 = MCKPEPS(sites, Nx, Ny, standard_dims, max_truncation_dims);
+	MCKPEPS PEPS2 = PEPS1;
+	PEPS2.prime();
 	//auto PEPS2 = MCKPEPS(sites, Nx, Ny, 1, max_truncation_dims); //Random product state
 	PEPS1.set_log_file(log_file);
 	auto timestart = std::time(NULL);
 	std::cerr << "Performing efficient inner product..." << std::endl;
-	double inner_product = PEPS1.inner_product(PEPS1);
+	double inner_product = PEPS1.inner_product(PEPS2);
 	double efficient_time = std::difftime(std::time(NULL), timestart);
 	timestart = std::time(NULL);
 
