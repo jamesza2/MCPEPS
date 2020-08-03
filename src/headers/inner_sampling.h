@@ -46,12 +46,13 @@ void randomize_in_sector(std::vector<int> &spin_config, int spin_max, std::mt199
 //Takes random groups of 2 spins (not necessarily pairs) and redistributes their spins such that the sum of their sz's is the same
 //Repeats num_spins_to_flip times
 void flip_spins(std::vector<int> &spin_config, int spin_max, std::mt19937 &generator, std::uniform_real_distribution<double> &distribution, int num_spins_to_flip){
+	int num_sites = spin_config.size();
 	for(int pairs_found = 0; pairs_found < num_spins_to_flip; pairs_found++){
 		if(distribution(generator) >= 0.5){
 			continue;
 		}
-		int site_choice_1 = std::floor(spin_max*distribution(generator));
-		int site_choice_2 = std::floor(spin_max*distribution(generator));
+		int site_choice_1 = std::floor(num_sites*distribution(generator));
+		int site_choice_2 = std::floor(num_sites*distribution(generator));
 		if(spin_config[site_choice_1] == spin_config[site_choice_2]){
 			pairs_found -= 1;
 			continue;
