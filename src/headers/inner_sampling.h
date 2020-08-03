@@ -70,7 +70,7 @@ void flip_spins(std::vector<int> &spin_config, int spin_max, std::mt19937 &gener
 
 void mc_norm(MCKPEPS &state, std::vector<double> &wavefunctions, int num_trials = 10000, int num_spins_to_flip = -1){
 	int num_sites = state.size();
-	std::vector<int> &spin_config(num_sites, 0);
+	std::vector<int> spin_config(num_sites, 0);
 	if(num_spins_to_flip == -1){
 		num_spins_to_flip = num_sites;
 	}

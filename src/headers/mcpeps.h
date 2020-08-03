@@ -45,7 +45,7 @@ class MCKPEPS{
 		}
 
 		int size(){ return _num_sites; }
-		int physical_dims(){ return sites(1).dim(); }
+		int physical_dims(){ return _site_indices(1).dim(); }
 		int Dc(){ return _Dc; }
 
 		//First combines the three sites in each size-3 unit cell, then combines the unit cell tensors
@@ -374,7 +374,7 @@ class MCKPEPS{
 			return std::make_tuple(i, j, k);
 		}
 
-	private:
+	protected:
 		int _Nx;
 		int _Ny;
 		int _num_sites;
@@ -477,7 +477,7 @@ class MCKPEPS{
 
 };
 
-class SpinConfigPEPS : private MCKPEPS
+class SpinConfigPEPS : public MCKPEPS
 {
 	public:
 		SpinConfigPEPS(itensor::IndexSet &sites,
@@ -510,11 +510,11 @@ class SpinConfigPEPS : private MCKPEPS
 
 		void set_spins(std::vector<int> &spin_config){
 			for(int spin_index = 0; spin_index < spin_config.size(); spin_index ++){
-				set_spin(spin_index, spin_config);
+				set_spin(spin_index, spin_config[spin_index]);
 			}
 		}
 
 
-}
+};
 
 #endif
