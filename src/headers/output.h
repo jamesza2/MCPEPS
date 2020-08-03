@@ -7,7 +7,7 @@
 class Output
 {
 	public:
-		Output();
+		Output(){ }
 		/*Output(std::string file_name){
 			_file_name = file_name;
 		}*/
