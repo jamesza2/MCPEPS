@@ -49,7 +49,7 @@ class MCKPEPS{
 		int Dc(){ return _Dc; }
 		int Nx(){ return _Nx; }
 		int Ny(){ return _Ny; }
-		itensor::IndexSet sites(){ return _site_indices; }
+		itensor::IndexSet sites(){ return itensor::IndexSet(_site_indices); }
 
 		//First combines the three sites in each size-3 unit cell, then combines the unit cell tensors
 		//O(D^8 + D^2Ny+2)
