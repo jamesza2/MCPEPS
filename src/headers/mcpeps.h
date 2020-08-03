@@ -71,7 +71,7 @@ class MCKPEPS{
 
 		//Prime all the link indices
 		void prime(int inc = 1){
-			for(auto link_iterator = _link_indices.begin(); link_iterator = _link_indices.end(); link_iterator++){
+			for(auto link_iterator = _link_indices.begin(); link_iterator != _link_indices.end(); link_iterator++){
 				link_iterator->second.prime(inc);
 			}
 		}
