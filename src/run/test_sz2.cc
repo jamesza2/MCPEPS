@@ -70,7 +70,6 @@ int main(int argc, char *argv[]){
 		sites_vector[i] = itensor::Index(physical_dims,"Site,n="+std::to_string(i+1));
 	}
 	itensor::IndexSet sites(sites_vector);
-	auto sz2_op = create_sz2_op(sites);
 
 	auto PEPS1 = MCKPEPS(sites, Nx, Ny, standard_dims, max_truncation_dims);
 	MCKPEPS PEPS2 = PEPS1;
@@ -78,15 +77,16 @@ int main(int argc, char *argv[]){
 
 	double total_Sz2;
 	std::cerr << "Performing efficient inner product..." << std::endl;
+	timestart = std::time(NULL);
 	double inner_product = PEPS1.inner_product(PEPS2);
 	for(int i = 0; i < num_sites; i++){
 		auto Sz2_tensor = create_sz2_op(i, sites);
 		MCKPEPS applied_PEPS = PEPS2;
 		applied_PEPS.apply_spinop(i+1, Sz2_tensor);
-		total_Sz += PEPS1.inner_product(applied_PEPS)/inner_product;
+		total_Sz2 += PEPS1.inner_product(applied_PEPS)/inner_product;
 	}
 	double efficient_time = std::difftime(std::time(NULL), timestart);
-	timestart = std::time(NULL);
+	
 
 	std::cerr << "Performing Monte Carlo inner product..." << std::endl;
 	std::vector<double> wavefunctions;
