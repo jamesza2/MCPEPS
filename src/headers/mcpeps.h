@@ -338,18 +338,24 @@ class MCKPEPS{
 
 		//Applies a set of simple spin operators (ITensors with only site indices) to the PEPS
 		//Assumes one site matches the site tensors, and the other is the primed version
-		void apply_spinop(std::vector<itensor::ITensor> spinops){
-			int site_index = 0;
-			for(int i = 0; i < _Nx; i++){
-				for(int j = 0; j < _Ny; j++){
-					for(int k = 0; k < UNIT_CELL_SIZE; k++){
-						_site_tensors[i][j][k] *= spinops[site_index];
-						_site_tensors[i][j][k].noPrime("Site");
-						site_index += 1;
-					}
-				}
+		void apply_spinop(std::vector<int> sites, std::vector<itensor::ITensor> spinops){
+			for(int site_index = 0; site_index < sites.size(); site_index ++){
+				int site = sites[site_index];
+				auto position = position_of_site(site);
+				int i = std::get<0>(position);
+				int j = std::get<1>(position);
+				int k = std::get<2>(position);
+				_site_tensors[i][j][k] *= spinops[site_index];
+				_site_tensors[i][j][k].noPrime("Site");
 			}
-
+		}
+		void apply_spinop(int site, itensor::ITensor spinops){
+			auto position = position_of_site(site);
+			int i = std::get<0>(position);
+			int j = std::get<1>(position);
+			int k = std::get<2>(position);
+			_site_tensors[i][j][k] *= spinops;
+			_site_tensors[i][j][k].noPrime("Site");
 		}
 
 		void print_self(){

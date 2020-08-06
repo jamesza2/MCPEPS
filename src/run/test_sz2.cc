@@ -8,7 +8,7 @@
 #include <complex>
 
 
-std::vector<itensor::ITensor> create_sz2_op(itensor::IndexSet &sites){
+/*std::vector<itensor::ITensor> create_sz2_op(itensor::IndexSet &sites){
 	std::vector<itensor::ITensor> ops;
 	double s = 0.5*(itensor::dim(sites(1))-1);
 	for(int i = 1; i <= itensor::length(sites); i++){
@@ -22,6 +22,19 @@ std::vector<itensor::ITensor> create_sz2_op(itensor::IndexSet &sites){
 		ops.push_back(op);
 	}
 	return ops;
+}*/
+
+itensor::ITensor create_sz2_op(int site, itensor::IndexSet &sites){
+	std::vector<itensor::ITensor> ops;
+	double s = 0.5*(itensor::dim(sites(1))-1);
+	itensor::Index site_index = sites(site+1);
+	itensor::Index site_index_primed = itensor::prime(site_index);
+	itensor::ITensor op(site_index, site_index_primed);
+	for(int sz_index = 1; sz_index <= itensor::dim(site_index); sz_index ++){
+		double sz = sz_index - s - 1.;
+		op.set(site_index = sz_index, site_index_primed = sz_index, sz*sz);
+	}
+	return op;
 }
 
 int main(int argc, char *argv[]){
@@ -62,13 +75,16 @@ int main(int argc, char *argv[]){
 	auto PEPS1 = MCKPEPS(sites, Nx, Ny, standard_dims, max_truncation_dims);
 	MCKPEPS PEPS2 = PEPS1;
 	PEPS2.prime();
-	MCKPEPS PEPS_orig = PEPS2;
-	PEPS2.apply_spinop(sz2_op);
-	//auto PEPS2 = MCKPEPS(sites, Nx, Ny, 1, max_truncation_dims); //Random product state
-	PEPS1.set_log_file(log_file);
-	auto timestart = std::time(NULL);
+
+	double total_Sz2;
 	std::cerr << "Performing efficient inner product..." << std::endl;
-	double inner_product = PEPS1.inner_product(PEPS2)/(PEPS1.inner_product(PEPS_orig));
+	double inner_product = PEPS1.inner_product(PEPS2);
+	for(int i = 0; i < num_sites; i++){
+		auto Sz2_tensor = create_sz2_op(i, sites);
+		MCKPEPS applied_PEPS = PEPS2;
+		applied_PEPS.apply_spinop(i+1, Sz2_tensor);
+		total_Sz += PEPS1.inner_product(applied_PEPS)/inner_product;
+	}
 	double efficient_time = std::difftime(std::time(NULL), timestart);
 	timestart = std::time(NULL);
 
@@ -86,6 +102,7 @@ int main(int argc, char *argv[]){
 	out.addInteger("CHI", max_truncation_dims);
 	out.addInteger("NUM_TRIALS", num_trials);
 	out.addDouble("DIRECT_INNER_PRODUCT", inner_product);
+	out.addDouble("DIRECT_SZ2", total_Sz2);
 	out.addVector("WAVEFUNCTIONS", wavefunctions);
 	out.addVector("VALUES", values);
 	out.writeOutput(out_file_name);
@@ -103,7 +120,7 @@ int main(int argc, char *argv[]){
 
 	out_file.close();*/
 
-	std::cerr << "Total Sz^2 (inner product): " << inner_product << " (" << efficient_time << "s)" << std::endl;
+	std::cerr << "Total Sz^2 (inner product): " << total_Sz2 << " (" << efficient_time << "s)" << std::endl;
 
 	int num_wavefunctions = values.size();
 	double later_half_average = 0;
