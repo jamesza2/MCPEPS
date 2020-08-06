@@ -25,7 +25,7 @@ class MCOperator{
 		double eval(std::vector<int> &spin_config_1, std::vector<int> &spin_config_2){
 			return 0;
 		}
-}
+};
 
 class Heisenberg : public MCOperator{
 	protected:
@@ -73,7 +73,7 @@ class Heisenberg : public MCOperator{
 			}
 			double matrix_element = 0;
 			double s = 0.5*(_d-1);
-			std::vector<double> J{0, _J1, _J2, _J3};
+			std::vector<double> J{0, _J1, _J2, _Jd};
 			//For each bond:
 			//Check if it covers all differences
 			//Split into Sxy and Sz components
@@ -153,19 +153,21 @@ class Heisenberg : public MCOperator{
 				}
 			}
 		}
-}
+};
 
 class Sz2 : public MCOperator{
-	//Measures sz^2 for spin config 1, ignores spin config 2
-	double eval(std::vector<int> &spin_config_1, std::vector<int> &spin_config_2){
-		double elem = 0;
-		double s = 0.5*(_d-1);
-		for(int spin_1 : spin_config_1){
-			double m1 = spin_1-s;
-			elem += m1*m1;
+	public:
+		Sz2(int Nx, int Ny, int physical_dimension) : MCOperator(Nx, Ny, physical_dimension) {}
+		//Measures sz^2 for spin config 1, ignores spin config 2
+		double eval(std::vector<int> &spin_config_1, std::vector<int> &spin_config_2){
+			double elem = 0;
+			double s = 0.5*(_d-1);
+			for(int spin_1 : spin_config_1){
+				double m1 = spin_1-s;
+				elem += m1*m1;
+			}
+			return elem;
 		}
-		return elem;
-	}
-}
+};
 
 #endif

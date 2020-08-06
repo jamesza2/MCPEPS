@@ -73,7 +73,8 @@ int main(int argc, char *argv[]){
 
 	std::cerr << "Performing Monte Carlo inner product..." << std::endl;
 	std::vector<double> wavefunctions;
-	mc_sz2(PEPS1, wavefunctions, num_trials);
+	std::vector<double> values;
+	mc_sz2(PEPS1, wavefunctions, values, num_trials);
 
 	double mc_time = std::difftime(std::time(NULL), timestart);
 	
@@ -85,6 +86,7 @@ int main(int argc, char *argv[]){
 	out.addInteger("NUM_TRIALS", num_trials);
 	out.addDouble("DIRECT_INNER_PRODUCT", inner_product);
 	out.addVector("WAVEFUNCTIONS", wavefunctions);
+	out.addVector("VALUES", values);
 	out.writeOutput(out_file_name);
 	/*std::ofstream out_file(out_file_name);
 	out_file << "NX: " << Nx;
