@@ -77,7 +77,7 @@ int main(int argc, char *argv[]){
 
 	double total_Sz2;
 	std::cerr << "Performing efficient inner product..." << std::endl;
-	timestart = std::time(NULL);
+	auto timestart = std::time(NULL);
 	double inner_product = PEPS1.inner_product(PEPS2);
 	for(int i = 0; i < num_sites; i++){
 		auto Sz2_tensor = create_sz2_op(i, sites);
