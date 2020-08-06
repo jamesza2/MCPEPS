@@ -102,12 +102,12 @@ int main(int argc, char *argv[]){
 
 	out_file.close();*/
 
-	std::cerr << "Inner Product: " << inner_product << " (" << efficient_time << "s)" << std::endl;
+	std::cerr << "Total Sz^2 (inner product): " << inner_product << " (" << efficient_time << "s)" << std::endl;
 
-	int num_wavefunctions = wavefunctions.size();
+	int num_wavefunctions = values.size();
 	double later_half_average = 0;
 	for(int i = num_wavefunctions/2; i < num_wavefunctions; i++){
-		later_half_average += wavefunctions[i];
+		later_half_average += values[i];
 	}
 	later_half_average /= (num_wavefunctions - num_wavefunctions/2);
 	std::cerr << "Later-Half Average: " << later_half_average << " (" << mc_time << "s)" << std::endl;
