@@ -69,7 +69,8 @@ void flip_spins(std::vector<int> &spin_config, int spin_max, std::mt19937 &gener
 	
 }
 
-void mc_norm(MCKPEPS &state, std::vector<double> &wavefunctions, int num_trials = 10000, int num_spins_to_flip = -1){
+//Computes average Sz^2
+void mc_sz2(MCKPEPS &state, std::vector<double> &wavefunctions, std::vector<double> &values, int num_trials = 10000, int num_spins_to_flip = -1){
 	int num_sites = state.size();
 	std::vector<int> spin_config(num_sites, 0);
 	if(num_spins_to_flip == -1){
@@ -80,7 +81,9 @@ void mc_norm(MCKPEPS &state, std::vector<double> &wavefunctions, int num_trials 
 	randomize_in_sector(spin_config, state.physical_dims(), generator, distribution);
 	double norm_estimate = 0;
 	double old_wavefn = wavefunction(spin_config, state);
+	Sz2 sz2op(state.Nx(), state.Ny(), state.physical_dims());
 	wavefunctions.push_back(old_wavefn);
+	values.push_back(sz2op.eval(spin_config, spin_config));
 	//In each step:
 	//Find new spin config by randomly flipping a few spins (say Lx pairs with 50% chance each)
 	//Get wavefunction
@@ -96,7 +99,7 @@ void mc_norm(MCKPEPS &state, std::vector<double> &wavefunctions, int num_trials 
 			}
 		}
 		std::cerr << "Spin config (";
-		for(int spin : spin_config){
+		for(int spin : new_spin_config){
 			std::cerr << spin << " ";
 		}
 		std::cerr << ") with wavefunction " << new_wavefn;
@@ -105,6 +108,7 @@ void mc_norm(MCKPEPS &state, std::vector<double> &wavefunctions, int num_trials 
 			old_wavefn = new_wavefn;
 			spin_config = new_spin_config;
 			wavefunctions.push_back(new_wavefn);
+			values.push_back(sz2op.eval(spin_config, spin_config));
 		}
 		else{
 			std::cerr << " rejected over old wavefunction ";

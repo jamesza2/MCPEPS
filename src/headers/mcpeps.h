@@ -2,6 +2,7 @@
 #define mcpeps
 
 #include "itensor/all.h"
+#include "operator.h"
 #include <random>
 #include <ctime>
 #include <cmath>
@@ -12,7 +13,6 @@
 //Constant: Uses a single estimate for the energy and nothing else
 //Antitrunc: Just tries to compensate for the truncation
 
-const int UNIT_CELL_SIZE = 3;
 
 
 //Kagome Lattice PEPS that uses Monte Carlo to evaluate itself
@@ -211,16 +211,6 @@ class MCKPEPS{
 						}
 					}
 				}
-				/*itensor::ITensor brute_force_product(1);
-				for(int i = 0; i < _Nx; i++){
-					for(int j = 0; j < _Ny; j++){
-						for(int k = 0; k < UNIT_CELL_SIZE; k++){
-							brute_force_product *= combined_tensors[i][j][k];
-						}
-					}
-				}
-				Print(brute_force_product);*/
-				//std::cout << "CURRENT BRUTE FORCE PRODUCT: " << itensor::norm(brute_force_product) << std::endl;
 			}
 
 			//Contract the resulting KPEPS
@@ -241,19 +231,6 @@ class MCKPEPS{
 						std::cout << "Site " << row_tensor_index << std::endl;
 						Print(row_tensors[row_tensor_index]);
 					}
-					/*itensor::ITensor brute_force_product(1);
-					for(int i_bfp = 0; i_bfp < i; i_bfp++){
-						for(int j = 0; j < _Ny; j++){
-							for(int k = 0; k < UNIT_CELL_SIZE; k++){
-								brute_force_product *= combined_tensors[i_bfp][j][k];
-							}
-						}
-					}
-					for(itensor::ITensor row_tensor : row_tensors){
-						brute_force_product *= row_tensor;
-					}
-					//std::cout << "CURRENT BRUTE FORCE PRODUCT: " << std::endl;
-					Print(brute_force_product);*/
 				}
 
 				//Second layer: Split each row tensor into two copies using truncated SVD, then combine those copies with the tensors above
@@ -293,16 +270,6 @@ class MCKPEPS{
 						Print(combined_tensors[i-1][j][1]);
 						Print(combined_tensors[i-1][j][2]);
 					}
-					/*itensor::ITensor brute_force_product(1);
-					for(int i_bfp = 0; i_bfp < i; i_bfp++){
-						for(int j = 0; j < _Ny; j++){
-							for(int k = 0; k < UNIT_CELL_SIZE; k++){
-								brute_force_product *= combined_tensors[i_bfp][j][k];
-							}
-						}
-					}
-					//std::cout << "CURRENT BRUTE FORCE PRODUCT: " << itensor::norm(brute_force_product) << std::endl;
-					Print(brute_force_product);*/
 				}
 
 				//Truncate indices
@@ -345,16 +312,6 @@ class MCKPEPS{
 						Print(combined_tensors[i-1][j][1]);
 						Print(combined_tensors[i-1][j][2]);
 					}
-					/*itensor::ITensor brute_force_product(1);
-					for(int i_bfp = 0; i_bfp < i; i_bfp++){
-						for(int j = 0; j < _Ny; j++){
-							for(int k = 0; k < UNIT_CELL_SIZE; k++){
-								brute_force_product *= combined_tensors[i_bfp][j][k];
-							}
-						}
-					}
-					//std::cout << "CURRENT BRUTE FORCE PRODUCT: " << itensor::norm(brute_force_product) << std::endl;
-					Print(brute_force_product);*/
 				}
 			}
 			itensor::ITensor contracted_tensor(1);
@@ -377,6 +334,23 @@ class MCKPEPS{
 		/*std::vector<int> dimensions(){
 			return {_Nx, _Ny};
 		}*/
+
+
+		//Applies a set of simple spin operators (ITensors with only site indices) to the PEPS
+		//Assumes one site matches the site tensors, and the other is the primed version
+		void apply_spinop(std::vector<itensor::ITensor> spinops){
+			int site_index = 0;
+			for(int i = 0; i < _Nx; i++){
+				for(int j = 0; j < _Ny; j++){
+					for(int k = 0; k < UNIT_CELL_SIZE; k++){
+						_site_tensors[i][j][k] *= spinops[site_index];
+						_site_tensors[i][j][k].noPrime("Site");
+						site_index += 1;
+					}
+				}
+			}
+
+		}
 
 		void print_self(){
 			std::cout << "TENSOR DATA:" << std::endl;
