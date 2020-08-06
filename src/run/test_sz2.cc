@@ -14,7 +14,7 @@ std::vector<itensor::ITensor> create_sz2_op(itensor::IndexSet &sites){
 	for(int i = 1; i <= itensor::length(sites); i++){
 		itensor::Index site_index = sites(1);
 		itensor::Index site_index_primed = itensor::prime(site_index);
-		itensor::Itensor op(site_index, site_index_primed);
+		itensor::ITensor op(site_index, site_index_primed);
 		for(int sz_index = 1; sz_index <= itensor::dim(site_index); sz_index ++){
 			double sz = sz_index - s - 1.;
 			op.set(site_index = sz_index, site_index_primed = sz_index, sz*sz);
