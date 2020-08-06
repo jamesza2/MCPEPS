@@ -48,7 +48,7 @@ int main(int argc, char *argv[]){
 	int max_truncation_dims = input.testInteger("Dc", 4);
 	int num_trials = input.testInteger("num_trials", 10000);
 	std::string out_file_name = input.testString("out_file", "");
-	int physical_dims = input.testInteger("physical_dims", 2);
+	int physical_dims = input.testInteger("physical_dims", 4);
 
 	int num_sites = Nx*Ny*UNIT_CELL_SIZE;
 
@@ -62,12 +62,13 @@ int main(int argc, char *argv[]){
 	auto PEPS1 = MCKPEPS(sites, Nx, Ny, standard_dims, max_truncation_dims);
 	MCKPEPS PEPS2 = PEPS1;
 	PEPS2.prime();
+	MCKPEPS PEPS_orig = PEPS2;
 	PEPS2.apply_spinop(sz2_op);
 	//auto PEPS2 = MCKPEPS(sites, Nx, Ny, 1, max_truncation_dims); //Random product state
 	PEPS1.set_log_file(log_file);
 	auto timestart = std::time(NULL);
 	std::cerr << "Performing efficient inner product..." << std::endl;
-	double inner_product = PEPS1.inner_product(PEPS2);
+	double inner_product = PEPS1.inner_product(PEPS2)/(PEPS1.inner_product(PEPS_orig));
 	double efficient_time = std::difftime(std::time(NULL), timestart);
 	timestart = std::time(NULL);
 
