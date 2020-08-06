@@ -86,7 +86,7 @@ int main(int argc, char *argv[]){
 		total_Sz2 += PEPS1.inner_product(applied_PEPS)/inner_product;
 	}
 	double efficient_time = std::difftime(std::time(NULL), timestart);
-	
+	timestart = std::time(NULL);
 
 	std::cerr << "Performing Monte Carlo inner product..." << std::endl;
 	std::vector<double> wavefunctions;
