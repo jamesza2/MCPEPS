@@ -90,7 +90,8 @@ void mc_sz2(MCKPEPS &state, std::vector<double> &wavefunctions, std::vector<doub
 	//Test if you will move to the new spin with metropolis probability
 	for(int i = 0; i < num_trials; i++){
 		std::vector<int> new_spin_config(spin_config);
-		flip_spins(new_spin_config, state.physical_dims(), generator, distribution,num_spins_to_flip);
+		randomize_in_sector(new_spin_config, state.physical_dims(), generator, distribution);
+		//flip_spins(new_spin_config, state.physical_dims(), generator, distribution,num_spins_to_flip);
 		double new_wavefn = wavefunction(new_spin_config, state);
 		bool switch_to_new_config = true;
 		if(std::abs(new_wavefn) < std::abs(old_wavefn)){
