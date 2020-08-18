@@ -72,18 +72,7 @@ int main(int argc, char *argv[]){
 	if(log_file_name == "AUTO"){ //../../logs/sz2_test_{Nx}x{Ny}_D{D}_X{Chi}_d{d}_{}trials
 		log_file_name = "../../logs/sz2_test" + version;
 	}
-	if(out_file_name == "AUTO"){
-		out_file_name = "../../out/sz2_test" + version;
-		std::ifstream out_file_cand(out_file_name + "_0");
-		int out_file_number = 0;
-		while(out_file_cand.good()){
-			out_file_cand.close();
-			out_file_number ++;
-			out_file_cand = std::ifstream(out_file_name + "_" + std::to_string(out_file_number));
-		}
-		out_file_name = out_file_name + "_" + std::to_string(out_file_number);
-		out_file_cand.close();
-	}
+
 
 	int num_sites = Nx*Ny*UNIT_CELL_SIZE;
 
@@ -128,6 +117,20 @@ int main(int argc, char *argv[]){
 	out.addDouble("DIRECT_SZ2", total_Sz2);
 	out.addVector("WAVEFUNCTIONS", wavefunctions);
 	out.addVector("VALUES", values);
+
+	if(out_file_name == "AUTO"){
+		out_file_name = "../../out/sz2_test" + version;
+		std::ifstream out_file_cand(out_file_name + "_0");
+		int out_file_number = 0;
+		while(out_file_cand.good()){
+			out_file_cand.close();
+			out_file_number ++;
+			out_file_cand = std::ifstream(out_file_name + "_" + std::to_string(out_file_number));
+		}
+		out_file_name = out_file_name + "_" + std::to_string(out_file_number);
+		out_file_cand.close();
+	}
+	
 	out.writeOutput(out_file_name);
 	/*std::ofstream out_file(out_file_name);
 	out_file << "NX: " << Nx;
