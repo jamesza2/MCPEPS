@@ -56,12 +56,34 @@ int main(int argc, char *argv[]){
 
 	int Nx = input.testInteger("Nx", 2);
 	int Ny = input.testInteger("Ny", 2);
-	std::string log_file = input.testString("log_file", "");
+	std::string log_file_name = input.testString("log_file", "");
 	int standard_dims = input.testInteger("D", 2);
 	int max_truncation_dims = input.testInteger("Dc", 4);
 	int num_trials = input.testInteger("num_trials", 10000);
 	std::string out_file_name = input.testString("out_file", "");
 	int physical_dims = input.testInteger("physical_dims", 4);
+
+	std::string version = "_";
+	version += std::to_string(Nx) + "x" + std::to_string(Ny);
+	version += "_D"+std::to_string(standard_dims);
+	version += "_X"+std::to_string(max_truncation_dims);
+	version += "_d"+std::to_string(physical_dims);
+	version += "_" + std::to_string(num_trials) + "trials";
+	if(log_file_name == "AUTO"){ //../../logs/sz2_test_{Nx}x{Ny}_D{D}_X{Chi}_d{d}_{}trials
+		log_file_name = "../../logs/sz2_test" + version;
+	}
+	if(out_file_name == "AUTO"){
+		out_file_name = "../../out/sz2_test" + version;
+		std::ifstream out_file_cand(out_file_name + "_0");
+		int out_file_number = 0;
+		while(out_file_cand.good()){
+			out_file_cand.close();
+			out_file_number ++;
+			out_file_cand = std::ifstream(out_file_name + "_" + std::to_string(out_file_number));
+		}
+		out_file_name = out_file_name + "_" + std::to_string(out_file_number);
+		out_file_cand.close();
+	}
 
 	int num_sites = Nx*Ny*UNIT_CELL_SIZE;
 
@@ -74,7 +96,7 @@ int main(int argc, char *argv[]){
 	auto PEPS1 = MCKPEPS(sites, Nx, Ny, standard_dims, max_truncation_dims);
 	MCKPEPS PEPS2 = PEPS1;
 	PEPS2.prime();
-	PEPS1.set_log_file(log_file);
+	PEPS1.set_log_file(log_file_name);
 
 	double total_Sz2;
 	std::cerr << "Performing efficient inner product..." << std::endl;
