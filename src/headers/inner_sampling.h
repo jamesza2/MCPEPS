@@ -106,10 +106,10 @@ double flip_spins(Neighbors &bonds, std::vector<int> &spin_config, int spin_max,
 
 void mc_sz2(MCKPEPS &state, std::vector<double> &wavefunctions, std::vector<double> &values, int num_trials = 10000){
 	Sz2 sz2op(state.Nx(), state.Ny(), state.physical_dims());
-	mc_eval(state, sz2op, wavefunctions, values, num_trials);
+	mc_eval_single(state, sz2op, wavefunctions, values, num_trials);
 }
 
-void mc_eval(MCKPEPS &state, MCOperator &op, std::vector<double> &wavefunctions, std::vector<double> &values, int num_trials = 10000){
+void mc_eval_single(MCKPEPS &state, MCOperator &op, std::vector<double> &wavefunctions, std::vector<double> &values, int num_trials = 10000){
 	std::vector<MCOperator> ops_wrapper{op};
 	std::vector<std::vector<double>> values_wrapper;
 	values_wrapper.push_back(std::vector<double>());
