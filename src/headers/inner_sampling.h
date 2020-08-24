@@ -103,22 +103,6 @@ double flip_spins(Neighbors &bonds, std::vector<int> &spin_config, int spin_max,
 	
 }
 
-
-void mc_sz2(MCKPEPS &state, std::vector<double> &wavefunctions, std::vector<double> &values, int num_trials = 10000){
-	Sz2 sz2op(state.Nx(), state.Ny(), state.physical_dims());
-	mc_eval_single(state, sz2op, wavefunctions, values, num_trials);
-}
-
-void mc_eval_single(MCKPEPS &state, MCOperator &op, std::vector<double> &wavefunctions, std::vector<double> &values, int num_trials = 10000){
-	std::vector<MCOperator> ops_wrapper{op};
-	std::vector<std::vector<double>> values_wrapper;
-	values_wrapper.push_back(std::vector<double>());
-	mc_eval(state, ops_wrapper, wavefunctions, values_wrapper, num_trials);
-	for(double val : values_wrapper[0]){
-		values.push_back(val);
-	}
-}
-
 //Computes average of a certain operator op
 void mc_eval(MCKPEPS &state, std::vector<MCOperator> &ops, std::vector<double> &wavefunctions, std::vector<std::vector<double>> &values, int num_trials = 10000){
 	int num_sites = state.size();
@@ -167,5 +151,22 @@ void mc_eval(MCKPEPS &state, std::vector<MCOperator> &ops, std::vector<double> &
 		std::cerr << "(trial " << i << ")\n";
 	}
 }
+
+void mc_eval_single(MCKPEPS &state, MCOperator &op, std::vector<double> &wavefunctions, std::vector<double> &values, int num_trials = 10000){
+	std::vector<MCOperator> ops_wrapper{op};
+	std::vector<std::vector<double>> values_wrapper;
+	values_wrapper.push_back(std::vector<double>());
+	mc_eval(state, ops_wrapper, wavefunctions, values_wrapper, num_trials);
+	for(double val : values_wrapper[0]){
+		values.push_back(val);
+	}
+}
+
+void mc_sz2(MCKPEPS &state, std::vector<double> &wavefunctions, std::vector<double> &values, int num_trials = 10000){
+	Sz2 sz2op(state.Nx(), state.Ny(), state.physical_dims());
+	mc_eval_single(state, sz2op, wavefunctions, values, num_trials);
+}
+
+
 
 #endif
