@@ -3,6 +3,7 @@
 
 #include "itensor/all.h"
 #include "operator.h"
+#include "neighbors.h"
 #include <random>
 #include <ctime>
 #include <cmath>
@@ -27,6 +28,7 @@ class MCKPEPS{
 		std::vector<std::vector<std::vector<itensor::ITensor>>> _site_tensors;
 		std::map<int, itensor::Index> _link_indices;
 	public:
+		Neighbors bonds;
 		itensor::IndexSet site_indices;
 		
 		MCKPEPS(itensor::IndexSet &sites,
@@ -39,6 +41,7 @@ class MCKPEPS{
 			_num_sites = input_Nx*input_Ny*UNIT_CELL_SIZE;
 			_Nx = input_Nx;
 			_Ny = input_Ny;
+			bonds.set_dimensions(input_Nx, input_Ny);
 			_D = input_max_bd;
 			_log_file = "";
 			_Dc = input_max_truncation_bd;

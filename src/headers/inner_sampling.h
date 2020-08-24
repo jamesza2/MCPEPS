@@ -2,6 +2,7 @@
 #define mccalculator
 
 #include "mcpeps.h"
+#include "neighbors.h"
 #include <random>
 
 
@@ -43,28 +44,60 @@ void randomize_in_sector(std::vector<int> &spin_config, int spin_max, std::mt199
 	}
 }
 
-//Takes random groups of 2 spins (not necessarily pairs) and redistributes their spins such that the sum of their sz's is the same
-//Repeats num_spins_to_flip times
-void flip_spins(std::vector<int> &spin_config, int spin_max, std::mt19937 &generator, std::uniform_real_distribution<double> &distribution, int num_spins_to_flip){
+//Takes random NN pair of 2 spins (not necessarily pairs) and increments one spin while decremening the other
+//returns ratio of total choices from old config over new config
+double flip_spins(Neighbors &bonds, std::vector<int> &spin_config, int spin_max, std::mt19937 &generator, std::uniform_real_distribution<double> &distribution){
 	int num_sites = spin_config.size();
-	for(int pairs_found = 0; pairs_found < num_spins_to_flip; pairs_found++){
-		if(distribution(generator) >= 0.5){
-			continue;
+	double num_choices = 0;
+	for(int site_1 = 0; site_1 < num_sites; site_1 ++){
+		for(int site_2 : bonds.nn_at(site_1)){
+			if((spin_config[site_1] > 0) && (spin_config[site_2] < spin_max-1)){//Can flip by decrementing site_1, incrementing site_2
+				num_choices += 1;
+			}
+			if((spin_config[site_1] < spin_max-1) && (spin_config[site_2] > 0)){//Can flip by incrementing site_1, decrementing site_2
+				num_choices += 1;
+			}
 		}
+	}
+	double new_num_choices = num_choices;
+	while(true){
 		int site_choice_1 = std::floor(num_sites*distribution(generator));
-		int site_choice_2 = std::floor(num_sites*distribution(generator));
-		if(spin_config[site_choice_1] == spin_config[site_choice_2]){
+		auto bonds_at_site_1 = bonds.nn_at(site_choice_1);
+		int neighbor_choice_index = std::floor(bonds_at_site_1.size()*distribution(generator));
+		int site_choice_2 = bonds_at_site_1[neighbor_choice_index];
+		/*if(site_choice_1 == site_choice_2){
 			pairs_found -= 1;
 			continue;
+		}*/
+		int old_sz_1 = spin_config[site_choice_1];
+		int old_sz_2 = spin_config[site_choice_2];
+		int total_site = old_sz_1 + old_sz_2;
+		//If total is 0,1,2S-1 or 2S, only one possible way to split config
+		if((total_site < 2) || (total_site > 2*spin_max-4)){
+			continue;
 		}
-		int total_site = spin_config[site_choice_1]+spin_config[site_choice_2];
-		int new_sz_1 = std::floor((total_site+1)*distribution(generator));
-		while((new_sz_1 >= spin_max) || (total_site - new_sz_1 >= spin_max)){
-			new_sz_1 = std::floor((total_site+1)*distribution(generator));
+		int up_or_down = std::floor(2*distribution(generator))*2-1; //-1 means decrement spin_1, +1 means increment spin_1
+		int new_sz_1 = spin_config[site_choice_1] + up_or_down;
+		int new_sz_2 = spin_config[site_choice_2] - up_or_down;
+		if((new_sz_1 < 0) || (new_sz_2 < 0) || (new_sz_1 >= spin_max) || (new_sz_2 >= spin_max)){
+			continue;
 		}
-		int new_sz_2 = total_site - new_sz_1;
 		spin_config[site_choice_1] = new_sz_1;
 		spin_config[site_choice_2] = new_sz_2;
+		if((old_sz_1 > 0) && (old_sz_2 < spin_max-1)){
+			new_num_choices -= 1;
+		}
+		if((old_sz_1 < spin_max-1) && (old_sz_2 > 0)){
+			new_num_choices -= 1;
+		}
+		if((new_sz_1 > 0) && (new_sz_2 < spin_max-1)){
+			new_num_choices += 1;
+		}
+		if((new_sz_1 < spin_max-1) && (new_sz_2 > 0)){
+			new_num_choices += 1;
+		}
+
+		return num_choices / new_num_choices;
 	}
 	
 }
@@ -90,14 +123,13 @@ void mc_sz2(MCKPEPS &state, std::vector<double> &wavefunctions, std::vector<doub
 	//Test if you will move to the new spin with metropolis probability
 	for(int i = 0; i < num_trials; i++){
 		std::vector<int> new_spin_config(spin_config);
-		randomize_in_sector(new_spin_config, state.physical_dims(), generator, distribution);
-		//flip_spins(new_spin_config, state.physical_dims(), generator, distribution,num_spins_to_flip);
+		//randomize_in_sector(new_spin_config, state.physical_dims(), generator, distribution);
+		double choice_ratio = flip_spins(state.bonds, new_spin_config, state.physical_dims(), generator, distribution);
 		double new_wavefn = wavefunction(new_spin_config, state);
 		bool switch_to_new_config = true;
-		if(std::abs(new_wavefn) < std::abs(old_wavefn)){
-			if((new_wavefn*new_wavefn)/(old_wavefn*old_wavefn) < distribution(generator)){
-				switch_to_new_config = false;
-			}
+		double acceptance_probability = choice_ratio*(new_wavefn*new_wavefn)/(old_wavefn*old_wavefn);
+		if(acceptance_probability < distribution(generator)){
+			switch_to_new_config = false;
 		}
 		std::cerr << "Spin config (";
 		for(int spin : new_spin_config){
