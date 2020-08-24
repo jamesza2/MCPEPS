@@ -123,16 +123,15 @@ void mc_eval_single(MCKPEPS &state, MCOperator &op, std::vector<double> &wavefun
 void mc_eval(MCKPEPS &state, std::vector<MCOperator> &ops, std::vector<double> &wavefunctions, std::vector<std::vector<double>> &values, int num_trials = 10000){
 	int num_sites = state.size();
 	std::vector<int> spin_config(num_sites, 0);
-	if(num_spins_to_flip == -1){
-		num_spins_to_flip = num_sites;
-	}
 	std::mt19937 generator;
 	std::uniform_real_distribution<double> distribution(0,1);
 	randomize_in_sector(spin_config, state.physical_dims(), generator, distribution);
 	double norm_estimate = 0;
 	double old_wavefn = wavefunction(spin_config, state);
 	wavefunctions.push_back(old_wavefn);
-	values.push_back(op.eval(spin_config, spin_config));
+	for(int op_index = 0; op_index < ops.size(); op_index++){
+		values[op_index].push_back(ops[op_index].eval(spin_config, spin_config));
+	}
 	//In each step:
 	//Find new spin config by randomly flipping a few spins (say Lx pairs with 50% chance each)
 	//Get wavefunction
