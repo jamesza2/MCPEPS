@@ -22,7 +22,7 @@ class Neighbors{
 			_num_sites = Nx*Ny*UNIT_CELL_SIZE;
 			//Set up bonds
 			for(int s1 = 0; s1 < _num_sites; s1++){
-				nn_bonds.push_back(std::vector<int>>());
+				nn_bonds.push_back(std::vector<int>());
 				bond_matrices.push_back(std::vector<std::pair<int, int>>());
 			}
 			set_up_bonds();
@@ -33,7 +33,7 @@ class Neighbors{
 			_num_sites = Nx*Ny*UNIT_CELL_SIZE;
 			//Set up bonds
 			for(int s1 = 0; s1 < _num_sites; s1++){
-				nn_bonds.push_back(std::vector<int>>());
+				nn_bonds.push_back(std::vector<int>());
 				bond_matrices.push_back(std::vector<std::pair<int, int>>());
 			}
 			set_up_bonds();
