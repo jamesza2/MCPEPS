@@ -65,6 +65,7 @@ double flip_spins(Neighbors &bonds, std::vector<int> &spin_config, int spin_max,
 		auto bonds_at_site_1 = bonds.nn_at(site_choice_1);
 		int neighbor_choice_index = std::floor(bonds_at_site_1.size()*distribution(generator));
 		int site_choice_2 = bonds_at_site_1[neighbor_choice_index];
+		std::cout << "Testing flip at " << site_choice_1 << ", " << site_choice_2 << std::endl;
 		/*if(site_choice_1 == site_choice_2){
 			pairs_found -= 1;
 			continue;
@@ -102,8 +103,24 @@ double flip_spins(Neighbors &bonds, std::vector<int> &spin_config, int spin_max,
 	
 }
 
-//Computes average Sz^2
-void mc_sz2(MCKPEPS &state, std::vector<double> &wavefunctions, std::vector<double> &values, int num_trials = 10000, int num_spins_to_flip = -1){
+
+void mc_sz2(MCKPEPS &state, std::vector<double> &wavefunctions, std::vector<double> &values, int num_trials = 10000){
+	Sz2 sz2op(state.Nx(), state.Ny(), state.physical_dims());
+	mc_eval(state, sz2op, wavefunctions, values, num_trials);
+}
+
+void mc_eval(MCKPEPS &state, MCOperator &op, std::vector<double> &wavefunctions, std::vector<double> &values, int num_trials = 10000){
+	std::vector<MCOperator> ops_wrapper{op};
+	std::vector<std::vector<double>> values_wrapper;
+	values_wrapper.push_back(std::vector<double>());
+	mc_eval(state, ops_wrapper, wavefunctions, values_wrapper, num_trials);
+	for(double val : values_wrapper[0]){
+		values.push_back(val);
+	}
+}
+
+//Computes average of a certain operator op
+void mc_eval(MCKPEPS &state, std::vector<MCOperator> &ops, std::vector<double> &wavefunctions, std::vector<std::vector<double>> &values, int num_trials = 10000){
 	int num_sites = state.size();
 	std::vector<int> spin_config(num_sites, 0);
 	if(num_spins_to_flip == -1){
@@ -114,9 +131,8 @@ void mc_sz2(MCKPEPS &state, std::vector<double> &wavefunctions, std::vector<doub
 	randomize_in_sector(spin_config, state.physical_dims(), generator, distribution);
 	double norm_estimate = 0;
 	double old_wavefn = wavefunction(spin_config, state);
-	Sz2 sz2op(state.Nx(), state.Ny(), state.physical_dims());
 	wavefunctions.push_back(old_wavefn);
-	values.push_back(sz2op.eval(spin_config, spin_config));
+	values.push_back(op.eval(spin_config, spin_config));
 	//In each step:
 	//Find new spin config by randomly flipping a few spins (say Lx pairs with 50% chance each)
 	//Get wavefunction
@@ -141,14 +157,16 @@ void mc_sz2(MCKPEPS &state, std::vector<double> &wavefunctions, std::vector<doub
 			old_wavefn = new_wavefn;
 			spin_config = new_spin_config;
 			wavefunctions.push_back(new_wavefn);
-			values.push_back(sz2op.eval(spin_config, spin_config));
+			for(int op_index = 0; op_index < ops.size(); op_index++){
+				values[op_index].push_back(ops[op_index].eval(spin_config, spin_config));
+			}
+			//values.push_back(op.eval(spin_config, spin_config));
 		}
 		else{
 			std::cerr << " rejected over old wavefunction ";
 		}
 		std::cerr << "(trial " << i << ")\n";
 	}
-
 }
 
 #endif
