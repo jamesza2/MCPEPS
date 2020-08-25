@@ -48,9 +48,9 @@ class MCKPEPS{
 			site_indices = itensor::IndexSet(sites);
 			bool randomize = args.getBool("RandomizeSites", true);
 
-			std::cerr << "Creating link indices..." << std::endl;
+			//std::cerr << "Creating link indices..." << std::endl;
 			create_link_indices(sites);
-			std::cerr << "Creating site tensors..." << std::endl;
+			//std::cerr << "Creating site tensors..." << std::endl;
 			create_site_tensors(sites, randomize);
 		}
 

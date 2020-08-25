@@ -63,11 +63,7 @@ double flip_spins(Neighbors &bonds, std::vector<int> &spin_config, int spin_max,
 	while(true){
 		int site_choice_1 = std::floor(num_sites*distribution(generator));
 		auto bonds_at_site_1 = bonds.nn_at(site_choice_1);
-		//std::cout << "Bonds of site " << site_choice_1 << ":";
-		for(int bond : bonds_at_site_1){
-			std::cout << bond << " ";
-		}
-		std::cout << std::endl;
+		
 		int neighbor_choice_index = std::floor(bonds_at_site_1.size()*distribution(generator));
 		int site_choice_2 = bonds_at_site_1[neighbor_choice_index];
 		//std::cout << "Trying flip at " << site_choice_1 << ", " << site_choice_2 << std::endl;
@@ -147,20 +143,25 @@ void mc_eval(MCKPEPS &state, std::vector<MCOperator> &ops, std::vector<double> &
 			old_wavefn = new_wavefn;
 			spin_config = new_spin_config;
 			wavefunctions.push_back(new_wavefn);
+			std::cerr << "[Vals = ";
 			for(int op_index = 0; op_index < ops.size(); op_index++){
-				values[op_index].push_back(ops[op_index].eval(spin_config, spin_config));
+				double opval = ops[op_index].eval(spin_config, spin_config);
+				std::cerr << opval << " ";
+				values[op_index].push_back(opval);
 			}
+			std::cerr << "] ";
 			//values.push_back(op.eval(spin_config, spin_config));
 		}
 		else{
 			std::cerr << " rejected over old wavefunction ";
 		}
-		std::cerr << "(trial " << i << ")\n";
+		std::cerr << "(trial " << i << ") ";
 	}
 }
 
 void mc_eval_single(MCKPEPS &state, MCOperator &op, std::vector<double> &wavefunctions, std::vector<double> &values, int num_trials = 10000){
-	std::vector<MCOperator> ops_wrapper{op};
+	std::vector<MCOperator> ops_wrapper;
+	ops_wrapper.push_back(op);
 	std::vector<std::vector<double>> values_wrapper;
 	values_wrapper.push_back(std::vector<double>());
 	mc_eval(state, ops_wrapper, wavefunctions, values_wrapper, num_trials);
