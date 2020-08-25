@@ -22,7 +22,8 @@ class MCOperator{
 			_d = physical_dimension;
 		}
 
-		double eval(std::vector<int> &spin_config_1, std::vector<int> &spin_config_2){
+		virtual double eval(std::vector<int> &spin_config_1, std::vector<int> &spin_config_2){
+			std::cerr << "WARNING: Null evaluator called" << std::endl;
 			return 0;
 		}
 };

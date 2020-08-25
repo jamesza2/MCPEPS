@@ -155,7 +155,7 @@ void mc_eval(MCKPEPS &state, std::vector<MCOperator> &ops, std::vector<double> &
 		else{
 			std::cerr << " rejected over old wavefunction ";
 		}
-		std::cerr << "(trial " << i << ") ";
+		std::cerr << "(trial " << i << ") \n";
 	}
 }
 
