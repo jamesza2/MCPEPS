@@ -63,6 +63,11 @@ double flip_spins(Neighbors &bonds, std::vector<int> &spin_config, int spin_max,
 	while(true){
 		int site_choice_1 = std::floor(num_sites*distribution(generator));
 		auto bonds_at_site_1 = bonds.nn_at(site_choice_1);
+		std::cout << "Bonds of site " << site_choice_1 << ":";
+		for(int bond : bonds_at_site_1){
+			std::cout << bond << " ";
+		}
+		std::cout << std::endl;
 		int neighbor_choice_index = std::floor(bonds_at_site_1.size()*distribution(generator));
 		int site_choice_2 = bonds_at_site_1[neighbor_choice_index];
 		std::cout << "Trying flip at " << site_choice_1 << ", " << site_choice_2 << std::endl;
