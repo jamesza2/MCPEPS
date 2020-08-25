@@ -59,7 +59,7 @@ class Heisenberg : public MCOperator{
 		}
 
 
-		double eval(std::vector<int> &spin_config_1, std::vector<int> &spin_config_2){
+		double eval(std::vector<int> &spin_config_1, std::vector<int> &spin_config_2) override{
 			//First check where spin_config_1 and spin_config_2 differ
 			//Bonds can only cover all the difference point
 			std::vector<int> different_sites;
@@ -110,7 +110,7 @@ class Sz2 : public MCOperator{
 	public:
 		Sz2(int Nx, int Ny, int physical_dimension) : MCOperator(Nx, Ny, physical_dimension) {}
 		//Measures sz^2 for spin config 1, ignores spin config 2
-		double eval(std::vector<int> &spin_config_1, std::vector<int> &spin_config_2){
+		double eval(std::vector<int> &spin_config_1, std::vector<int> &spin_config_2) override{
 			double elem = 0;
 			double s = 0.5*(_d-1);
 			for(int spin_1 : spin_config_1){

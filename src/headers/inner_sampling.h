@@ -106,7 +106,7 @@ double flip_spins(Neighbors &bonds, std::vector<int> &spin_config, int spin_max,
 }
 
 //Computes average of a certain operator op
-void mc_eval(MCKPEPS &state, std::vector<MCOperator> &ops, std::vector<double> &wavefunctions, std::vector<std::vector<double>> &values, int num_trials = 10000){
+void mc_eval(MCKPEPS &state, std::vector<MCOperator*> &ops, std::vector<double> &wavefunctions, std::vector<std::vector<double>> &values, int num_trials = 10000){
 	int num_sites = state.size();
 	std::vector<int> spin_config(num_sites, 0);
 	std::mt19937 generator;
@@ -116,7 +116,7 @@ void mc_eval(MCKPEPS &state, std::vector<MCOperator> &ops, std::vector<double> &
 	double old_wavefn = wavefunction(spin_config, state);
 	wavefunctions.push_back(old_wavefn);
 	for(int op_index = 0; op_index < ops.size(); op_index++){
-		values[op_index].push_back(ops[op_index].eval(spin_config, spin_config));
+		values[op_index].push_back(ops[op_index]->eval(spin_config, spin_config));
 	}
 	//In each step:
 	//Find new spin config by randomly flipping a few spins (say Lx pairs with 50% chance each)
@@ -145,7 +145,7 @@ void mc_eval(MCKPEPS &state, std::vector<MCOperator> &ops, std::vector<double> &
 			wavefunctions.push_back(new_wavefn);
 			std::cerr << "[Vals = ";
 			for(int op_index = 0; op_index < ops.size(); op_index++){
-				double opval = ops[op_index].eval(spin_config, spin_config);
+				double opval = ops[op_index]->eval(spin_config, spin_config);
 				std::cerr << opval << " ";
 				values[op_index].push_back(opval);
 			}
@@ -159,8 +159,8 @@ void mc_eval(MCKPEPS &state, std::vector<MCOperator> &ops, std::vector<double> &
 	}
 }
 
-void mc_eval_single(MCKPEPS &state, MCOperator &op, std::vector<double> &wavefunctions, std::vector<double> &values, int num_trials = 10000){
-	std::vector<MCOperator> ops_wrapper;
+void mc_eval_single(MCKPEPS &state, MCOperator *op, std::vector<double> &wavefunctions, std::vector<double> &values, int num_trials = 10000){
+	std::vector<MCOperator*> ops_wrapper;
 	ops_wrapper.push_back(op);
 	std::vector<std::vector<double>> values_wrapper;
 	values_wrapper.push_back(std::vector<double>());
@@ -172,7 +172,7 @@ void mc_eval_single(MCKPEPS &state, MCOperator &op, std::vector<double> &wavefun
 
 void mc_sz2(MCKPEPS &state, std::vector<double> &wavefunctions, std::vector<double> &values, int num_trials = 10000){
 	Sz2 sz2op(state.Nx(), state.Ny(), state.physical_dims());
-	mc_eval_single(state, sz2op, wavefunctions, values, num_trials);
+	mc_eval_single(state, &sz2op, wavefunctions, values, num_trials);
 }
 
 
