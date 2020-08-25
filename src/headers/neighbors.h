@@ -89,6 +89,7 @@ class Neighbors{
 					bond_matrices[site_1].push_back(bond);
 					if(bond_type == 1){
 						nn_bonds[site_1].push_back(site_2);
+						nn_bonds[site_2].push_back(site_1);
 					}
 				}
 			}
