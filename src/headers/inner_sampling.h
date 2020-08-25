@@ -65,6 +65,7 @@ double flip_spins(Neighbors &bonds, std::vector<int> &spin_config, int spin_max,
 		auto bonds_at_site_1 = bonds.nn_at(site_choice_1);
 		int neighbor_choice_index = std::floor(bonds_at_site_1.size()*distribution(generator));
 		int site_choice_2 = bonds_at_site_1[neighbor_choice_index];
+		std::cout << "Trying flip at " << site_choice_1 << ", " << site_choice_2 << std::endl;
 		/*if(site_choice_1 == site_choice_2){
 			pairs_found -= 1;
 			continue;
@@ -79,6 +80,7 @@ double flip_spins(Neighbors &bonds, std::vector<int> &spin_config, int spin_max,
 		int up_or_down = std::floor(2*distribution(generator))*2-1; //-1 means decrement spin_1, +1 means increment spin_1
 		int new_sz_1 = spin_config[site_choice_1] + up_or_down;
 		int new_sz_2 = spin_config[site_choice_2] - up_or_down;
+		std::cout << "Flip from " << old_sz_1 << ", " << old_sz_2 << " to " << new_sz_1 << ", " << new_sz_2 << std::endl;
 		if((new_sz_1 < 0) || (new_sz_2 < 0) || (new_sz_1 >= spin_max) || (new_sz_2 >= spin_max)){
 			continue;
 		}
@@ -96,7 +98,7 @@ double flip_spins(Neighbors &bonds, std::vector<int> &spin_config, int spin_max,
 		if((new_sz_1 < spin_max-1) && (new_sz_2 > 0)){
 			new_num_choices += 1;
 		}
-		std::cout << "Testing flip at " << site_choice_1 << ", " << site_choice_2 << std::endl;
+		std::cout << "Evaluating flip at " << site_choice_1 << ", " << site_choice_2 << std::endl;
 		return num_choices / new_num_choices;
 	}
 	
@@ -123,7 +125,7 @@ void mc_eval(MCKPEPS &state, std::vector<MCOperator> &ops, std::vector<double> &
 		std::vector<int> new_spin_config(spin_config);
 		//randomize_in_sector(new_spin_config, state.physical_dims(), generator, distribution);
 		double choice_ratio = flip_spins(state.bonds, new_spin_config, state.physical_dims(), generator, distribution);
-		std::cerr << "Tryhing spin config (";
+		std::cerr << "Trying spin config (";
 		for(int spin : new_spin_config){
 			std::cerr << spin << " ";
 		}
