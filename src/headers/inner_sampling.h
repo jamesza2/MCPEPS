@@ -65,7 +65,6 @@ double flip_spins(Neighbors &bonds, std::vector<int> &spin_config, int spin_max,
 		auto bonds_at_site_1 = bonds.nn_at(site_choice_1);
 		int neighbor_choice_index = std::floor(bonds_at_site_1.size()*distribution(generator));
 		int site_choice_2 = bonds_at_site_1[neighbor_choice_index];
-		std::cout << "Testing flip at " << site_choice_1 << ", " << site_choice_2 << std::endl;
 		/*if(site_choice_1 == site_choice_2){
 			pairs_found -= 1;
 			continue;
@@ -97,7 +96,7 @@ double flip_spins(Neighbors &bonds, std::vector<int> &spin_config, int spin_max,
 		if((new_sz_1 < spin_max-1) && (new_sz_2 > 0)){
 			new_num_choices += 1;
 		}
-
+		std::cout << "Testing flip at " << site_choice_1 << ", " << site_choice_2 << std::endl;
 		return num_choices / new_num_choices;
 	}
 	
@@ -124,17 +123,18 @@ void mc_eval(MCKPEPS &state, std::vector<MCOperator> &ops, std::vector<double> &
 		std::vector<int> new_spin_config(spin_config);
 		//randomize_in_sector(new_spin_config, state.physical_dims(), generator, distribution);
 		double choice_ratio = flip_spins(state.bonds, new_spin_config, state.physical_dims(), generator, distribution);
+		std::cerr << "Tryhing spin config (";
+		for(int spin : new_spin_config){
+			std::cerr << spin << " ";
+		}
+		std::cerr << ")";
 		double new_wavefn = wavefunction(new_spin_config, state);
 		bool switch_to_new_config = true;
 		double acceptance_probability = choice_ratio*(new_wavefn*new_wavefn)/(old_wavefn*old_wavefn);
 		if(acceptance_probability < distribution(generator)){
 			switch_to_new_config = false;
 		}
-		std::cerr << "Spin config (";
-		for(int spin : new_spin_config){
-			std::cerr << spin << " ";
-		}
-		std::cerr << ") with wavefunction " << new_wavefn;
+		std::cerr << "wavefunction=" << new_wavefn;
 		if(switch_to_new_config){
 			std::cerr << " accepted over old wavefunction ";
 			old_wavefn = new_wavefn;
