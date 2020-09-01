@@ -262,7 +262,8 @@ class NoSitePEPS
 				previous_row.clear();
 				int imin = std::max(0, h-_Ny+1);
 				int imax = std::min(_Nx-1, h);
-				for(int i = imin, i < imax; i++){
+				AuxMPS aux(AuxType::LD);
+				for(int i = imin; i < imax; i++){
 					int unsplit_index = i-imin;
 					int j = h-i;
 					itensor::Index left_upper_link = itensor::commonIndex(unsplit_MPS[unsplit_index], _site_tensors[i][j][0]);
@@ -294,7 +295,8 @@ class NoSitePEPS
 					}
 					//Contract the (:,h,0) and (:,h,1) rows into the (:,h-1,2) row
 					unsplit_MPS.clear();
-					for(int i = std::max(0, h-_Ny), i < std::min(_Nx-1, h-1); i++){
+					for(int i = std::max(0, h-_Ny); i < std::min(_Nx-1, h-1); i++){
+						int j = h-i;
 						unsplit_MPS.push_back(_site_tensors[i][h-j-1][2]);
 					}
 					for(int i = imin; i < imax; i++){
@@ -474,7 +476,7 @@ class MCKPEPS : public NoSitePEPS{
 			bool randomize = args.getBool("RandomizeSites", true);
 
 			//std::cerr << "Creating link indices..." << std::endl;
-			create_link_indices(sites);
+			create_link_indices();
 			//std::cerr << "Creating site tensors..." << std::endl;
 			create_site_tensors(sites, randomize);
 		}
