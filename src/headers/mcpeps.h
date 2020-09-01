@@ -10,6 +10,7 @@
 #include <cmath>
 #include <complex>
 #include <map>
+#include <list>
 
 //Normal: Uses the previous 2 total weights to estimate energy, then attempts to make the total walker weight num_walkers
 //Constant: Uses a single estimate for the energy and nothing else
@@ -30,6 +31,11 @@ class NoSitePEPS
 
 	public:
 		Neighbors bonds;
+		NoSitePEPS(){
+			_Nx = 0;
+			_Ny = 0;
+			_num_sites=0;
+		}
 		NoSitePEPS(int input_Nx,
 			int input_Ny,
 			int input_max_bd,
@@ -354,6 +360,10 @@ class NoSitePEPS
 			return std::make_tuple(i, j, k);
 		}
 
+		itensor::ITensor site_tensor(int i, int j, int k){
+			return _site_tensors[i][j][k];
+		}
+
 	protected:
 		int pair_to_link_index(int i, int j){
 			if(i < j){
@@ -388,7 +398,7 @@ class NoSitePEPS
 			_link_indices[lifp(i1, j1, k1, i2, j2, k2)] = itensor::Index(_D, link_name);
 		}
 
-		void create_link_indices(itensor::IndexSet &sites){
+		void create_link_indices(){
 			for(int i = 0; i < _Nx; i++){
 				for(int j = 0; j < _Ny; j++){
 					create_link_index(i,j,0,i,j,1);
@@ -439,7 +449,7 @@ class NoSitePEPS
 				_site_tensors.push_back(_site_tensors_2D);
 			}
 		}
-}
+};
 
 //Kagome Lattice PEPS that uses Monte Carlo to evaluate itself
 class MCKPEPS : public NoSitePEPS{
@@ -599,16 +609,16 @@ class MCKPEPS : public NoSitePEPS{
 			for(int i = 0; i < _Nx; i++){
 				for(int j = 0; j < _Ny; j++){
 					add_link(i,j,0,i,j,1,output_link_indices,combined_tensors);
-					create_link_index(i,j,0,i,j,2,output_link_indices,combined_tensors);
-					create_link_index(i,j,1,i,j,2,output_link_indices,combined_tensors);
+					add_link(i,j,0,i,j,2,output_link_indices,combined_tensors);
+					add_link(i,j,1,i,j,2,output_link_indices,combined_tensors);
 					if(j > 0){
-						create_link_index(i,j-1,2,i,j,1,output_link_indices,combined_tensors);
+						add_link(i,j-1,2,i,j,1,output_link_indices,combined_tensors);
 						if(i <_Nx-1){
-							create_link_index(i,j,1,i+1,j-1,0,output_link_indices,combined_tensors);
+							add_link(i,j,1,i+1,j-1,0,output_link_indices,combined_tensors);
 						}
 					}
 					if(i > 0){
-						create_link_index(i-1,j,2,i,j,0,output_link_indices,combined_tensors);
+						add_link(i-1,j,2,i,j,0,output_link_indices,combined_tensors);
 					}
 				}
 			}

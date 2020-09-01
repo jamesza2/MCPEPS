@@ -39,7 +39,7 @@ itensor::ITensor create_sz2_op(int site, itensor::IndexSet &sites){
 
 std::string check_common_indices(itensor::ITensor tensor_1, std::string tensor_name_1, itensor::ITensor tensor_2, std::string tensor_name_2, int ideal_common_indices = 1){
 	std::string result = "";
-	itensor::IndexSet common_indices = itensor::commonInds(tensor_1,tensor_2)
+	itensor::IndexSet common_indices = itensor::commonInds(tensor_1,tensor_2);
 	int num_common_indices = itensor::length(common_indices);
 	if(num_common_indices!=ideal_common_indices){
 		result += tensor_name_1 + " has incorrect common indices with " + tensor_name_2 + ", at " + std::to_string(num_common_indices) + ": ";
@@ -125,16 +125,16 @@ int main(int argc, char *argv[]){
 			std::string site_tensor_name = "SITE[" + std::to_string(original_i) + "][" + std::to_string(original_j) + "][0]";
 			std::string upper_left_site_tensor_name = "SITE[" + std::to_string(original_i-1) + "][" + std::to_string(original_j) + "][2]";
 			std::string vd_tensor_name_1 = "VD[" + std::to_string(original_i) + "][" + std::to_string(original_j) + "][0]";
-			final_result += check_common_indices(PEPSC._site_tensors[original_i][original_j][0], site_tensor_name, vd_tensor_1, vd_tensor_name_1, 1);
-			final_result += check_common_indices(PEPSC._site_tensors[original_i-1][original_j][2], upper_left_site_tensor_name, vd_tensor_1, vd_tensor_name_1, 1);
+			final_result += check_common_indices(PEPSC.site_tensor(original_i, original_j, 0), site_tensor_name, vd_tensor_1, vd_tensor_name_1, 1);
+			final_result += check_common_indices(PEPSC.site_tensor(original_i-1,original_j,2), upper_left_site_tensor_name, vd_tensor_1, vd_tensor_name_1, 1);
 			
 			if(original_j != Ny-1){
 				auto vd_tensor_2 = vd_it->MPS[2*original_j+1];
 				std::string vd_tensor_name_2 = "VD[" + std::to_string(original_i) + "][" + std::to_string(original_j) + "][1]";
 				std::string upper_right_site_tensor_name = "SITE[" + std::to_string(original_i-1) + "][" + std::to_string(original_j+1) + "][1]";
 				final_result += check_common_indices(vd_tensor_1, vd_tensor_name_1, vd_tensor_2, vd_tensor_name_2, 1);
-				final_result += check_common_indices(vd_tensor_2, vd_tensor_name_2, PEPSC._site_tensors[original_i][original_j][0], site_tensor_name, 1);
-				final_result += check_common_indices(PEPSC._site_tensors[original_i-1][original_j+1][1], upper_right_site_tensor_name, vd_tensor_2, vd_tensor_name_2, 1);
+				final_result += check_common_indices(vd_tensor_2, vd_tensor_name_2, PEPSC._site_tensor(original_i,original_j,0), site_tensor_name, 1);
+				final_result += check_common_indices(PEPSC.site_tensor(original_i-1,original_j+1,1), upper_right_site_tensor_name, vd_tensor_2, vd_tensor_name_2, 1);
 			}
 		}
 	}
@@ -153,17 +153,17 @@ int main(int argc, char *argv[]){
 			auto sd_tensor_1 = sd_it->MPS[2*original_i];
 			std::string site_tensor_name = "SITE[" + std::to_string(original_i) + "][" + std::to_string(original_j) + "][1]";
 			std::string upper_left_site_tensor_name = "SITE[" + std::to_string(original_i) + "][" + std::to_string(original_j-1) + "][2]";
-			std::string vd_tensor_name_1 = "SD[" + std::to_string(original_i) + "][" + std::to_string(original_j) + "][0]";
-			final_result += check_common_indices(PEPSC._site_tensors[original_i][original_j][1], site_tensor_name, vd_tensor_1, vd_tensor_name_1, 1);
-			final_result += check_common_indices(PEPSC._site_tensors[original_i][original_j-1][2], upper_left_site_tensor_name, vd_tensor_1, vd_tensor_name_1, 1);
+			std::string sd_tensor_name_1 = "SD[" + std::to_string(original_i) + "][" + std::to_string(original_j) + "][0]";
+			final_result += check_common_indices(PEPSC.site_tensor(original_i,original_j,1), site_tensor_name, sd_tensor_1, sd_tensor_name_1, 1);
+			final_result += check_common_indices(PEPSC.site_tensor(original_i,original_j-1,2), upper_left_site_tensor_name, sd_tensor_1, sd_tensor_name_1, 1);
 			
 			if(original_i != Nx-1){
-				auto vd_tensor_2 = vd_it->MPS[2*original_i+1];
-				std::string vd_tensor_name_2 = "SD[" + std::to_string(original_i) + "][" + std::to_string(original_j) + "][1]";
+				auto sd_tensor_2 = sd_it->MPS[2*original_i+1];
+				std::string sd_tensor_name_2 = "SD[" + std::to_string(original_i) + "][" + std::to_string(original_j) + "][1]";
 				std::string upper_right_site_tensor_name = "SITE[" + std::to_string(original_i+1) + "][" + std::to_string(original_j-1) + "][0]";
-				final_result += check_common_indices(vd_tensor_1, vd_tensor_name_1, vd_tensor_2, vd_tensor_name_2, 1);
-				final_result += check_common_indices(vd_tensor_2, vd_tensor_name_2, PEPSC._site_tensors[original_i][original_j][1], site_tensor_name, 1);
-				final_result += check_common_indices(PEPSC._site_tensors[original_i+1][original_j-1][0], upper_right_site_tensor_name, vd_tensor_2, vd_tensor_name_2, 1);
+				final_result += check_common_indices(sd_tensor_1, sd_tensor_name_1, sd_tensor_2, sd_tensor_name_2, 1);
+				final_result += check_common_indices(sd_tensor_2, sd_tensor_name_2, PEPSC.site_tensor(original_i,original_j,1), site_tensor_name, 1);
+				final_result += check_common_indices(PEPSC.site_tensor(original_i+1,original_j-1,0), upper_right_site_tensor_name, sd_tensor_2, sd_tensor_name_2, 1);
 			}
 		}
 	}
@@ -180,17 +180,17 @@ int main(int argc, char *argv[]){
 			auto ld_tensor_1 = ld_it->MPS[2*(original_i-imin)];
 			std::string site_tensor_name = "SITE[" + std::to_string(original_i) + "][" + std::to_string(original_j) + "][2]";
 			std::string upper_left_site_tensor_name = "SITE[" + std::to_string(original_i) + "][" + std::to_string(original_j) + "][0]";
-			std::string vd_tensor_name_1 = "LD[" + std::to_string(original_i) + "][" + std::to_string(original_j) + "][0]";
-			final_result += check_common_indices(PEPSC._site_tensors[original_i][original_j][2], site_tensor_name, ld_tensor_1, ld_tensor_name_1, 1);
-			final_result += check_common_indices(PEPSC._site_tensors[original_i][original_j][0], upper_left_site_tensor_name, ld_tensor_1, ld_tensor_name_1, 1);
+			std::string ld_tensor_name_1 = "LD[" + std::to_string(original_i) + "][" + std::to_string(original_j) + "][0]";
+			final_result += check_common_indices(PEPSC.site_tensor(original_i,original_j,2), site_tensor_name, ld_tensor_1, ld_tensor_name_1, 1);
+			final_result += check_common_indices(PEPSC.site_tensor(original_i,original_j,0), upper_left_site_tensor_name, ld_tensor_1, ld_tensor_name_1, 1);
 			
 			if(original_i != Nx-1){
 				auto ld_tensor_2 = ld_it->MPS[2*original_i+1];
 				std::string ld_tensor_name_2 = "LD[" + std::to_string(original_i) + "][" + std::to_string(original_j) + "][1]";
 				std::string upper_right_site_tensor_name = "SITE[" + std::to_string(original_i) + "][" + std::to_string(original_j) + "][1]";
 				final_result += check_common_indices(ld_tensor_1, ld_tensor_name_1, ld_tensor_2, ld_tensor_name_2, 1);
-				final_result += check_common_indices(ld_tensor_2, ld_tensor_name_2, PEPSC._site_tensors[original_i][original_j][2], site_tensor_name, 1);
-				final_result += check_common_indices(PEPSC._site_tensors[original_i][original_j][1], upper_right_site_tensor_name, vd_tensor_2, vd_tensor_name_2, 1);
+				final_result += check_common_indices(ld_tensor_2, ld_tensor_name_2, PEPSC.site_tensor(original_i,original_j,2), site_tensor_name, 1);
+				final_result += check_common_indices(PEPSC.site_tensor(original_i,original_j,1), upper_right_site_tensor_name, vd_tensor_2, vd_tensor_name_2, 1);
 			}
 		}
 		original_h ++;
