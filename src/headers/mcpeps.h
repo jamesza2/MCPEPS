@@ -118,6 +118,7 @@ class NoSitePEPS
 
 			//Contract upwards and add each SVD split step into the AuxMPS list. Does not add the very last one.
 			for(int i = _Nx-1; i > 0; i--){
+				std::cout << "Contracting Row " << i << ":"
 				unsplit_MPS.clear();
 				for(int j = 0; j < _Ny; j++){
 					unsplit_MPS.push_back((_site_tensors[i][j][0]*previous_row[2*j])*previous_row[2*j+1]);
