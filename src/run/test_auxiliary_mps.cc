@@ -73,8 +73,6 @@ int main(int argc, char *argv[]){
 	std::string log_file_name = input.testString("log_file", "");
 	int standard_dims = input.testInteger("D", 2);
 	int max_truncation_dims = input.testInteger("Dc", 4);
-	int num_trials = input.testInteger("num_trials", 10000);
-	std::string out_file_name = input.testString("out_file", "");
 	int physical_dims = input.testInteger("physical_dims", 4);
 
 	std::string version = "_";
@@ -82,9 +80,8 @@ int main(int argc, char *argv[]){
 	version += "_D"+std::to_string(standard_dims);
 	version += "_X"+std::to_string(max_truncation_dims);
 	version += "_d"+std::to_string(physical_dims);
-	version += "_" + std::to_string(num_trials) + "trials";
 	if(log_file_name == "AUTO"){ //../../logs/sz2_test_{Nx}x{Ny}_D{D}_X{Chi}_d{d}_{}trials
-		log_file_name = "../../logs/sz2_test" + version;
+		log_file_name = "../../logs/aux_test" + version;
 	}
 
 
