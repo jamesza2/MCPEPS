@@ -80,7 +80,7 @@ int main(int argc, char *argv[]){
 	version += "_D"+std::to_string(standard_dims);
 	version += "_X"+std::to_string(max_truncation_dims);
 	version += "_d"+std::to_string(physical_dims);
-	if(log_file_name == "AUTO"){ //../../logs/sz2_test_{Nx}x{Ny}_D{D}_X{Chi}_d{d}_{}trials
+	if(log_file_name == "AUTO"){ //../../logs/aux_test_{Nx}x{Ny}_D{D}_X{Chi}_d{d}_{}trials
 		log_file_name = "../../logs/aux_test" + version;
 	}
 
@@ -97,6 +97,7 @@ int main(int argc, char *argv[]){
 	MCKPEPS PEPS2 = PEPS1;
 	PEPS2.prime();
 	PEPS1.set_log_file(log_file_name);
+	PEPS1.print_self();
 
 	NoSitePEPS PEPSC = PEPS1.contract(PEPS2);
 	std::cout << "Contracted PEPS created..." << std::endl;

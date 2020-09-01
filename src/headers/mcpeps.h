@@ -75,7 +75,7 @@ class NoSitePEPS
 			_link_indices = input_link_indices;
 		}
 
-		void set_log_file(string log_file){
+		void set_log_file(std::string log_file){
 			_log_file = log_file;
 		}
 
