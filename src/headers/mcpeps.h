@@ -309,6 +309,16 @@ class NoSitePEPS
 					for(int pr_index = 1; pr_index < previous_row.size(); pr_index++){
 						auto combined_pr_tensor = previous_row[pr_index-1]*previous_row[pr_index];
 						auto left_links = itensor::commonInds(combined_pr_tensor, previous_row[pr_index-1]);
+						if(itensor::length(left_links) == 0){ //The original left tensor only had indices which belonged to the link. The new left tensor becomes the scalar 1.
+							previous_row[pr_index-1] = itensor::ITensor(1);
+							previous_row[pr_index] = combined_pr_tensor;
+							continue;
+						}
+						if(itensor::length(left_links) == itensor::order(combined_pr_tensor)){ //Ditto for the right tensor
+							previous_row[pr_index] = itensor::ITensor(1);
+							previous_row[pr_index-1] = combined_pr_tensor;
+							continue;
+						}
 						auto [left_tensor, singular_vals, right_tensor] = itensor::svd(combined_pr_tensor, left_links, {"MaxDim", _Dc});
 						previous_row[pr_index-1] = left_tensor;
 						previous_row[pr_index] = singular_vals*right_tensor;
