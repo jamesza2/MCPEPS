@@ -140,6 +140,8 @@ int main(int argc, char *argv[]){
 				final_result += check_common_indices(vd_tensor_2, vd_tensor_name_2, PEPSC.site_tensor(original_i,original_j,0), site_tensor_name, 1);
 				final_result += check_common_indices(PEPSC.site_tensor(original_i-1,original_j+1,1), upper_right_site_tensor_name, vd_tensor_2, vd_tensor_name_2, 1);
 			}
+			std::cout << "VD warnings for i=" << original_i << ", j=" << original_j << ": \n" << final_result << std::endl;
+			final_result = "";
 		}
 	}
 
