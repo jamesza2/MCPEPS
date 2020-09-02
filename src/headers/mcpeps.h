@@ -305,12 +305,21 @@ class NoSitePEPS
 						previous_row.push_back(_site_tensors[i][j][1]*aux.MPS[aux_index+1]);
 					}
 
+					//Truncate the bond dimensions in the previous row. Does all links as they all need to be truncated now.
+					for(int pr_index = 1; pr_index < previous_row.size(); pr_index++){
+						auto combined_pr_tensor = previous_row[pr_index-1]*previous_row[pr_index];
+						auto left_links = itensor::commonInds(combined_pr_tensor, previous_row[pr_index-1]);
+						auto [left_tensor, singular_vals, right_tensor] = itensor::svd(combined_pr_tensor, left_links, {"MaxDim", _Dc});
+						previous_row[pr_index-1] = left_tensor;
+						previous_row[pr_index] = singular_vals*right_tensor;
+					}
+
 					//Contract the (:,h,0) and (:,h,1) rows into the (:,h-1,2) row
 					unsplit_MPS.clear();
-					for(int i = std::max(0, h-_Ny); i < std::min(_Nx, h); i++){
+					/*for(int i = std::max(0, h-_Ny); i < std::min(_Nx, h); i++){
 						int j = h-i-1;
 						unsplit_MPS.push_back(_site_tensors[i][j][2]);
-					}
+					}*/
 					for(int i = imin; i < imax; i++){
 						int j = h-i;
 						int pr_index = 2*(i-imin);
