@@ -195,6 +195,10 @@ class NoSitePEPS
 			std::cout << "Creating starting row of size " << previous_row.size() << std::endl;
 			//Contract to the left and add each SVD splitted column to the AuxMPS list. Does not contract the last column.
 			for(int j = _Ny-1; j > 0; j--){
+				std::cout << "Starting row:" << std::endl;
+				for(auto row_element : previous_row){
+					Print(row_element);
+				}
 				std::cout << "Contracting Column " << j << ":" << std::endl;
 				unsplit_MPS.clear();
 				for(int i = 0; i < _Nx; i++){
