@@ -210,7 +210,7 @@ class NoSitePEPS
 						itensor::Index left_link = itensor::commonIndex(unsplit_MPS[i], unsplit_MPS[i-1]);
 						left_tensor = itensor::ITensor(left_upper_link, left_link);
 					}
-					itensor::svd(unsplit_MPS[j], left_tensor, sing_vals, right_tensor, {"MaxDim", _Dc});
+					itensor::svd(unsplit_MPS[i], left_tensor, sing_vals, right_tensor, {"MaxDim", _Dc});
 					std::cout << "SVD Error: " << itensor::sqr(itensor::norm(unsplit_MPS[i]-left_tensor*sing_vals*right_tensor)/itensor::norm(unsplit_MPS[i])) << std::endl;
 					left_tensor *= sing_vals;
 					if(_log){
