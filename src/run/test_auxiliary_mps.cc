@@ -200,6 +200,8 @@ int main(int argc, char *argv[]){
 			std::cout << "Starting check 1" << std::endl;
 			final_result += check_common_indices(ld_tensor_1, ld_tensor_name_1, ld_tensor_2, ld_tensor_name_2, 1);
 			std::cout << "Check 1 passed" << std::endl;
+			Print(ld_tensor_2);
+			Print(PEPSC.site_tensor(original_i, original_j, 2));
 			final_result += check_common_indices(ld_tensor_2, ld_tensor_name_2, PEPSC.site_tensor(original_i,original_j,2), site_tensor_name, 1);
 			std::cout << "Check 2 passed" << std::endl;
 			final_result += check_common_indices(PEPSC.site_tensor(original_i,original_j,1), upper_right_site_tensor_name, ld_tensor_2, ld_tensor_name_2, 1);
