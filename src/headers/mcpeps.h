@@ -125,7 +125,7 @@ class NoSitePEPS
 				}
 				AuxMPS aux(AuxType::VD);
 				//Create auxiliary tensors
-				for(int j = 0; j < _Ny-1; j++){
+				for(int j = 0; j < _Ny; j++){
 					
 					itensor::Index left_upper_link = itensor::commonIndex(unsplit_MPS[j], _site_tensors[i-1][j][2]);
 					itensor::ITensor sing_vals, right_tensor;
@@ -168,6 +168,7 @@ class NoSitePEPS
 				}
 			}
 			out.push_front(AuxMPS(AuxType::NA)); //The first row is a dummy AuxMPS that shouldn't ever have to be called
+			std::cout << "Row 0 empty auxMPS pushed " << std::endl;
 			if(_log){
 				std::cout.rdbuf(coutbuf);
 				log_file_stream.close();
@@ -262,7 +263,7 @@ class NoSitePEPS
 				//Split the (:,h,2) tensors with SVD
 				previous_row.clear();
 				int imin = std::max(0, h-_Ny+1);
-				int imax = std::min(_Nx-1, h);
+				int imax = std::min(_Nx, h+1);
 				AuxMPS aux(AuxType::LD);
 				for(int i = imin; i < imax; i++){
 					int unsplit_index = i-imin;
@@ -296,7 +297,7 @@ class NoSitePEPS
 					}
 					//Contract the (:,h,0) and (:,h,1) rows into the (:,h-1,2) row
 					unsplit_MPS.clear();
-					for(int i = std::max(0, h-_Ny); i < std::min(_Nx-1, h-1); i++){
+					for(int i = std::max(0, h-_Ny); i < std::min(_Nx, h); i++){
 						int j = h-i;
 						unsplit_MPS.push_back(_site_tensors[i][h-j-1][2]);
 					}
