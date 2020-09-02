@@ -181,7 +181,7 @@ int main(int argc, char *argv[]){
 	int original_h = 0;
 	for(auto ld_it = ld.begin(); ld_it != ld.end(); ld_it++){
 		int imin = std::max(0, original_h - Ny+1);
-		int imax = std::min(Nx-1, original_h);
+		int imax = std::min(Nx, original_h+1);
 		for(int original_i = imin; original_i < imax; original_i++){
 			int original_j = original_h - original_i;
 			auto ld_tensor_1 = ld_it->MPS[2*(original_i-imin)];
@@ -191,14 +191,13 @@ int main(int argc, char *argv[]){
 			final_result += check_common_indices(PEPSC.site_tensor(original_i,original_j,2), site_tensor_name, ld_tensor_1, ld_tensor_name_1, 1);
 			final_result += check_common_indices(PEPSC.site_tensor(original_i,original_j,0), upper_left_site_tensor_name, ld_tensor_1, ld_tensor_name_1, 1);
 			
-			if(original_i != Nx-1){
-				auto ld_tensor_2 = ld_it->MPS[2*original_i+1];
-				std::string ld_tensor_name_2 = "LD[" + std::to_string(original_i) + "][" + std::to_string(original_j) + "][1]";
-				std::string upper_right_site_tensor_name = "SITE[" + std::to_string(original_i) + "][" + std::to_string(original_j) + "][1]";
-				final_result += check_common_indices(ld_tensor_1, ld_tensor_name_1, ld_tensor_2, ld_tensor_name_2, 1);
-				final_result += check_common_indices(ld_tensor_2, ld_tensor_name_2, PEPSC.site_tensor(original_i,original_j,2), site_tensor_name, 1);
-				final_result += check_common_indices(PEPSC.site_tensor(original_i,original_j,1), upper_right_site_tensor_name, ld_tensor_2, ld_tensor_name_2, 1);
-			}
+			auto ld_tensor_2 = ld_it->MPS[2*(original_i-imin)+1];
+			std::string ld_tensor_name_2 = "LD[" + std::to_string(original_i) + "][" + std::to_string(original_j) + "][1]";
+			std::string upper_right_site_tensor_name = "SITE[" + std::to_string(original_i) + "][" + std::to_string(original_j) + "][1]";
+			final_result += check_common_indices(ld_tensor_1, ld_tensor_name_1, ld_tensor_2, ld_tensor_name_2, 1);
+			final_result += check_common_indices(ld_tensor_2, ld_tensor_name_2, PEPSC.site_tensor(original_i,original_j,2), site_tensor_name, 1);
+			final_result += check_common_indices(PEPSC.site_tensor(original_i,original_j,1), upper_right_site_tensor_name, ld_tensor_2, ld_tensor_name_2, 1);
+			
 			std::cout << "LD warnings for i=" << original_i << ", j=" << original_j << ": \n" << final_result << std::endl;
 		}
 		original_h ++;
