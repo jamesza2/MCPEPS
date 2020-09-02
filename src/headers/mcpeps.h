@@ -202,10 +202,11 @@ class NoSitePEPS
 				}
 				AuxMPS aux(AuxType::SD);
 				for(int i = 0; i <_Nx-1; i++){
+					std::cout << "    At row " << i << ":" << std::endl;
 					itensor::Index left_upper_link = itensor::commonIndex(unsplit_MPS[i], _site_tensors[i][j-1][2]);
 					itensor::ITensor sing_vals, right_tensor;
 					itensor::ITensor left_tensor(left_upper_link);
-					if(j>0){
+					if(i>0){
 						itensor::Index left_link = itensor::commonIndex(unsplit_MPS[i], unsplit_MPS[i-1]);
 						left_tensor = itensor::ITensor(left_upper_link, left_link);
 					}
