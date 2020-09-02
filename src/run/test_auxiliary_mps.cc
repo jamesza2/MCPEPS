@@ -49,7 +49,9 @@ std::string check_common_indices(itensor::ITensor tensor_1, std::string tensor_n
 	if(num_common_indices!=ideal_common_indices){
 		result += tensor_name_1 + " has incorrect common indices with " + tensor_name_2 + ", at " + std::to_string(num_common_indices) + ": ";
 		for(int i = 0; i < itensor::length(common_indices); i++){
-			result += itensor::id(common_indices[i]) + " ";
+			//result += itensor::id(common_indices[i]) + " ";
+			Print(tensor_1);
+			Print(tensor_2);
 		}
 		result += "\n";
 	}
