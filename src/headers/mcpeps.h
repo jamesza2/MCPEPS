@@ -139,11 +139,9 @@ class NoSitePEPS
 					itensor::svd(unsplit_MPS[j], left_tensor, sing_vals, right_tensor, {"MaxDim", _Dc});
 					std::cout << "SVD Error: " << itensor::sqr(itensor::norm(unsplit_MPS[j]-left_tensor*sing_vals*right_tensor)/itensor::norm(unsplit_MPS[j])) << std::endl;
 					left_tensor *= sing_vals;
-					if(_log){
-						std::cout << "Split tensors at i=" << i << ", j=" << j << std::endl;
-						Print(left_tensor);
-						Print(right_tensor);
-					}
+					std::cout << "Split tensors at i=" << i << ", j=" << j << std::endl;
+					Print(left_tensor);
+					Print(right_tensor);
 					aux.add_tensor(left_tensor);
 					aux.add_tensor(right_tensor);
 				}
@@ -172,6 +170,7 @@ class NoSitePEPS
 			out.push_front(AuxMPS(AuxType::NA)); //The first row is a dummy AuxMPS that shouldn't ever have to be called
 			if(_log){
 				std::cout.rdbuf(coutbuf);
+				log_file_stream.close();
 			}
 			return out;
 		}
@@ -242,6 +241,7 @@ class NoSitePEPS
 			out.push_front(AuxMPS(AuxType::NA)); //The first column is a dummy AuxMPS that shouldn't ever have to be called
 			if(_log){
 				std::cout.rdbuf(coutbuf);
+				log_file_stream.close();
 			}
 			return out;
 		}
@@ -326,6 +326,7 @@ class NoSitePEPS
 			//Unlike the vertical and short direction cases, the first row needs to be called
 			if(_log){
 				std::cout.rdbuf(coutbuf);
+				log_file_stream.close();
 			}
 			return out;
 		}
@@ -352,7 +353,10 @@ class NoSitePEPS
 				std::cout << site_i << "-" << site_j << " link:" << std::endl;
 				Print(link_index);
 			}
-			if(_log){std::cout.rdbuf(coutbuf);}
+			if(_log){
+				std::cout.rdbuf(coutbuf);
+				log_file_stream.close();
+			}
 		}
 		std::tuple<int, int, int> position_of_site(int site_index){
 			int k = site_index % UNIT_CELL_SIZE;
@@ -631,6 +635,7 @@ class MCKPEPS : public NoSitePEPS{
 
 			if(_log){
 				std::cout.rdbuf(coutbuf);
+				log_file_stream.close();
 			}
 			return nsp;
 		}
@@ -816,6 +821,7 @@ class MCKPEPS : public NoSitePEPS{
 
 			if(_log){
 				std::cout.rdbuf(coutbuf);
+				log_file_stream.close();
 			}
 			return itensor::norm(contracted_tensor);
 
