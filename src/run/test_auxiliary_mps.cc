@@ -184,6 +184,7 @@ int main(int argc, char *argv[]){
 		int imax = std::min(Nx, original_h+1);
 		for(int original_i = imin; original_i < imax; original_i++){
 			int original_j = original_h - original_i;
+			std::cout << "LD warnings for i=" << original_i << ", j=" << original_j << ": \n";
 			auto ld_tensor_1 = ld_it->MPS[2*(original_i-imin)];
 			std::string site_tensor_name = "SITE[" + std::to_string(original_i) + "][" + std::to_string(original_j) + "][2]";
 			std::string upper_left_site_tensor_name = "SITE[" + std::to_string(original_i) + "][" + std::to_string(original_j) + "][0]";
@@ -198,7 +199,7 @@ int main(int argc, char *argv[]){
 			final_result += check_common_indices(ld_tensor_2, ld_tensor_name_2, PEPSC.site_tensor(original_i,original_j,2), site_tensor_name, 1);
 			final_result += check_common_indices(PEPSC.site_tensor(original_i,original_j,1), upper_right_site_tensor_name, ld_tensor_2, ld_tensor_name_2, 1);
 			
-			std::cout << "LD warnings for i=" << original_i << ", j=" << original_j << ": \n" << final_result << std::endl;
+			std::cout << final_result << std::endl;
 		}
 		original_h ++;
 	}
