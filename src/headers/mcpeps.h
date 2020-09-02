@@ -304,6 +304,7 @@ class NoSitePEPS
 						previous_row.push_back(_site_tensors[i][j][0]*aux.MPS[aux_index]);
 						previous_row.push_back(_site_tensors[i][j][1]*aux.MPS[aux_index+1]);
 					}
+
 					//Contract the (:,h,0) and (:,h,1) rows into the (:,h-1,2) row
 					unsplit_MPS.clear();
 					for(int i = std::max(0, h-_Ny); i < std::min(_Nx, h); i++){
@@ -330,6 +331,12 @@ class NoSitePEPS
 						if(j>0){
 							unsplit_MPS.push_back(_site_tensors[i][j-1][2]*previous_row[pr_index+1]);
 						}
+					}
+					for(int pr_index = 0; pr_index < previous_row.size(); pr_index++){
+						Print(previous_row[pr_index]);
+					}
+					for(int unsplit_index = 0; unsplit_index < unsplit_MPS.size(); unsplit_index++){
+						Print(unsplit_MPS[unsplit_index]);
 					}
 				}
 			}
