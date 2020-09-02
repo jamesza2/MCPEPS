@@ -102,7 +102,7 @@ int main(int argc, char *argv[]){
 	NoSitePEPS PEPSC = PEPS1.contract(PEPS2);
 	std::cout << "Contracted PEPS created..." << std::endl;
 	PEPSC.print_self();
-	std::cout << "printed..." << std::endl;
+	std::cout << "printed to " << PEPSC._log_file << std::endl;
 	auto vd = PEPSC.get_vd_auxiliaries();
 	auto sd = PEPSC.get_sd_auxiliaries();
 	auto ld = PEPSC.get_ld_auxiliaries();

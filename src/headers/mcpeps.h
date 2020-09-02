@@ -25,11 +25,12 @@ class NoSitePEPS
 		int _num_sites;
 		int _D;
 		int _Dc;
-		std::string _log_file;
+		
 		std::vector<std::vector<std::vector<itensor::ITensor>>> _site_tensors;
 		std::map<int, itensor::Index> _link_indices;
 
 	public:
+		std::string _log_file;
 		Neighbors bonds;
 		NoSitePEPS(){
 			_Nx = 0;
@@ -193,6 +194,7 @@ class NoSitePEPS
 			}
 			//Contract to the left and add each SVD splitted column to the AuxMPS list. Does not contract the last column.
 			for(int j = _Ny-1; j > 0; j--){
+				std::cout << "Contracting Column " << j << ":" << std::endl;
 				unsplit_MPS.clear();
 				for(int i = 0; i < _Nx; i++){
 					unsplit_MPS.push_back((_site_tensors[i][j][1]*previous_row[2*i])*previous_row[2*i+1]);
@@ -260,6 +262,7 @@ class NoSitePEPS
 			std::vector<itensor::ITensor> previous_row; //Unlike VD and SD case, previous row starts off empty
 			unsplit_MPS.push_back(_site_tensors[_Nx-1][_Ny-1][2]);
 			for(int h = _Nx+_Ny-2; h >= 0; h--){
+				std::cout << "Contracting Diagonal " << h << ":" << std::endl;
 				//Split the (:,h,2) tensors with SVD
 				previous_row.clear();
 				int imin = std::max(0, h-_Ny+1);
