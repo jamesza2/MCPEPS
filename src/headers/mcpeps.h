@@ -125,7 +125,7 @@ class NoSitePEPS
 				}
 				AuxMPS aux(AuxType::VD);
 				//Create auxiliary tensors
-				for(int j = 0; j < _Ny; j++){
+				for(int j = 0; j < _Ny-1; j++){
 					
 					itensor::Index left_upper_link = itensor::commonIndex(unsplit_MPS[j], _site_tensors[i-1][j][2]);
 					itensor::ITensor sing_vals, right_tensor;
