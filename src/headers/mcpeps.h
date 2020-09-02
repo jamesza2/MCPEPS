@@ -308,7 +308,7 @@ class NoSitePEPS
 					unsplit_MPS.clear();
 					for(int i = std::max(0, h-_Ny); i < std::min(_Nx, h); i++){
 						int j = h-i;
-						unsplit_MPS.push_back(_site_tensors[i][h-j-1][2]);
+						unsplit_MPS.push_back(_site_tensors[i][j][2]);
 					}
 					for(int i = imin; i < imax; i++){
 						int j = h-i;
