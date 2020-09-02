@@ -48,8 +48,8 @@ std::string check_common_indices(itensor::ITensor tensor_1, std::string tensor_n
 	int num_common_indices = itensor::length(common_indices);
 	if(num_common_indices!=ideal_common_indices){
 		result += tensor_name_1 + " has incorrect common indices with " + tensor_name_2 + ", at " + std::to_string(num_common_indices) + ": ";
-		for(auto ind : common_indices){
-			result += itensor::id(ind) + " ";
+		for(int i = 0; i < itensor::length(common_indices); i++){
+			result += itensor::id(common_indices[i]) + " ";
 		}
 		result += "\n";
 	}
@@ -201,7 +201,7 @@ int main(int argc, char *argv[]){
 			final_result += check_common_indices(ld_tensor_2, ld_tensor_name_2, PEPSC.site_tensor(original_i,original_j,2), site_tensor_name, 1);
 			final_result += check_common_indices(PEPSC.site_tensor(original_i,original_j,1), upper_right_site_tensor_name, ld_tensor_2, ld_tensor_name_2, 1);
 			
-			std::cout << final_result << std::endl;
+			std::cout << "Current errors: " << final_result << std::endl;
 		}
 		original_h ++;
 	}
