@@ -184,15 +184,17 @@ int main(int argc, char *argv[]){
 		int imax = std::min(Nx, original_h+1);
 		for(int original_i = imin; original_i < imax; original_i++){
 			int original_j = original_h - original_i;
-			std::cout << "LD warnings for i=" << original_i << ", j=" << original_j << "/" << ld_it->MPS.size() << ": \n";
+			std::cout << "LD warnings for i=" << original_i << ", j=" << original_j << ", size " << ld_it->MPS.size() << ": \n";
 			auto ld_tensor_1 = ld_it->MPS[2*(original_i-imin)];
+			std::cout << "Brought out tensor #" << 2*(original_i-imin) << std::endl;
 			std::string site_tensor_name = "SITE[" + std::to_string(original_i) + "][" + std::to_string(original_j) + "][2]";
 			std::string upper_left_site_tensor_name = "SITE[" + std::to_string(original_i) + "][" + std::to_string(original_j) + "][0]";
 			std::string ld_tensor_name_1 = "LD[" + std::to_string(original_i) + "][" + std::to_string(original_j) + "][0]";
 			final_result += check_common_indices(PEPSC.site_tensor(original_i,original_j,2), site_tensor_name, ld_tensor_1, ld_tensor_name_1, 1);
 			final_result += check_common_indices(PEPSC.site_tensor(original_i,original_j,0), upper_left_site_tensor_name, ld_tensor_1, ld_tensor_name_1, 1);
-			
+			std::cout << "Current errors: " << final_result << std::endl;
 			auto ld_tensor_2 = ld_it->MPS[2*(original_i-imin)+1];
+			std::cout << "Brought out tensor #" << 2*(original_i-imin)+1 << std::endl;
 			std::string ld_tensor_name_2 = "LD[" + std::to_string(original_i) + "][" + std::to_string(original_j) + "][1]";
 			std::string upper_right_site_tensor_name = "SITE[" + std::to_string(original_i) + "][" + std::to_string(original_j) + "][1]";
 			final_result += check_common_indices(ld_tensor_1, ld_tensor_name_1, ld_tensor_2, ld_tensor_name_2, 1);
