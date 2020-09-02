@@ -121,8 +121,8 @@ int main(int argc, char *argv[]){
 		final_result += "VD[0] Length test failed: " + std::to_string(vd_it->length) +"\n";
 	}
 	int original_i = 0;
+	vd_it++;
 	while(vd_it != vd.end()){
-		vd_it ++;
 		original_i ++;
 		for(int original_j = 0; original_j < Ny; original_j++){
 			auto vd_tensor_1 = vd_it->MPS[2*original_j];
@@ -141,8 +141,9 @@ int main(int argc, char *argv[]){
 				final_result += check_common_indices(PEPSC.site_tensor(original_i-1,original_j+1,1), upper_right_site_tensor_name, vd_tensor_2, vd_tensor_name_2, 1);
 			}
 			std::cout << "VD warnings for i=" << original_i << ", j=" << original_j << ": \n" << final_result << std::endl;
-			final_result = "";
+			//final_result = "";
 		}
+		vd_it ++;
 	}
 
 	std::cout << "SD auxiliary test..." << std::endl;
@@ -152,8 +153,8 @@ int main(int argc, char *argv[]){
 		final_result += "SD[0] Length test failed: " + std::to_string(sd_it->length) +"\n";
 	}
 	int original_j = 0;
+	sd_it++;
 	while(sd_it != sd.end()){
-		sd_it ++;
 		original_j ++;
 		for(int original_i = 0; original_i < Nx; original_i++){
 			auto sd_tensor_1 = sd_it->MPS[2*original_i];
@@ -172,6 +173,7 @@ int main(int argc, char *argv[]){
 				final_result += check_common_indices(PEPSC.site_tensor(original_i+1,original_j-1,0), upper_right_site_tensor_name, sd_tensor_2, sd_tensor_name_2, 1);
 			}
 		}
+		sd_it ++;
 	}
 
 	std::cout << "LD auxiliary test..." << std::endl;
