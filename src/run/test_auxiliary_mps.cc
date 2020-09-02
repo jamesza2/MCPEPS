@@ -37,6 +37,11 @@ itensor::ITensor create_sz2_op(int site, itensor::IndexSet &sites){
 	return op;
 }
 
+void clear_file(std::string file_name){
+	std::ofstream file_stream(file_name);
+	file_stream.close();
+}
+
 std::string check_common_indices(itensor::ITensor tensor_1, std::string tensor_name_1, itensor::ITensor tensor_2, std::string tensor_name_2, int ideal_common_indices = 1){
 	std::string result = "";
 	itensor::IndexSet common_indices = itensor::commonInds(tensor_1,tensor_2);
@@ -83,7 +88,7 @@ int main(int argc, char *argv[]){
 	if(log_file_name == "AUTO"){ //../../logs/aux_test_{Nx}x{Ny}_D{D}_X{Chi}_d{d}_{}trials
 		log_file_name = "../../logs/aux_test" + version;
 	}
-
+	clear_file(log_file_name);
 
 	int num_sites = Nx*Ny*UNIT_CELL_SIZE;
 
@@ -169,7 +174,6 @@ int main(int argc, char *argv[]){
 
 	std::cout << "LD auxiliary test..." << std::endl;
 	//LD auxiliary test
-	auto ld_it = ld.begin();
 	int original_h = 0;
 	for(auto ld_it = ld.begin(); ld_it != ld.end(); ld_it++){
 		int imin = std::max(0, original_h - Ny+1);

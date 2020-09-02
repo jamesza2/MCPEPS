@@ -105,7 +105,7 @@ class NoSitePEPS
 		std::list<AuxMPS> get_vd_auxiliaries(){
 			bool _log = (_log_file != "");
 			std::streambuf *coutbuf = std::cout.rdbuf();
-			std::ofstream log_file_stream(_log_file);
+			std::ofstream log_file_stream(_log_file, std::ofstream::app);
 			if(_log){
 				std::cout.rdbuf(log_file_stream.rdbuf());
 			}
@@ -181,7 +181,7 @@ class NoSitePEPS
 		std::list<AuxMPS> get_sd_auxiliaries(){
 			bool _log = (_log_file != "");
 			std::streambuf *coutbuf = std::cout.rdbuf();
-			std::ofstream log_file_stream(_log_file);
+			std::ofstream log_file_stream(_log_file, std::ofstream::app);
 			if(_log){
 				std::cout.rdbuf(log_file_stream.rdbuf());
 			}
@@ -192,6 +192,7 @@ class NoSitePEPS
 				previous_row.push_back(_site_tensors[i][_Ny-1][0]);
 				previous_row.push_back(_site_tensors[i][_Ny-1][2]);
 			}
+			std::cout << "Creating starting row of size " << previous_row.size() << std::endl;
 			//Contract to the left and add each SVD splitted column to the AuxMPS list. Does not contract the last column.
 			for(int j = _Ny-1; j > 0; j--){
 				std::cout << "Contracting Column " << j << ":" << std::endl;
@@ -253,7 +254,7 @@ class NoSitePEPS
 		std::list<AuxMPS> get_ld_auxiliaries(){
 			bool _log = (_log_file != "");
 			std::streambuf *coutbuf = std::cout.rdbuf();
-			std::ofstream log_file_stream(_log_file);
+			std::ofstream log_file_stream(_log_file, std::ofstream::app);
 			if(_log){
 				std::cout.rdbuf(log_file_stream.rdbuf());
 			}
@@ -338,7 +339,7 @@ class NoSitePEPS
 		void print_self(){
 			bool _log = (_log_file != "");
 			std::streambuf *coutbuf = std::cout.rdbuf();
-			std::ofstream log_file_stream(_log_file);
+			std::ofstream log_file_stream(_log_file, std::ofstream::app);
 			if(_log){
 				std::cout.rdbuf(log_file_stream.rdbuf());
 			}
@@ -550,7 +551,7 @@ class MCKPEPS : public NoSitePEPS{
 		NoSitePEPS contract(MCKPEPS &other){
 			bool _log = (_log_file != "");
 			std::streambuf *coutbuf = std::cout.rdbuf();
-			std::ofstream log_file_stream(_log_file);
+			std::ofstream log_file_stream(_log_file, std::ofstream::app);
 			if(_log){
 				std::cout.rdbuf(log_file_stream.rdbuf());
 			}
@@ -647,7 +648,7 @@ class MCKPEPS : public NoSitePEPS{
 		double inner_product(MCKPEPS &other){
 			bool _log = (_log_file != "");
 			std::streambuf *coutbuf = std::cout.rdbuf();
-			std::ofstream log_file_stream(_log_file);
+			std::ofstream log_file_stream(_log_file, std::ofstream::app);
 			if(_log){
 				std::cout.rdbuf(log_file_stream.rdbuf());
 			}
