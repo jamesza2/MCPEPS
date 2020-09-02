@@ -197,8 +197,11 @@ int main(int argc, char *argv[]){
 			std::cout << "Brought out tensor #" << 2*(original_i-imin)+1 << std::endl;
 			std::string ld_tensor_name_2 = "LD[" + std::to_string(original_i) + "][" + std::to_string(original_j) + "][1]";
 			std::string upper_right_site_tensor_name = "SITE[" + std::to_string(original_i) + "][" + std::to_string(original_j) + "][1]";
+			std::cout << "Starting check 1" << std::endl;
 			final_result += check_common_indices(ld_tensor_1, ld_tensor_name_1, ld_tensor_2, ld_tensor_name_2, 1);
+			std::cout << "Check 1 passed" << std::endl;
 			final_result += check_common_indices(ld_tensor_2, ld_tensor_name_2, PEPSC.site_tensor(original_i,original_j,2), site_tensor_name, 1);
+			std::cout << "Check 2 passed" << std::endl;
 			final_result += check_common_indices(PEPSC.site_tensor(original_i,original_j,1), upper_right_site_tensor_name, ld_tensor_2, ld_tensor_name_2, 1);
 			
 			std::cout << "Current errors: " << final_result << std::endl;
