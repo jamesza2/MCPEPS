@@ -184,7 +184,7 @@ int main(int argc, char *argv[]){
 		int imax = std::min(Nx, original_h+1);
 		for(int original_i = imin; original_i < imax; original_i++){
 			int original_j = original_h - original_i;
-			std::cout << "LD warnings for i=" << original_i << ", j=" << original_j << "/" << ld_it->MPS.length() << ": \n";
+			std::cout << "LD warnings for i=" << original_i << ", j=" << original_j << "/" << ld_it->MPS.size() << ": \n";
 			auto ld_tensor_1 = ld_it->MPS[2*(original_i-imin)];
 			std::string site_tensor_name = "SITE[" + std::to_string(original_i) + "][" + std::to_string(original_j) + "][2]";
 			std::string upper_left_site_tensor_name = "SITE[" + std::to_string(original_i) + "][" + std::to_string(original_j) + "][0]";
