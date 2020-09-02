@@ -307,7 +307,7 @@ class NoSitePEPS
 					//Contract the (:,h,0) and (:,h,1) rows into the (:,h-1,2) row
 					unsplit_MPS.clear();
 					for(int i = std::max(0, h-_Ny); i < std::min(_Nx, h); i++){
-						int j = h-i;
+						int j = h-i-1;
 						unsplit_MPS.push_back(_site_tensors[i][j][2]);
 					}
 					for(int i = imin; i < imax; i++){
