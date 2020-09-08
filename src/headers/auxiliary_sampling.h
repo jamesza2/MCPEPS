@@ -39,8 +39,8 @@ itensor::ITensor adapt_tensor(NoSitePEPS &target_PEPS, NoSitePEPS &original_PEPS
 	for(int l = 0; l < links.size(); l++){
 		new_tensor *= itensor::delta(links[l].first, links[l].second);
 	}
-	//Check new tensor and no site tensor have the same indices
-	if(!itensor::hasSameInds(target_PEPS._site_tensors[i][j][k].inds(), new_tensor.inds())){
+	//Check new tensor contains the same indices as no site tensor except for the extra site index
+	if(itensor::length(itensor::uniqueInds(new_tensor.inds(), target_PEPS._site_tensors[i][j][k].inds())) != 1){
 		std::cout << "WARNING: Index sets of original no-site tensor and new tensor different" << std::endl;
 		Print(target_PEPS._site_tensors[i][j][k]);
 		Print(new_tensor);
@@ -104,13 +104,13 @@ double test_bond(NoSitePEPS &no_site, MCKPEPS &original, std::vector<int> &spin_
 			spin_config[no_site.site_index_from_position(i2,j2,k2)] = new_sz_2;
 			std::cout << "Spin config ";
 			for(int sp : spin_config){std::cout << sp << " ";}
-			std::cout << "Accepted with wavefunction " << new_wavefunction;
+			std::cout << "Accepted with wavefunction " << new_wavefunction << std::endl;
 			wavefn_to_return = new_wavefunction;
 		}
 		else{
 			std::cout << "Spin config ";
 			for(int sp : spin_config){std::cout << sp << " ";}
-			std::cout << "Rejected with wavefunction " << new_wavefunction;
+			std::cout << "Rejected with wavefunction " << new_wavefunction << std::endl;
 		}
 	}
 	//No matter if the move is accepted or rejected, we should update the auxiliary tensor accordingly
@@ -155,6 +155,7 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 		}
 		//Evaluate the old wavefunction
 		double old_wavefunction = itensor::norm(vr_auxiliaries[0]);
+		std::cout << "Old wavefunction: " << old_wavefunction << std::endl;
 		//double old_num_choices = config.num_choices();
 		itensor::ITensor vl_auxiliary(1);
 		//Sweep the horizontal (1-2) links from left to right
@@ -164,9 +165,14 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			itensor::ITensor vd_aux_1(1);
 			if(j > 0){vd_aux_1 = vd_it->MPS[J-1];}
 			most_recent_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,1,i,j,2, vl_auxiliary, vr_auxiliaries[J+2],VUi.MPS[J],VUi.MPS[J+1],vd_aux_1, vd_it->MPS[J], old_wavefunction, r);
+			Print(vl_auxiliary);
+			Print(vr_auxiliaries[J]);
 			if(j < psi.Ny()-1){
 				most_recent_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,2,i,j+1,1, vl_auxiliary, vr_auxiliaries[J+3],VUi.MPS[J+1],VUi.MPS[J+2],vd_it->MPS[J], vd_it->MPS[J+1], old_wavefunction, r);
+				Print(vl_auxiliary);
+				Print(vr_auxiliaries[J+1]);
 			}
+
 			/*
 			int old_sz_1 = spin_config[psi.site_index_from_position(i,j,1)];
 			int old_sz_2 = spin_config[psi.site_index_from_position(i,j,2)];
