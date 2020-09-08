@@ -351,12 +351,6 @@ class NoSitePEPS
 							unsplit_MPS.push_back(_site_tensors[i][j-1][2]*previous_row[pr_index+1]);
 						}
 					}
-					for(int pr_index = 0; pr_index < previous_row.size(); pr_index++){
-						Print(previous_row[pr_index]);
-					}
-					for(int unsplit_index = 0; unsplit_index < unsplit_MPS.size(); unsplit_index++){
-						Print(unsplit_MPS[unsplit_index]);
-					}
 				}
 			}
 			//Unlike the vertical and short direction cases, the first row needs to be called
@@ -936,7 +930,7 @@ class MCKPEPS : public NoSitePEPS{
 		}
 };
 
-
+const double WAVEFUNCTION_NORMALIZATION_CONSTANT = 0.35;
 
 class SpinConfigPEPS : public MCKPEPS
 {
@@ -944,9 +938,18 @@ class SpinConfigPEPS : public MCKPEPS
 		SpinConfigPEPS(itensor::IndexSet &sites,
 			int input_Nx,
 			int input_Ny) : MCKPEPS(sites, input_Nx, input_Ny, 1, 1, {"RandomizeSites",false}){
+			_spin_max = itensor::dim(sites[0]);
 		}
 
 		SpinConfigPEPS(MCKPEPS &base_state) : MCKPEPS(base_state.site_indices, base_state.Nx(), base_state.Ny(), 1, 1, {"RandomizeSites",false}){
+			_spin_config = std::vector<int>(_num_sites, -1);
+			_spin_max = itensor::dim(base_state.site_indices[0]);
+		}
+
+		SpinConfigPEPS(MCKPEPS &base_state, std::vector<int> &spin_config, double wavefunction_normalization = 1) : MCKPEPS(base_state.site_indices, base_state.Nx(), base_state.Ny(), 1, 1, {"RandomizeSites",false}){
+			_spin_config = spin_config;
+			_spin_max = itensor::dim(base_state.site_indices[0]);
+			set_spins(spin_config, wavefunction_normalization);
 		}
 
 		void set_spin(int i , int j, int k, int spin_value, double wavefunction_normalization = 1){
@@ -962,11 +965,39 @@ class SpinConfigPEPS : public MCKPEPS
 				}
 			}
 			_site_tensors[i][j][k].set(config, 1.0/wavefunction_normalization);
+			_spin_config[site_index] = spin_value;
 		}
 
 		void set_spin(int site_index, int spin_value, double wavefunction_normalization = 1){
 			auto ijk = position_of_site(site_index);
 			set_spin(std::get<0>(ijk), std::get<1>(ijk), std::get<2>(ijk),spin_value, wavefunction_normalization);
+			//_spin_config[site_index] = spin_value;
+		}
+
+		void change_spin(int i , int j, int k, int spin_value){
+			int site_index = site_index_from_position(i,j,k);
+			int old_spin_value = _spin_config[site_index];
+			std::vector<itensor::IndexVal> old_config;
+			std::vector<itensor::IndexVal> new_config;
+			for(itensor::Index ind : _site_tensors[i][j][k].inds()){
+				if(ind.dim() > 1) {
+					old_config.push_back(ind(old_spin_value+1));
+					new_config.push_back(ind(spin_value+1));
+				}
+				else {
+					old_config.push_back(ind(1));
+					new_config.push_back(ind(1));
+				}
+			}
+			double old_value = _site_tensors[i][j][k].elt(old_config);
+			_site_tensors[i][j][k].set(old_config, 0);
+			_site_tensors[i][j][k].set(new_config, old_value);
+			_spin_config[site_index] = spin_value;
+		}
+
+		void change_spin(int site_index, int spin_value){
+			auto ijk = position_of_site(site_index);
+			change_spin(std::get<0>(ijk), std::get<1>(ijk), std::get<2>(ijk),spin_value);
 		}
 
 		void set_spins(std::vector<int> &spin_config, double wavefunction_normalization = 1){
@@ -975,6 +1006,29 @@ class SpinConfigPEPS : public MCKPEPS
 			}
 		}
 
+		double num_choices(){
+			double num_choices_to_return = 0;
+			for(int site_1 = 0; site_1 < _num_sites; site_1 ++){
+				for(int site_2 : bonds.nn_at(site_1)){
+					if((spin_config[site_1] > 0) && (spin_config[site_2] < _spin_max-1)){//Can flip by decrementing site_1, incrementing site_2
+						num_choices_to_return += 1;
+					}
+					if((spin_config[site_1] < _spin_max-1) && (spin_config[site_2] > 0)){//Can flip by incrementing site_1, decrementing site_2
+						num_choices_to_return += 1;
+					}
+				}
+			}
+			return num_choices_to_return
+		}
+
+		int spin_at(int i, int j, int k){
+			return _spin_config[site_index_from_position(i,j,k)];
+		}
+
+
+	protected:
+		std::vector<int> _spin_config;
+		int _spin_max;
 
 };
 
