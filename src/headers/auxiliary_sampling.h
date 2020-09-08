@@ -49,7 +49,7 @@ itensor::ITensor adapt_tensor(NoSitePEPS &target_PEPS, NoSitePEPS &original_PEPS
 }
 
 void update_site_tensor(NoSitePEPS &no_site, MCKPEPS &original, int i, int j, int k, int new_sz){
-	itensor::Index site_at = original._site_indices[original.site_index_from_position(i,j,k)];
+	itensor::Index site_at = original.site_indices[original.site_index_from_position(i,j,k)];
 	itensor::ITensor new_tensor = adapt_tensor(no_site, original, i, j, k) * itensor::setElt(site_at = new_sz+1);
 	no_site._site_tensors[i][j][k] = new_tensor;
 }
@@ -131,7 +131,8 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 		auto left_links = itensor::commonInds(psi._site_tensors[0][j][0], psi._site_tensors[0][j][1]);
 		auto [left_tensor, sing_vals, right_tensor] = itensor::svd(psi._site_tensors[0][j][0], left_links, {"MaxDim", psi.Dc()});
 		VUi.add_tensor(left_tensor);
-		VUi.add_tensor(sing_vals*right_tensor);
+		itensor::ITensor right_tensor_combined = sing_vals*right_tensor;
+		VUi.add_tensor(right_tensor_combined);
 	}
 	//Begin sweeping along the rows
 	auto vd_it = vd_list.begin();
@@ -198,13 +199,13 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 		if(i < psi.Nx()-1){
 			//Create new VU auxiliary MPS
 			std::vector<itensor::ITensor> row_i_contracted;
-			for(int j = 0; j < Ny(); j++){
+			for(int j = 0; j < psi.Ny(); j++){
 				int J = 2*j;
 				row_i_contracted.push_back(VUi.MPS[J]*psi._site_tensors[i][j][1]);
 				row_i_contracted.push_back(VUi.MPS[J+1]*psi._site_tensors[i][j][2]);
 			}
 			//Contract the bond dimensions of the contracted row i
-			for(int J = 0; J < 2*Ny()-2; J++){
+			for(int J = 0; J < 2*psi.Ny()-2; J++){
 				auto forward_links = itensor::commonInds(row_i_contracted[J], row_i_contracted[J+1]);
 				auto [forward_tensor, sing_vals, back_tensor] = itensor::svd(row_i_contracted[J], forward_links, {"MaxDim", psi.Dc()});
 				row_i_contracted[J+1] *= (forward_tensor*sing_vals);
@@ -244,7 +245,8 @@ double sample_s_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 		auto left_links = itensor::commonInds(psi._site_tensors[i][0][1], psi._site_tensors[i][0][0]);
 		auto [left_tensor, sing_vals, right_tensor] = itensor::svd(psi._site_tensors[i][0][1], left_links, {"MaxDim", psi.Dc()});
 		SUi.add_tensor(left_tensor);
-		SUi.add_tensor(sing_vals*right_tensor);
+		itensor::ITensor right_tensor_combined = sing_vals*right_tensor;
+		SUi.add_tensor(right_tensor_combined);
 	}
 	//Begin sweeping along the rows
 	auto sd_it = sd_list.begin();
