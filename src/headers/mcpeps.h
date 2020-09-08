@@ -26,11 +26,12 @@ class NoSitePEPS
 		int _D;
 		int _Dc;
 		
-		std::vector<std::vector<std::vector<itensor::ITensor>>> _site_tensors;
+		
 		std::map<int, itensor::Index> _link_indices;
 
 	public:
 		std::string _log_file;
+		std::vector<std::vector<std::vector<itensor::ITensor>>> _site_tensors;
 		Neighbors bonds;
 		NoSitePEPS(){
 			_Nx = 0;
@@ -401,7 +402,15 @@ class NoSitePEPS
 			return _site_tensors[i][j][k];
 		}
 
-	protected:
+		void set_site_tensor(int i, int j, int k, itensor::ITensor &new_tensor){
+			if(!itensor::hasSameInds(_site_tensors[i][j][k].inds(), new_tensor.inds())){
+				std::cerr << "Warning: index mismatch" << std::endl;
+				Print(_site_tensors[i][j][k]);
+				Print(new_tensor);
+			}
+			_site_tensors[i][j][k] = new_tensor;
+		}
+
 		int pair_to_link_index(int i, int j){
 			if(i < j){
 				return i*_num_sites + j;
@@ -421,14 +430,23 @@ class NoSitePEPS
 			return i*_Ny*UNIT_CELL_SIZE + j*UNIT_CELL_SIZE + k;
 		}
 
-		
-
 		int link_index_from_position(int i1, int j1, int k1, int i2, int j2, int k2){
 			return pair_to_link_index(site_index_from_position(i1, j1, k1), site_index_from_position(i2, j2, k2));
 		}
 		int lifp(int i1, int j1, int k1, int i2, int j2, int k2){
 			return link_index_from_position(i1, j1, k1, i2, j2, k2);
 		}
+
+		itensor::Index link_index(int site_1, int site_2){
+			return _link_indices[pair_to_link_index(site_1, site_2)];
+		}
+
+		itensor::Index link_index(int i1, int j1, int k1, int i2, int j2, int k2){
+			return link_index(site_index_from_position(i1, j1, k1), site_index_from_position(i2, j2, k2));
+		}
+
+	protected:
+		
 
 		void create_link_index(int i1, int j1, int k1, int i2, int j2, int k2){
 			std::string link_name = "Link,n1=" + std::to_string(site_index_from_position(i1, j1, k1)+1) + ",n2=" + std::to_string(site_index_from_position(i2, j2, k2)+1);
@@ -887,6 +905,7 @@ class MCKPEPS : public NoSitePEPS{
 			return MCKPEPS(site_indices, _Nx, _Ny, 1, _Dc);
 		}
 
+
 		
 	
 	protected:
@@ -1010,15 +1029,15 @@ class SpinConfigPEPS : public MCKPEPS
 			double num_choices_to_return = 0;
 			for(int site_1 = 0; site_1 < _num_sites; site_1 ++){
 				for(int site_2 : bonds.nn_at(site_1)){
-					if((spin_config[site_1] > 0) && (spin_config[site_2] < _spin_max-1)){//Can flip by decrementing site_1, incrementing site_2
+					if((_spin_config[site_1] > 0) && (_spin_config[site_2] < _spin_max-1)){//Can flip by decrementing site_1, incrementing site_2
 						num_choices_to_return += 1;
 					}
-					if((spin_config[site_1] < _spin_max-1) && (spin_config[site_2] > 0)){//Can flip by incrementing site_1, decrementing site_2
+					if((_spin_config[site_1] < _spin_max-1) && (_spin_config[site_2] > 0)){//Can flip by incrementing site_1, decrementing site_2
 						num_choices_to_return += 1;
 					}
 				}
 			}
-			return num_choices_to_return
+			return num_choices_to_return;
 		}
 
 		int spin_at(int i, int j, int k){

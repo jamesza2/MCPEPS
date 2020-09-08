@@ -65,8 +65,6 @@ int main(int argc, char *argv[]){
 	std::string out_file_name = input.testString("out_file", "");
 	int physical_dims = input.testInteger("physical_dims", 4);
 
-	int num_sites = Nx*Ny*UNIT_CELL_SIZE;
-
 	std::string version = "_";
 	version += std::to_string(Nx) + "x" + std::to_string(Ny);
 	version += "_D"+std::to_string(standard_dims);
@@ -108,7 +106,7 @@ int main(int argc, char *argv[]){
 	std::vector<double> wavefunctions;
 	std::vector<double> values;
 	std::vector<int> spin_config(num_sites, 0);
-	Randomizer r();
+	Randomizer r;
 	randomize_in_sector(spin_config, physical_dims, r.gen, r.dist);
 	for(int trial = 0; trial < num_trials; trial++){
 		std::cerr << "Sampling v direction..." << std::endl;
@@ -121,7 +119,7 @@ int main(int argc, char *argv[]){
 		double wavefn = sample_s_direction(PEPS1, spin_config, r);
 		std::cerr << "Evaluating final value..." << std::endl;
 		wavefunctions.push_back(wavefn);
-		Sz2 sz2op(state.Nx(), state.Ny(), state.physical_dims());
+		Sz2 sz2op(Nx, Ny, physical_dims);
 		values.push_back(sz2op.eval(spin_config, spin_config));
 	}
 
