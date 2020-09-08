@@ -145,7 +145,7 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 	NoSitePEPS psi = psi_sites.contract(config);
 	std::list<AuxMPS> vd_list = psi.get_vd_auxiliaries();
 	std::cout << "Creating up auxiliary..." << std::endl;
-	double most_recent_wavefunction = -1;
+	double old_wavefunction = -1;
 	AuxMPS VUi(AuxType::VU);//Create the up auxiliary (won't have some links between certain sites though)
 	for(int j = 0; j < psi.Ny(); j++){
 		auto left_links = itensor::commonInds(psi._site_tensors[0][j][0], psi._site_tensors[0][j][1]);
@@ -156,7 +156,6 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 	}
 	//Begin sweeping along the rows
 	auto vd_it = vd_list.begin();
-
 
 	for(int i = 0; i < psi.Nx(); i++){
 		std::cout << "Sweeping row " << i << std::endl;
@@ -174,7 +173,7 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			}
 		}
 		//Evaluate the old wavefunction
-		double old_wavefunction = itensor::norm(vr_auxiliaries[0]);
+		old_wavefunction = itensor::norm(vr_auxiliaries[0]);
 		std::cout << "Old wavefunction: " << old_wavefunction << std::endl;
 		//double old_num_choices = config.num_choices();
 		itensor::ITensor vl_auxiliary(1);
@@ -290,7 +289,7 @@ double sample_s_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 	SpinConfigPEPS config(psi_sites, spin_config, WAVEFUNCTION_NORMALIZATION_CONSTANT);
 	NoSitePEPS psi = psi_sites.contract(config);
 	std::list<AuxMPS> sd_list = psi.get_sd_auxiliaries();
-	double most_recent_wavefunction = -1;
+	double old_wavefunction = -1;
 	AuxMPS SUi(AuxType::SU);//Create the up auxiliary (won't have some links between certain sites though)
 	for(int i = 0; i < psi.Nx(); i++){
 		auto left_links = itensor::commonInds(psi._site_tensors[i][0][1], psi._site_tensors[i][0][0]);
@@ -319,7 +318,7 @@ double sample_s_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			}
 		}
 		//Evaluate the old wavefunction
-		double old_wavefunction = itensor::norm(sr_auxiliaries[0]);
+		old_wavefunction = itensor::norm(sr_auxiliaries[0]);
 		//double old_num_choices = config.num_choices();
 		itensor::ITensor sl_auxiliary(1);
 		//Sweep the short direction (0-2) links from left to right
