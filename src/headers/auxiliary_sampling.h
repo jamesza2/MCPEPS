@@ -71,6 +71,20 @@ double test_bond(NoSitePEPS &no_site, MCKPEPS &original, std::vector<int> &spin_
 	int new_sz_2 = old_sz_2 - up_or_down;
 	double wavefn_to_return = old_wavefunction;
 	int spin_max = original.physical_dims();
+
+	itensor::ITensor old_product_1 = l_aux;
+	old_product_1 *= u_aux_1;
+	itensor::Index old_site_at = original.site_indices[original.site_index_from_position(i1,j1,k1)];
+	old_product_1 *= (adapt_tensor(no_site, original, i1, j1, k1)*itensor::setElt(old_site_at = old_sz_1+1));
+	old_product_1 *= d_aux_1;
+	itensor::ITensor old_product_2 = r_aux;
+	old_product_2 *= u_aux_2;
+	old_site_at = original.site_indices[original.site_index_from_position(i2,j2,k2)];
+	old_product_2 *= (adapt_tensor(no_site, original, i2, j2, k2)*itensor::setElt(old_site_at = old_sz_2+1));
+	old_product_2 *= d_aux_2;
+	itensor::ITensor old_product = old_product_1*old_product_2;
+	Print(old_product);
+
 	if((new_sz_1 >= 0) && (new_sz_2 >= 0) && (new_sz_1 < spin_max) && (new_sz_2 < spin_max)){
 		/*Contract the tensor group
 				VU(iJ)---VU(iJ+1)
@@ -88,6 +102,7 @@ double test_bond(NoSitePEPS &no_site, MCKPEPS &original, std::vector<int> &spin_
 		new_product_2 *= (adapt_tensor(no_site, original, i2, j2, k2)*itensor::setElt(site_at = new_sz_2+1));
 		new_product_2 *= d_aux_2;
 		itensor::ITensor total_product = new_product_1*new_product_2;
+		Print(total_product);
 		double new_wavefunction = itensor::norm(total_product);
 		/* Shouldn't have to worry about number of choices in the sequential case, because selection probability is always 1/2
 		if((old_sz_1 > 0) && (old_sz_2 < spin_max-1)){ new_num_choices -= 1; }
@@ -169,9 +184,9 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			int J = 2*j;
 			itensor::ITensor vd_aux_1(1);
 			if(j > 0){vd_aux_1 = vd_it->MPS[J-1];}
-			most_recent_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,1,i,j,2, vl_auxiliary, vr_auxiliaries[J+2],VUi.MPS[J],VUi.MPS[J+1],vd_aux_1, vd_it->MPS[J], old_wavefunction, r);
-			std::cout << "Tensor data for " << i << ", " << j << ", 1-2..." << std::endl;
 			Print(vl_auxiliary);
+			old_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,1,i,j,2, vl_auxiliary, vr_auxiliaries[J+2],VUi.MPS[J],VUi.MPS[J+1],vd_aux_1, vd_it->MPS[J], old_wavefunction, r);
+			std::cout << "Tensor data for " << i << ", " << j << ", 1-2..." << std::endl;
 			Print(VUi.MPS[J]);
 			Print(psi._site_tensors[i][j][1]);
 			Print(vd_aux_1);
@@ -180,9 +195,9 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			Print(vd_it->MPS[J]);
 			Print(vr_auxiliaries[J+2]);
 			if(j < psi.Ny()-1){
-				most_recent_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,2,i,j+1,1, vl_auxiliary, vr_auxiliaries[J+3],VUi.MPS[J+1],VUi.MPS[J+2],vd_it->MPS[J], vd_it->MPS[J+1], old_wavefunction, r);
-				std::cout << "Tensor data for " << i << ", " << j << ", 2-1+..." << std::endl;
 				Print(vl_auxiliary);
+				old_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,2,i,j+1,1, vl_auxiliary, vr_auxiliaries[J+3],VUi.MPS[J+1],VUi.MPS[J+2],vd_it->MPS[J], vd_it->MPS[J+1], old_wavefunction, r);
+				std::cout << "Tensor data for " << i << ", " << j << ", 2-1+..." << std::endl;
 				Print(VUi.MPS[J+1]);
 				Print(psi._site_tensors[i][j][2]);
 				Print(vd_it->MPS[J]);
@@ -191,7 +206,6 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 				Print(vd_it->MPS[J+1]);
 				Print(vr_auxiliaries[J+3]);
 			}
-
 			/*
 			int old_sz_1 = spin_config[psi.site_index_from_position(i,j,1)];
 			int old_sz_2 = spin_config[psi.site_index_from_position(i,j,2)];
@@ -234,9 +248,16 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			//Contract the bond dimensions of the contracted row i
 			for(int J = 0; J < 2*psi.Ny()-2; J++){
 				auto forward_links = itensor::commonInds(row_i_contracted[J], row_i_contracted[J+1]);
-				auto [forward_tensor, sing_vals, back_tensor] = itensor::svd(row_i_contracted[J], forward_links, {"MaxDim", psi.Dc()});
-				row_i_contracted[J+1] *= (forward_tensor*sing_vals);
-				row_i_contracted[J] = back_tensor;
+				if(itensor::length(forward_links) == itensor::length(row_i_contracted[J].inds())){
+					row_i_contracted[J+1] *= row_i_contracted[J];
+					row_i_contracted[J] = itensor::ITensor(1);
+				}
+				else{
+					auto [forward_tensor, sing_vals, back_tensor] = itensor::svd(row_i_contracted[J], forward_links, {"MaxDim", psi.Dc()});
+					row_i_contracted[J+1] *= (forward_tensor*sing_vals);
+					row_i_contracted[J] = back_tensor;
+				}
+				
 			}
 
 			std::cout << "Applying row i to row i+1..." << std::endl;
@@ -262,7 +283,7 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			}
 		}
 	}	
-	return most_recent_wavefunction;
+	return old_wavefunction;
 }
 
 double sample_s_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Randomizer &r){
@@ -306,9 +327,9 @@ double sample_s_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			int I = 2*i;
 			itensor::ITensor sd_aux_1(1);
 			if(i > 0){sd_aux_1 = sd_it->MPS[I-1];}
-			most_recent_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,0,i,j,2, sl_auxiliary, sr_auxiliaries[I+2], SUi.MPS[I],SUi.MPS[I+1],sd_aux_1, sd_it->MPS[I], old_wavefunction, r);
+			old_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,0,i,j,2, sl_auxiliary, sr_auxiliaries[I+2], SUi.MPS[I],SUi.MPS[I+1],sd_aux_1, sd_it->MPS[I], old_wavefunction, r);
 			if(i < psi.Nx()-1){
-				most_recent_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,2,i+1,j,0, sl_auxiliary, sr_auxiliaries[I+3],SUi.MPS[I+1],SUi.MPS[I+2],sd_it->MPS[I], sd_it->MPS[I+1], old_wavefunction, r);
+				old_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,2,i+1,j,0, sl_auxiliary, sr_auxiliaries[I+3],SUi.MPS[I+1],SUi.MPS[I+2],sd_it->MPS[I], sd_it->MPS[I+1], old_wavefunction, r);
 			}
 		}
 		if(j < psi.Ny()-1){
@@ -322,9 +343,15 @@ double sample_s_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			//Contract the bond dimensions of the contracted row i
 			for(int I = 0; I < 2*psi.Nx()-2; I++){
 				auto forward_links = itensor::commonInds(row_j_contracted[I], row_j_contracted[I+1]);
-				auto [forward_tensor, sing_vals, back_tensor] = itensor::svd(row_j_contracted[I], forward_links, {"MaxDim", psi.Dc()});
-				row_j_contracted[I+1] *= (forward_tensor*sing_vals);
-				row_j_contracted[I] = back_tensor;
+				if(itensor::length(forward_links) == itensor::length(row_j_contracted[I].inds())){
+					row_j_contracted[I+1] *= row_j_contracted[I];
+					row_j_contracted[I] = itensor::ITensor(1);
+				}
+				else{
+					auto [forward_tensor, sing_vals, back_tensor] = itensor::svd(row_j_contracted[I], forward_links, {"MaxDim", psi.Dc()});
+					row_j_contracted[I+1] *= (forward_tensor*sing_vals);
+					row_j_contracted[I] = back_tensor;
+				}
 			}
 			std::vector<itensor::ITensor>row_jp_unsplit;
 			//Apply the tensors to the next row down, then split them
@@ -347,7 +374,7 @@ double sample_s_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			}
 		}
 	}	
-	return most_recent_wavefunction;
+	return old_wavefunction;
 }
 
 #endif
