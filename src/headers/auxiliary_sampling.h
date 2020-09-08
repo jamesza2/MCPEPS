@@ -262,6 +262,10 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 				
 			}
 
+			std::cout << "Fully truncated row i: " << std::endl;
+			for(int J = 0; J < row_i_contracted.size(); J++){Print(row_i_contracted[J]);}
+			std::cout << "Original row i+1: " << std::endl;
+			for(int j = 0; j < psi.Ny(); j++){Print(psi._site_tensors[i+1][j][0]);}
 			std::cout << "Applying row i to row i+1..." << std::endl;
 			std::vector<itensor::ITensor>row_ip_unsplit;
 			//Apply the tensors to the next row down, then split them
@@ -272,6 +276,8 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 				}
 				row_ip_unsplit.push_back(row_i_contracted[J+1]*psi._site_tensors[i+1][j][0]);
 			}
+			std::cout << "Unsplit row i+1: " << std::endl;
+			for(int J = 0; J < row_ip_unsplit.size(); J++){Print(row_ip_unsplit[J]);}
 			std::cout << "Splitting row i+1..." << std::endl;
 			for(int j = 0; j < psi.Ny(); j++){
 				int J = 2*j;
