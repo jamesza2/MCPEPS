@@ -113,6 +113,11 @@ double test_bond(NoSitePEPS &no_site, MCKPEPS &original, std::vector<int> &spin_
 			std::cout << "Rejected with wavefunction " << new_wavefunction << std::endl;
 		}
 	}
+	else{
+		std::cout << "Spin config ";
+		for(int sp : spin_config){std::cout << sp << " ";}
+		std::cout << "invalid..." << std::endl;
+	}
 	//No matter if the move is accepted or rejected, we should update the auxiliary tensor accordingly
 	l_aux *= u_aux_1;
 	l_aux *= no_site._site_tensors[i1][j1][k1];
@@ -165,12 +170,26 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			itensor::ITensor vd_aux_1(1);
 			if(j > 0){vd_aux_1 = vd_it->MPS[J-1];}
 			most_recent_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,1,i,j,2, vl_auxiliary, vr_auxiliaries[J+2],VUi.MPS[J],VUi.MPS[J+1],vd_aux_1, vd_it->MPS[J], old_wavefunction, r);
+			std::cout << "Tensor data for " << i << ", " << j << ", 1-2..." << std::endl;
 			Print(vl_auxiliary);
-			Print(vr_auxiliaries[J]);
+			Print(VUi.MPS[J]);
+			Print(psi._site_tensors[i][j][1]);
+			Print(vd_aux_1);
+			Print(VUi.MPS[J+1]);
+			Print(psi._site_tensors[i][j][2]);
+			Print(vd_it->MPS[J]);
+			Print(vr_auxiliaries[J+2]);
 			if(j < psi.Ny()-1){
 				most_recent_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,2,i,j+1,1, vl_auxiliary, vr_auxiliaries[J+3],VUi.MPS[J+1],VUi.MPS[J+2],vd_it->MPS[J], vd_it->MPS[J+1], old_wavefunction, r);
+				std::cout << "Tensor data for " << i << ", " << j << ", 2-1+..." << std::endl;
 				Print(vl_auxiliary);
-				Print(vr_auxiliaries[J+1]);
+				Print(VUi.MPS[J+1]);
+				Print(psi._site_tensors[i][j][2]);
+				Print(vd_it->MPS[J]);
+				Print(VUi.MPS[J+2]);
+				Print(psi._site_tensors[i][j+1][1]);
+				Print(vd_it->MPS[J+1]);
+				Print(vr_auxiliaries[J+3]);
 			}
 
 			/*
@@ -203,6 +222,7 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			}*/
 		}
 		if(i < psi.Nx()-1){
+			std::cout << "Creating new VU auxiliary... Contracting row i..." << std::endl;
 			//Create new VU auxiliary MPS
 			std::vector<itensor::ITensor> row_i_contracted;
 			for(int j = 0; j < psi.Ny(); j++){
@@ -210,6 +230,7 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 				row_i_contracted.push_back(VUi.MPS[J]*psi._site_tensors[i][j][1]);
 				row_i_contracted.push_back(VUi.MPS[J+1]*psi._site_tensors[i][j][2]);
 			}
+			std::cout << "Truncating row i..." << std::endl;
 			//Contract the bond dimensions of the contracted row i
 			for(int J = 0; J < 2*psi.Ny()-2; J++){
 				auto forward_links = itensor::commonInds(row_i_contracted[J], row_i_contracted[J+1]);
@@ -217,6 +238,8 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 				row_i_contracted[J+1] *= (forward_tensor*sing_vals);
 				row_i_contracted[J] = back_tensor;
 			}
+
+			std::cout << "Applying row i to row i+1..." << std::endl;
 			std::vector<itensor::ITensor>row_ip_unsplit;
 			//Apply the tensors to the next row down, then split them
 			for(int j = 0; j < psi.Ny(); j++){
@@ -226,6 +249,7 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 				}
 				row_ip_unsplit.push_back(row_i_contracted[J+1]*psi._site_tensors[i+1][j][0]);
 			}
+			std::cout << "Splitting row i+1..." << std::endl;
 			for(int j = 0; j < psi.Ny(); j++){
 				int J = 2*j;
 				itensor::IndexSet forward_inds;
