@@ -248,7 +248,7 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			}
 			std::cout << "Truncating row i..." << std::endl;
 			//Contract the bond dimensions of the contracted row i
-			for(int J = 0; J < 2*psi.Ny()-2; J++){
+			for(int J = 0; J < 2*psi.Ny()-1; J++){
 				auto forward_links = itensor::commonInds(row_i_contracted[J], row_i_contracted[J+1]);
 				if(itensor::length(forward_links) == itensor::length(row_i_contracted[J].inds())){
 					row_i_contracted[J+1] *= row_i_contracted[J];
@@ -351,7 +351,7 @@ double sample_s_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 				row_j_contracted.push_back(SUi.MPS[I+1]*psi._site_tensors[i][j][2]);
 			}
 			//Contract the bond dimensions of the contracted row i
-			for(int I = 0; I < 2*psi.Nx()-2; I++){
+			for(int I = 0; I < 2*psi.Nx()-1; I++){
 				auto forward_links = itensor::commonInds(row_j_contracted[I], row_j_contracted[I+1]);
 				if(itensor::length(forward_links) == itensor::length(row_j_contracted[I].inds())){
 					row_j_contracted[I+1] *= row_j_contracted[I];
