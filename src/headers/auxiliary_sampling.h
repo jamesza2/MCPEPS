@@ -48,9 +48,9 @@ itensor::ITensor adapt_tensor(NoSitePEPS &target_PEPS, NoSitePEPS &original_PEPS
 	return new_tensor;
 }
 
-void update_site_tensor(NoSitePEPS &no_site, MCKPEPS &original, int i, int j, int k, int new_sz){
+void update_site_tensor(NoSitePEPS &no_site, MCKPEPS &original, int i, int j, int k, int new_sz, double wavefunction_normalization = 1){
 	itensor::Index site_at = original.site_indices[original.site_index_from_position(i,j,k)];
-	itensor::ITensor new_tensor = adapt_tensor(no_site, original, i, j, k) * itensor::setElt(site_at = new_sz+1);
+	itensor::ITensor new_tensor = adapt_tensor(no_site, original, i, j, k) * itensor::setElt(site_at = new_sz+1) / wavefunction_normalization;
 	no_site._site_tensors[i][j][k] = new_tensor;
 }
 
@@ -63,7 +63,8 @@ double test_bond(NoSitePEPS &no_site, MCKPEPS &original, std::vector<int> &spin_
 		itensor::ITensor &d_aux_1,
 		itensor::ITensor &d_aux_2,
 		double old_wavefunction,
-		Randomizer &r){
+		Randomizer &r,
+		double wavefunction_normalization = 1){
 	int old_sz_1 = spin_config[original.site_index_from_position(i1,j1,k1)];
 	int old_sz_2 = spin_config[original.site_index_from_position(i2,j2,k2)];
 	int up_or_down = std::floor(2*r.rand())*2-1; 
@@ -75,12 +76,12 @@ double test_bond(NoSitePEPS &no_site, MCKPEPS &original, std::vector<int> &spin_
 	itensor::ITensor old_product_1 = l_aux;
 	old_product_1 *= u_aux_1;
 	itensor::Index old_site_at = original.site_indices[original.site_index_from_position(i1,j1,k1)];
-	old_product_1 *= (adapt_tensor(no_site, original, i1, j1, k1)*itensor::setElt(old_site_at = old_sz_1+1));
+	old_product_1 *= (adapt_tensor(no_site, original, i1, j1, k1)*itensor::setElt(old_site_at = old_sz_1+1)/wavefunction_normalization);
 	old_product_1 *= d_aux_1;
 	itensor::ITensor old_product_2 = r_aux;
 	old_product_2 *= u_aux_2;
 	old_site_at = original.site_indices[original.site_index_from_position(i2,j2,k2)];
-	old_product_2 *= (adapt_tensor(no_site, original, i2, j2, k2)*itensor::setElt(old_site_at = old_sz_2+1));
+	old_product_2 *= (adapt_tensor(no_site, original, i2, j2, k2)*itensor::setElt(old_site_at = old_sz_2+1)/wavefunction_normalization);
 	old_product_2 *= d_aux_2;
 	itensor::ITensor old_product = old_product_1*old_product_2;
 	Print(old_product);
@@ -94,12 +95,12 @@ double test_bond(NoSitePEPS &no_site, MCKPEPS &original, std::vector<int> &spin_
 		itensor::ITensor new_product_1 = l_aux;
 		new_product_1 *= u_aux_1;
 		itensor::Index site_at = original.site_indices[original.site_index_from_position(i1,j1,k1)];
-		new_product_1 *= (adapt_tensor(no_site, original, i1, j1, k1)*itensor::setElt(site_at = new_sz_1+1));
+		new_product_1 *= (adapt_tensor(no_site, original, i1, j1, k1)*itensor::setElt(site_at = new_sz_1+1)/wavefunction_normalization);
 		new_product_1 *= d_aux_1;
 		itensor::ITensor new_product_2 = r_aux;
 		new_product_2 *= u_aux_2;
 		site_at = original.site_indices[original.site_index_from_position(i2,j2,k2)];
-		new_product_2 *= (adapt_tensor(no_site, original, i2, j2, k2)*itensor::setElt(site_at = new_sz_2+1));
+		new_product_2 *= (adapt_tensor(no_site, original, i2, j2, k2)*itensor::setElt(site_at = new_sz_2+1)/wavefunction_normalization);
 		new_product_2 *= d_aux_2;
 		itensor::ITensor total_product = new_product_1*new_product_2;
 		Print(total_product);
@@ -113,8 +114,8 @@ double test_bond(NoSitePEPS &no_site, MCKPEPS &original, std::vector<int> &spin_
 		if(r.rand() < transition_probability){ //Transition is a success, change to new spin config
 			//config.set_spin(i,j,1,new_sz_1, WAVEFUNCTION_NORMALIZATION_CONSTANT);
 			//config.set_spin(i,j,2,new_sz_2, WAVEFUNCTION_NORMALIZATION_CONSTANT);
-			update_site_tensor(no_site, original, i1,j1,k1, new_sz_1);
-			update_site_tensor(no_site, original, i2,j2,k2, new_sz_1);
+			update_site_tensor(no_site, original, i1,j1,k1, new_sz_1, wavefunction_normalization);
+			update_site_tensor(no_site, original, i2,j2,k2, new_sz_1, wavefunction_normalization);
 			spin_config[no_site.site_index_from_position(i1,j1,k1)] = new_sz_1;
 			spin_config[no_site.site_index_from_position(i2,j2,k2)] = new_sz_2;
 			std::cout << "Spin config ";
@@ -123,15 +124,17 @@ double test_bond(NoSitePEPS &no_site, MCKPEPS &original, std::vector<int> &spin_
 			wavefn_to_return = new_wavefunction;
 		}
 		else{
+			spin_config[no_site.site_index_from_position(i1,j1,k1)] = new_sz_1;
+			spin_config[no_site.site_index_from_position(i2,j2,k2)] = new_sz_2;
 			std::cout << "Spin config ";
 			for(int sp : spin_config){std::cout << sp << " ";}
 			std::cout << "Rejected with wavefunction " << new_wavefunction << std::endl;
+			spin_config[no_site.site_index_from_position(i1,j1,k1)] = old_sz_1;
+			spin_config[no_site.site_index_from_position(i2,j2,k2)] = old_sz_2;
 		}
 	}
 	else{
-		std::cout << "Spin config ";
-		for(int sp : spin_config){std::cout << sp << " ";}
-		std::cout << "invalid..." << std::endl;
+		std::cout << "Spin config " << "(" << new_sz_1 << ", " << new_sz_2 << ") invalid..." << std::endl;;
 	}
 	//No matter if the move is accepted or rejected, we should update the auxiliary tensor accordingly
 	l_aux *= u_aux_1;
@@ -184,7 +187,7 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			itensor::ITensor vd_aux_1(1);
 			if(j > 0){vd_aux_1 = vd_it->MPS[J-1];}
 			Print(vl_auxiliary);
-			old_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,1,i,j,2, vl_auxiliary, vr_auxiliaries[J+2],VUi.MPS[J],VUi.MPS[J+1],vd_aux_1, vd_it->MPS[J], old_wavefunction, r);
+			old_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,1,i,j,2, vl_auxiliary, vr_auxiliaries[J+2],VUi.MPS[J],VUi.MPS[J+1],vd_aux_1, vd_it->MPS[J], old_wavefunction, r, WAVEFUNCTION_NORMALIZATION_CONSTANT);
 			std::cout << "Tensor data for " << i << ", " << j << ", 1-2..." << std::endl;
 			Print(VUi.MPS[J]);
 			Print(psi._site_tensors[i][j][1]);
@@ -195,7 +198,7 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			Print(vr_auxiliaries[J+2]);
 			if(j < psi.Ny()-1){
 				Print(vl_auxiliary);
-				old_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,2,i,j+1,1, vl_auxiliary, vr_auxiliaries[J+3],VUi.MPS[J+1],VUi.MPS[J+2],vd_it->MPS[J], vd_it->MPS[J+1], old_wavefunction, r);
+				old_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,2,i,j+1,1, vl_auxiliary, vr_auxiliaries[J+3],VUi.MPS[J+1],VUi.MPS[J+2],vd_it->MPS[J], vd_it->MPS[J+1], old_wavefunction, r, WAVEFUNCTION_NORMALIZATION_CONSTANT);
 				std::cout << "Tensor data for " << i << ", " << j << ", 2-1+..." << std::endl;
 				Print(VUi.MPS[J+1]);
 				Print(psi._site_tensors[i][j][2]);
@@ -273,6 +276,8 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			for(int j = 0; j < psi.Ny(); j++){
 				int J = 2*j;
 				itensor::IndexSet forward_inds;
+				Print(row_ip_unsplit[j]);
+				Print(psi._site_tensors[i+1][j][2]);
 				itensor::Index always_forward = itensor::commonIndex(row_ip_unsplit[j], psi._site_tensors[i+1][j][2]);
 				if(j == psi.Ny()-1){forward_inds = itensor::IndexSet(always_forward);}
 				else{forward_inds = itensor::IndexSet(always_forward, itensor::commonIndex(row_ip_unsplit[j], row_ip_unsplit[j+1]));}
