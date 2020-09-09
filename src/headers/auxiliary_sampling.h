@@ -73,6 +73,7 @@ double test_bond(NoSitePEPS &no_site, MCKPEPS &original, std::vector<int> &spin_
 	double wavefn_to_return = old_wavefunction;
 	int spin_max = original.physical_dims();
 
+	/*
 	itensor::ITensor old_product_1 = l_aux;
 	old_product_1 *= u_aux_1;
 	itensor::Index old_site_at = original.site_indices[original.site_index_from_position(i1,j1,k1)];
@@ -84,7 +85,7 @@ double test_bond(NoSitePEPS &no_site, MCKPEPS &original, std::vector<int> &spin_
 	old_product_2 *= (adapt_tensor(no_site, original, i2, j2, k2)*itensor::setElt(old_site_at = old_sz_2+1)/wavefunction_normalization);
 	old_product_2 *= d_aux_2;
 	itensor::ITensor old_product = old_product_1*old_product_2;
-	Print(old_product);
+	//Print(old_product);*/
 
 	if((new_sz_1 >= 0) && (new_sz_2 >= 0) && (new_sz_1 < spin_max) && (new_sz_2 < spin_max)){
 		/*Contract the tensor group
@@ -103,7 +104,7 @@ double test_bond(NoSitePEPS &no_site, MCKPEPS &original, std::vector<int> &spin_
 		new_product_2 *= (adapt_tensor(no_site, original, i2, j2, k2)*itensor::setElt(site_at = new_sz_2+1)/wavefunction_normalization);
 		new_product_2 *= d_aux_2;
 		itensor::ITensor total_product = new_product_1*new_product_2;
-		Print(total_product);
+		//Print(total_product);
 		double new_wavefunction = itensor::norm(total_product);
 		/* Shouldn't have to worry about number of choices in the sequential case, because selection probability is always 1/2
 		if((old_sz_1 > 0) && (old_sz_2 < spin_max-1)){ new_num_choices -= 1; }
@@ -147,7 +148,7 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 	SpinConfigPEPS config(psi_sites, spin_config, WAVEFUNCTION_NORMALIZATION_CONSTANT);
 	NoSitePEPS psi = psi_sites.contract(config);
 	std::list<AuxMPS> vd_list = psi.get_vd_auxiliaries();
-	std::cout << "Creating up auxiliary..." << std::endl;
+	//std::cout << "Creating up auxiliary..." << std::endl;
 	double old_wavefunction = -1;
 	AuxMPS VUi(AuxType::VU);//Create the up auxiliary (won't have some links between certain sites though)
 	for(int j = 0; j < psi.Ny(); j++){
@@ -161,7 +162,7 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 	auto vd_it = vd_list.begin();
 
 	for(int i = 0; i < psi.Nx(); i++){
-		std::cout << "Sweeping row " << i << std::endl;
+		//std::cout << "Sweeping row " << i << std::endl;
 		vd_it++;
 		//Create right auxiliary tensors
 		std::vector<itensor::ITensor> vr_auxiliaries(psi.Ny()*2+1);
@@ -182,8 +183,7 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 		}
 		//Evaluate the old wavefunction
 		old_wavefunction = itensor::norm(vr_auxiliaries[0]);
-		std::cout << "Old wavefunction: " << old_wavefunction << std::endl;
-		//double old_num_choices = config.num_choices();
+		//std::cout << "Old wavefunction: " << old_wavefunction << std::endl;
 		itensor::ITensor vl_auxiliary(1);
 		//Sweep the horizontal (1-2) links from left to right
 		for(int j = 0; j < psi.Ny(); j++){
@@ -191,27 +191,27 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			int J = 2*j;
 			itensor::ITensor vd_aux_1(1);
 			if(j > 0){vd_aux_1 = vd_it->MPS[J-1];}
-			Print(vl_auxiliary);
+			//Print(vl_auxiliary);
 			old_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,1,i,j,2, vl_auxiliary, vr_auxiliaries[J+2],VUi.MPS[J],VUi.MPS[J+1],vd_aux_1, vd_it->MPS[J], old_wavefunction, r, WAVEFUNCTION_NORMALIZATION_CONSTANT);
-			std::cout << "Tensor data for " << i << ", " << j << ", 1-2..." << std::endl;
-			Print(VUi.MPS[J]);
-			Print(psi._site_tensors[i][j][1]);
-			Print(vd_aux_1);
-			Print(VUi.MPS[J+1]);
-			Print(psi._site_tensors[i][j][2]);
-			Print(vd_it->MPS[J]);
-			Print(vr_auxiliaries[J+2]);
+			//std::cout << "Tensor data for " << i << ", " << j << ", 1-2..." << std::endl;
+			//Print(VUi.MPS[J]);
+			//Print(psi._site_tensors[i][j][1]);
+			//Print(vd_aux_1);
+			//Print(VUi.MPS[J+1]);
+			//Print(psi._site_tensors[i][j][2]);
+			//Print(vd_it->MPS[J]);
+			//Print(vr_auxiliaries[J+2]);
 			if(j < psi.Ny()-1){
-				Print(vl_auxiliary);
+				//Print(vl_auxiliary);
 				old_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,2,i,j+1,1, vl_auxiliary, vr_auxiliaries[J+3],VUi.MPS[J+1],VUi.MPS[J+2],vd_it->MPS[J], vd_it->MPS[J+1], old_wavefunction, r, WAVEFUNCTION_NORMALIZATION_CONSTANT);
-				std::cout << "Tensor data for " << i << ", " << j << ", 2-1+..." << std::endl;
-				Print(VUi.MPS[J+1]);
-				Print(psi._site_tensors[i][j][2]);
-				Print(vd_it->MPS[J]);
-				Print(VUi.MPS[J+2]);
-				Print(psi._site_tensors[i][j+1][1]);
-				Print(vd_it->MPS[J+1]);
-				Print(vr_auxiliaries[J+3]);
+				//std::cout << "Tensor data for " << i << ", " << j << ", 2-1+..." << std::endl;
+				//Print(VUi.MPS[J+1]);
+				//Print(psi._site_tensors[i][j][2]);
+				//Print(vd_it->MPS[J]);
+				//Print(VUi.MPS[J+2]);
+				//Print(psi._site_tensors[i][j+1][1]);
+				//Print(vd_it->MPS[J+1]);
+				//Print(vr_auxiliaries[J+3]);
 			}
 			/*
 			int old_sz_1 = spin_config[psi.site_index_from_position(i,j,1)];
@@ -243,7 +243,7 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			}*/
 		}
 		if(i < psi.Nx()-1){
-			std::cout << "Creating new VU auxiliary... Contracting row i..." << std::endl;
+			//std::cout << "Creating new VU auxiliary... Contracting row i..." << std::endl;
 			//Create new VU auxiliary MPS
 			std::vector<itensor::ITensor> row_i_contracted;
 			for(int j = 0; j < psi.Ny(); j++){
@@ -251,7 +251,7 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 				row_i_contracted.push_back(VUi.MPS[J]*psi._site_tensors[i][j][1]);
 				row_i_contracted.push_back(VUi.MPS[J+1]*psi._site_tensors[i][j][2]);
 			}
-			std::cout << "Truncating row i..." << std::endl;
+			//std::cout << "Truncating row i..." << std::endl;
 			//Contract the bond dimensions of the contracted row i
 			for(int J = 0; J < 2*psi.Ny()-1; J++){
 				auto forward_links = itensor::commonInds(row_i_contracted[J], row_i_contracted[J+1]);
@@ -267,11 +267,11 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 				
 			}
 
-			std::cout << "Fully truncated row i: " << std::endl;
-			for(int J = 0; J < row_i_contracted.size(); J++){Print(row_i_contracted[J]);}
-			std::cout << "Original row i+1: " << std::endl;
-			for(int j = 0; j < psi.Ny(); j++){Print(psi._site_tensors[i+1][j][0]);}
-			std::cout << "Applying row i to row i+1..." << std::endl;
+			//std::cout << "Fully truncated row i: " << std::endl;
+			//for(int J = 0; J < row_i_contracted.size(); J++){Print(row_i_contracted[J]);}
+			//std::cout << "Original row i+1: " << std::endl;
+			//for(int j = 0; j < psi.Ny(); j++){Print(psi._site_tensors[i+1][j][0]);}
+			//std::cout << "Applying row i to row i+1..." << std::endl;
 			std::vector<itensor::ITensor>row_ip_unsplit;
 			//Apply the tensors to the next row down, then split them
 			for(int j = 0; j < psi.Ny(); j++){
@@ -281,9 +281,9 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 				}
 				row_ip_unsplit.push_back(row_i_contracted[J+1]*psi._site_tensors[i+1][j][0]);
 			}
-			std::cout << "Unsplit row i+1: " << std::endl;
-			for(int J = 0; J < row_ip_unsplit.size(); J++){Print(row_ip_unsplit[J]);}
-			std::cout << "Splitting row i+1..." << std::endl;
+			//std::cout << "Unsplit row i+1: " << std::endl;
+			//for(int J = 0; J < row_ip_unsplit.size(); J++){Print(row_ip_unsplit[J]);}
+			//std::cout << "Splitting row i+1..." << std::endl;
 			for(int j = 0; j < psi.Ny(); j++){
 				int J = 2*j;
 				itensor::IndexSet forward_inds;
@@ -293,8 +293,8 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 				auto [forward_tensor, sing_vals, back_tensor] = itensor::svd(row_ip_unsplit[j], forward_inds, {"MaxDim", psi.Dc()});
 				VUi.MPS[J] = back_tensor;
 				VUi.MPS[J+1] = forward_tensor*sing_vals;
-				Print(VUi.MPS[J]);
-				Print(VUi.MPS[J+1]);
+				//Print(VUi.MPS[J]);
+				//Print(VUi.MPS[J+1]);
 			}
 		}
 	}	
@@ -320,7 +320,7 @@ double sample_s_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 	//double old_wavefunction = -1;
 	//int old_num_choices = -1;
 	for(int j = 0; j < psi.Ny(); j++){
-		std::cout << "Sweeping column " << j << std::endl;
+		//std::cout << "Sweeping column " << j << std::endl;
 		sd_it++;
 		//Create right auxiliary tensors
 		std::vector<itensor::ITensor> sr_auxiliaries(psi.Nx()*2+1);
@@ -329,20 +329,20 @@ double sample_s_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			for(int half_k = 1; half_k >= 0; half_k--){
 				int k = 2*half_k;
 				int I = 2*i+half_k;//I is the index of the VU MPS tensors and left/right auxiliary tensors, I-1 is the index of the VD tensors
-				std::cout << "Tensors at " << I << ": " << std::endl;
-				Print(sr_auxiliaries[I+1]);
-				Print(SUi.MPS[I]);
-				Print(psi._site_tensors[i][j][k]);
+				//std::cout << "Tensors at " << I << ": " << std::endl;
+				//Print(sr_auxiliaries[I+1]);
+				//Print(SUi.MPS[I]);
+				//Print(psi._site_tensors[i][j][k]);
 				sr_auxiliaries[I] = (sr_auxiliaries[I+1]*SUi.MPS[I])*psi._site_tensors[i][j][k];
 				if(I > 0){
-					Print(sd_it->MPS[I-1]);
+					//Print(sd_it->MPS[I-1]);
 					sr_auxiliaries[I] *= sd_it->MPS[I-1];
 				}
 			}
 		}
 		//Evaluate the old wavefunction
 		old_wavefunction = itensor::norm(sr_auxiliaries[0]);
-		std::cout << "original wavefunction: " << old_wavefunction << std::endl;
+		//std::cout << "original wavefunction: " << old_wavefunction << std::endl;
 		//double old_num_choices = config.num_choices();
 		itensor::ITensor sl_auxiliary(1);
 		//Sweep the short direction (0-2) links from left to right
