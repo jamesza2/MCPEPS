@@ -320,7 +320,7 @@ double sample_s_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 	//double old_wavefunction = -1;
 	//int old_num_choices = -1;
 	for(int j = 0; j < psi.Ny(); j++){
-		std::cout << "Sweeping row " << i << std::endl;
+		std::cout << "Sweeping column " << j << std::endl;
 		sd_it++;
 		//Create right auxiliary tensors
 		std::vector<itensor::ITensor> sr_auxiliaries(psi.Nx()*2+1);
