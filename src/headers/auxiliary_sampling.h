@@ -385,7 +385,7 @@ double sample_s_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 				}
 				row_jp_unsplit.push_back(row_j_contracted[I+1]*psi._site_tensors[i][j+1][1]);
 			}
-			for(int i = 0; i < psi.Ny(); i++){
+			for(int i = 0; i < psi.Nx(); i++){
 				int I = 2*i;
 				itensor::IndexSet forward_inds;
 				itensor::Index always_forward = itensor::commonIndex(row_jp_unsplit[i], psi._site_tensors[i][j+1][2]);
