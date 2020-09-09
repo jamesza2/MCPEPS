@@ -320,6 +320,7 @@ double sample_s_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 	//double old_wavefunction = -1;
 	//int old_num_choices = -1;
 	for(int j = 0; j < psi.Ny(); j++){
+		std::cout << "Sweeping row " << i << std::endl;
 		sd_it++;
 		//Create right auxiliary tensors
 		std::vector<itensor::ITensor> sr_auxiliaries(psi.Nx()*2+1);
@@ -329,12 +330,14 @@ double sample_s_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 				int I = 2*i+(k/2)-1;//I is the index of the VU MPS tensors and left/right auxiliary tensors, I-1 is the index of the VD tensors
 				sr_auxiliaries[I] = (sr_auxiliaries[I+1]*SUi.MPS[I])*psi._site_tensors[i][j][k];
 				if(I > 0){
+					Print(sd_it->MPS[I-1]);
 					sr_auxiliaries[I] *= sd_it->MPS[I-1];
 				}
 			}
 		}
 		//Evaluate the old wavefunction
 		old_wavefunction = itensor::norm(sr_auxiliaries[0]);
+		std::cout << "original wavefunction: " << old_wavefunction << std::endl;
 		//double old_num_choices = config.num_choices();
 		itensor::ITensor sl_auxiliary(1);
 		//Sweep the short direction (0-2) links from left to right
