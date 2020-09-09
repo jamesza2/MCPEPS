@@ -170,6 +170,7 @@ class NoSitePEPS
 				}
 			}
 			out.push_front(AuxMPS(AuxType::NA)); //The first row is a dummy AuxMPS that shouldn't ever have to be called
+			out.push_back(AuxMPS(2*_Ny-1)); //The last row is a blank AuxMPS of 1-tensors
 			std::cout << "Row 0 empty auxMPS pushed " << std::endl;
 			if(_log){
 				std::cout.rdbuf(coutbuf);
@@ -249,6 +250,7 @@ class NoSitePEPS
 				}
 			}
 			out.push_front(AuxMPS(AuxType::NA)); //The first column is a dummy AuxMPS that shouldn't ever have to be called
+			out.push_back(AuxMPS(2*_Nx-1)); //The last column is a blank AuxMPS of 1-tensors
 			if(_log){
 				std::cout.rdbuf(coutbuf);
 				log_file_stream.close();
