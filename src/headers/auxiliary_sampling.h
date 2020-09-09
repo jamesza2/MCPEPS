@@ -328,7 +328,7 @@ double sample_s_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 		for(int i = psi.Nx()-1; i >= 0; i--){
 			for(int half_k = 1; half_k >= 0; half_k--){
 				int k = 2*half_k;
-				int I = 2*i+half_k-1;//I is the index of the VU MPS tensors and left/right auxiliary tensors, I-1 is the index of the VD tensors
+				int I = 2*i+half_k;//I is the index of the VU MPS tensors and left/right auxiliary tensors, I-1 is the index of the VD tensors
 				std::cout << "Tensors at " << I << ": " << std::endl;
 				Print(sr_auxiliaries[I+1]);
 				Print(SUi.MPS[I]);
