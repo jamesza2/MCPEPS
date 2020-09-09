@@ -8,7 +8,7 @@
 //L = long direction
 //U = up
 //D = down
-enum class AuxType{NA, VU, VD, SU, SD, LU, LD}; 
+enum class AuxType{NA, VU, VD, SU, SD, LU, LD, BLANK}; 
 
 class AuxMPS{
 	public:
@@ -22,6 +22,13 @@ class AuxMPS{
 		AuxMPS(AuxType input_type){
 			type = input_type;
 			length = 0;
+		}
+		AuxMPS(int input_length){
+			type=AuxType::BLANK;
+			length = input_length;
+			for(int i = 0; i < length; i++){
+				MPS.push_back(itensor::ITensor(1));
+			}
 		}
 		void set_type(AuxType proposed_type){
 			type = proposed_type;
@@ -37,6 +44,8 @@ class AuxMPS{
 
 		std::vector<itensor::ITensor>::iterator begin(){return MPS.begin();}
 		std::vector<itensor::ITensor>::iterator end(){return MPS.end();}
+
+
 };
 
 
