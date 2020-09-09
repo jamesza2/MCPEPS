@@ -169,8 +169,13 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 		for(int j = psi.Ny()-1; j >= 0; j--){
 			for(int k = 2; k >= 1; k--){
 				int J = 2*j+k-1; //J is the index of the VU MPS tensors and left/right auxiliary tensors, J-1 is the index of the VD tensors
+				Print(vr_auxiliaries[J+1]);
+				Print(VUi.MPS[J]);
+				Print(psi._site_tensors[i][j][k]);
+
 				vr_auxiliaries[J] = (vr_auxiliaries[J+1]*VUi.MPS[J])*psi._site_tensors[i][j][k];
 				if(J>0){
+					Print(vd_it->MPS[J-1]);
 					vr_auxiliaries[J] *= vd_it->MPS[J-1];
 				}
 			}
@@ -282,14 +287,14 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			for(int j = 0; j < psi.Ny(); j++){
 				int J = 2*j;
 				itensor::IndexSet forward_inds;
-				Print(row_ip_unsplit[j]);
-				Print(psi._site_tensors[i+1][j][2]);
 				itensor::Index always_forward = itensor::commonIndex(row_ip_unsplit[j], psi._site_tensors[i+1][j][2]);
 				if(j == psi.Ny()-1){forward_inds = itensor::IndexSet(always_forward);}
 				else{forward_inds = itensor::IndexSet(always_forward, itensor::commonIndex(row_ip_unsplit[j], row_ip_unsplit[j+1]));}
 				auto [forward_tensor, sing_vals, back_tensor] = itensor::svd(row_ip_unsplit[j], forward_inds, {"MaxDim", psi.Dc()});
 				VUi.MPS[J] = back_tensor;
 				VUi.MPS[J+1] = forward_tensor*sing_vals;
+				Print(VUi.MPS[J]);
+				Print(VUi.MPS[J+1]);
 			}
 		}
 	}	
