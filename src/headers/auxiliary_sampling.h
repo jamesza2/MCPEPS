@@ -350,9 +350,9 @@ double sample_s_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			int I = 2*i;
 			itensor::ITensor sd_aux_1(1);
 			if(i > 0){sd_aux_1 = sd_it->MPS[I-1];}
-			old_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,0,i,j,2, sl_auxiliary, sr_auxiliaries[I+2], SUi.MPS[I],SUi.MPS[I+1],sd_aux_1, sd_it->MPS[I], old_wavefunction, r);
+			old_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,0,i,j,2, sl_auxiliary, sr_auxiliaries[I+2], SUi.MPS[I],SUi.MPS[I+1],sd_aux_1, sd_it->MPS[I], old_wavefunction, r, WAVEFUNCTION_NORMALIZATION_CONSTANT);
 			if(i < psi.Nx()-1){
-				old_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,2,i+1,j,0, sl_auxiliary, sr_auxiliaries[I+3],SUi.MPS[I+1],SUi.MPS[I+2],sd_it->MPS[I], sd_it->MPS[I+1], old_wavefunction, r);
+				old_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,2,i+1,j,0, sl_auxiliary, sr_auxiliaries[I+3],SUi.MPS[I+1],SUi.MPS[I+2],sd_it->MPS[I], sd_it->MPS[I+1], old_wavefunction, r, WAVEFUNCTION_NORMALIZATION_CONSTANT);
 			}
 		}
 		if(j < psi.Ny()-1){
