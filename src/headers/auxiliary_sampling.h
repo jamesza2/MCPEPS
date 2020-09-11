@@ -316,9 +316,6 @@ double sample_s_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 	}
 	//Begin sweeping along the rows
 	auto sd_it = sd_list.begin();
-
-	//double old_wavefunction = -1;
-	//int old_num_choices = -1;
 	for(int j = 0; j < psi.Ny(); j++){
 		//std::cout << "Sweeping column " << j << std::endl;
 		sd_it++;
@@ -363,7 +360,7 @@ double sample_s_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 				row_j_contracted.push_back(SUi.MPS[I]*psi._site_tensors[i][j][0]);
 				row_j_contracted.push_back(SUi.MPS[I+1]*psi._site_tensors[i][j][2]);
 			}
-			//Contract the bond dimensions of the contracted row i
+			//Truncate the bond dimensions of the contracted row i
 			for(int I = 0; I < 2*psi.Nx()-1; I++){
 				auto forward_links = itensor::commonInds(row_j_contracted[I], row_j_contracted[I+1]);
 				if(itensor::length(forward_links) == itensor::length(row_j_contracted[I].inds())){
@@ -398,6 +395,91 @@ double sample_s_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 		}
 	}	
 	return old_wavefunction;
+}
+
+double sample_l_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Randomizer &r){
+	SpinConfigPEPS config(psi_sites, spin_config, WAVEFUNCTION_NORMALIZATION_CONSTANT);
+	NoSitePEPS psi = psi_sites.contract(config);
+	std::list<AuxMPS> ld_list = psi.get_ld_auxiliaries();
+	double old_wavefunction = -1;
+	AuxMPS LUi(AuxType::LU);//Create the up auxiliary (won't have some links between certain sites though)
+	LUi.add_tensor(itensor::ITensor(1));//Very first up auxiliary is nonexistent, just two scalar 1 tensors
+	LUi.add_tensor(itensor::ITensor(1));
+	auto ld_it = ld_list.begin();
+	for(int h = 0; h < psi.Nx() + psi.Ny() - 1; h++){//h = i+j
+		int imin = std::max(0, h - psi.Ny()+1);
+		int imax = std::min(psi.Nx(), h+1);
+		//Create right auxiliary tensors
+		int Nd = imax-imin;
+		std::vector<itensor::ITensor> lr_auxiliaries(2*Nd+1);
+		lr_auxiliaires[2*Nd] = itensor::ITensor(1);
+		for(int i = imax-1; i >= imin; i--){
+			for(int k = 1; k >= 0; k--){
+				int H = 2*(i-imin) + k;
+				int j = h - i;
+				lr_auxiliaries[H] = ((lr_auxiliaries[H+1]*ld_it->MPS[H])*psi._site_tensors[i][j][k])*LUi.MPS[H];
+			}
+		}
+		double old_wavefunction = lr_auxiliaries[0];
+		itensor::ITensor ll_auxiliary(1);
+		for(int i = imin; i < imax; i++){
+			int H = 2*(i-imin);
+			int j = h-i;
+			old_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,0,i,j,1,ll_auxiliary, sr_auxiliaries[H+2], LUi.MPS[H], LUi.MPS[H+1], ld_it->MPS[H], ld_it->MPS[H+1], old_wavefunction, r, WAVEFUNCTION_NORMALIZATION_CONSTANT);
+			if(i < imax-1){
+				old_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,1,i+1,j-1,0,ll_auxiliary, sr_auxiliaries[H+3], LUi.MPS[H+1], LUi.MPS[H+2], ld_it->MPS[H+1], ld_it->MPS[H+2], old_wavefunction, r, WAVEFUNCTION_NORMALIZATION_CONSTANT);
+			}
+		}
+		//Create new LU auxiliary MPS
+		if(h < psi.Nx()+psi.Ny()-2){
+			std::vector<itensor::ITensor> row_h_contracted;
+			for(int i = imin; i < imax; i++){
+				int H = 2*(i-imin);
+				int j = h-i;
+				row_h_contracted.push_back(LUi.MPS[H]*psi._site_tensors[i][j][0]);
+				row_h_contracted.push_back(LUi.MPS[H+1]*psi._site_tensors[i][j][1]);
+			}
+		}
+		//Truncate the bond dimensions of the contracted row h
+		for(int H = 0; H < 2*Nd-1; H++){
+			auto forward_links = itensor::commonInds(row_h_contracted[H], row_h_contracted[H+1]);
+			auto [forward_tensor, sing_vals, back_tensor] = itensor::svd(row_h_contracted[H], forward_links, {"MaxDim", psi.Dc()});
+			row_h_contracted[H] = back_tensor;
+			row_h_contracted[H+1] *= (sing_vals*forward_tensor);
+		}
+		std::vector<itensor::ITensor> row_hp_unsplit;
+		for(int i = imin; i < imax; i++){
+			int H = 2*(i-imin);
+			int j = h-i;
+			row_hp_unsplit.push_back((psi._site_tensors[i][j][2]*row_h_contracted[H])*row_h_contracted[H+1]);
+		}
+
+		LUi.clear();
+
+		//Split the row h+1, creating scalar 1-tensors when necessary
+		for(int i = imin; i < imax; i++){
+			int j = h-i;
+			if(j+1 >= psi.Ny()){ //If the next diagonal has an (imin, j+1) space, add an extra 1-tensor at the front
+				LUi.add_tensor(itensor::ITensor(1));
+			}
+			if((j+1 < psi.Ny()) && (i+1 < psi.Nx())){
+				auto forward_links = itensor::commonInds(row_hp_unsplit[i-imin], psi._site_tensors[i+1][j][0]);
+				if(i < imax-1){forward_links = itensor::unionInds(forward_links, itensor::commonInds(row_hp_unsplit[i-imin], row_hp_unsplit[i-imin+1]));}
+				auto [forward_tensor, sing_vals, back_tensor] = itensor::svd(row_hp_unsplit[i-imin], forward_links, {"MaxDim", psi.Dc()});
+				LUi.add_tensor(back_tensor);
+				LUi.add_tensor(forward_tensor*sing_vals);
+			}
+			else{
+				LUi.add_tensor(row_hp_unsplit[i-imin]);
+			}
+			if(i+1 >= psi.Nx()){
+				LUi.add_tensor(itensor::ITensor(1));
+			}
+		}
+	}
+
+	return old_wavefunction;
+	
 }
 
 #endif

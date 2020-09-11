@@ -113,10 +113,8 @@ int main(int argc, char *argv[]){
 		sample_v_direction(PEPS1, spin_config, r);
 		std::cerr << "Sampling s direction..." << std::endl;
 		sample_s_direction(PEPS1, spin_config, r);
-		std::cerr << "Sampling v direction..." << std::endl;
-		sample_v_direction(PEPS1, spin_config, r);
-		std::cerr << "Sampling s direction..." << std::endl;
-		double wavefn = sample_s_direction(PEPS1, spin_config, r);
+		std::cerr << "Sampling l direction..." << std::endl;
+		sample_l_direction(PEPS1, spin_config, r);
 		std::cerr << "Evaluating final value..." << std::endl;
 		wavefunctions.push_back(wavefn);
 		Sz2 sz2op(Nx, Ny, physical_dims);

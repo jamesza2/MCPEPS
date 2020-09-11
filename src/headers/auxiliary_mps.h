@@ -42,6 +42,11 @@ class AuxMPS{
 			length += 1;
 		}
 
+		void clear(){
+			MPS.clear();
+			length = 0;
+		}
+
 		std::vector<itensor::ITensor>::iterator begin(){return MPS.begin();}
 		std::vector<itensor::ITensor>::iterator end(){return MPS.end();}
 
