@@ -77,9 +77,12 @@ int main(int argc, char *argv[]){
 
 	std::string version = "_";
 	version += std::to_string(Nx) + "x" + std::to_string(Ny);
-	version += "_J1"+std::to_string(std::static_cast<int>(J1*1000000));
-	version += "_Jz"+std::to_string(std::static_cast<int>(Jz*1000000));
-	version += "_J2"+std::to_string(std::static_cast<int>(J2*1000000));
+	version += "_J1"+std::to_string(std::static_cast<int>(Jvals["J1"]*1000000));
+	version += "_Jz"+std::to_string(std::static_cast<int>(Jvals["Jz"]*1000000));
+	version += "_J2"+std::to_string(std::static_cast<int>(Jvals["J2"]*1000000));
+	if(Jvals["Jd"] != 0){
+		version += "_Jd"+std::to_string(std::static_cast<int>(Jvals["Jd"]*1000000));
+	}
 	version += "_D"+std::to_string(standard_dims);
 	version += "_X"+std::to_string(max_truncation_dims);
 	version += "_d"+std::to_string(physical_dims);
