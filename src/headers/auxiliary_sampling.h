@@ -476,7 +476,7 @@ double sample_l_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			for(int i = imin; i < imax; i++){
 				std::cerr << "  i=" << i << "...";
 				int j = h-i;
-				if(j+1 >= psi.Ny()){ //If the next diagonal has an (imin, j+1) space, add an extra 1-tensor at the front
+				if((i == imin) && (j+1 < psi.Ny())){ //If the next diagonal has an (imin, j+1) space, add an extra 1-tensor at the front
 					itensor::ITensor blank(1);
 					LUi.add_tensor(blank);
 				}
@@ -486,7 +486,7 @@ double sample_l_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 					if(i < imax-1){forward_links = itensor::unionInds(forward_links, itensor::commonInds(row_hp_unsplit[i-imin], row_hp_unsplit[i-imin+1]));}
 					std::cerr << "svd...";
 					auto [forward_tensor, sing_vals, back_tensor] = itensor::svd(row_hp_unsplit[i-imin], forward_links, {"MaxDim", psi.Dc()});
-					std::cerr << "adding tensors..." << std::endl;
+					std::cerr << "adding tensors...";
 					LUi.add_tensor(back_tensor);
 					itensor::ITensor forward_combined = forward_tensor*sing_vals;
 					LUi.add_tensor(forward_combined);
@@ -494,10 +494,11 @@ double sample_l_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 				else{
 					LUi.add_tensor(row_hp_unsplit[i-imin]);
 				}
-				if(i+1 >= psi.Nx()){
+				if((i == imax-1) && (i+1 < psi.Nx())){ //If the next diagonal has an (imax+1, jmin) space, add an extra 1-tensor at the back
 					itensor::ITensor blank(1);
 					LUi.add_tensor(blank);
 				}
+				std::cerr << "New LU length: " << LUi.length << std::endl;
 			}
 		}
 		
