@@ -6,9 +6,10 @@
 #include <random>
 
 
+
 double wavefunction(std::vector<int> &spin_config, MCKPEPS &state){
 	SpinConfigPEPS spins(state);
-	spins.set_spins(spin_config);
+	spins.set_spins(spin_config, WAVEFUNCTION_NORMALIZATION_CONSTANT);
 	return state.inner_product(spins);
 }
 
@@ -174,7 +175,5 @@ void mc_sz2(MCKPEPS &state, std::vector<double> &wavefunctions, std::vector<doub
 	Sz2 sz2op(state.Nx(), state.Ny(), state.physical_dims());
 	mc_eval_single(state, &sz2op, wavefunctions, values, num_trials);
 }
-
-
 
 #endif

@@ -1,0 +1,187 @@
+#ifndef PEPS_OPERATOR
+#define PEPS_OPERATOR
+
+#include "mcpeps.h"
+#include "operator.h"
+
+enum class OpType{I,SP,SM,SZ,SX,SZ2};
+
+//Examples include Sx, S+, Sz, etc.
+//Can return the ITensor form of the operator, given input physical indices
+class Spinop{
+	protected:
+		OpType type;
+		itensor::ITensor identity(itensor::Index &ind1, itensor::Index &ind2){
+			itensor::ITensor T(ind1, ind2);
+			for(int i = 1; i <= itensor::dim(ind1); i++){
+				T.set(ind1 = i, ind2 = i, 1.);
+			}
+			return T;
+		}
+		//Upgrades spin from ind1 to ind2
+		itensor::ITensor spinplus(itensor::Index &ind1, itensor::Index &ind2){
+			itensor::ITensor T(ind1, ind2);
+			double s = 0.5*(itensor::dim(ind1)-1);
+			for(int i = 1; i <= itensor::dim(ind1)-1; i++){
+				double sz = i-s-1;
+				double me = std::sqrt(s*(s+1)-sz*(sz+1));
+				T.set(ind1 = i, ind2 = i+1, me);
+			}
+			return T;
+		}
+		//Downgrades spin from ind1 to ind2
+		itensor::ITensor spinminus(itensor::Index &ind1, itensor::Index &ind2){
+			itensor::ITensor T(ind1, ind2);
+			double s = 0.5*(itensor::dim(ind1)-1);
+			for(int i = 2; i <= itensor::dim(ind1); i++){
+				double sz = i-s-1;
+				double me = std::sqrt(s*(s+1)-sz*(sz-1));
+				T.set(ind1 = i, ind2 = i-1, me);
+			}
+			return T;
+		}
+		itensor::ITensor spinz(itensor::Index &ind1, itensor::Index &ind2){
+			itensor::ITensor T(ind1, ind2);
+			for(int i = 1; i <= itensor::dim(ind1); i++){
+				double sz = i-0.5*itensor::dim(ind1)-0.5;
+				T.set(ind1 = i, ind2 = i, sz);
+			}
+			return T;
+		}
+		itensor::ITensor spinzsquared(itensor::Index &ind1, itensor::Index &ind2){
+			itensor::ITensor T(ind1, ind2);
+			for(int i = 1; i <= itensor::dim(ind1); i++){
+				double sz = i-0.5*itensor::dim(ind1)-0.5;
+				T.set(ind1 = i, ind2 = i, sz*sz);
+			}
+			return T;
+		}
+
+	public:
+		Spinop(){type = OpType::I;}
+		Spinop(OpType t){type = t;}
+
+		itensor::ITensor tensor(itensor::Index &ind1){return tensor(ind1, itensor::prime(ind1));}
+		itensor::ITensor tensor(itensor::Index &ind1, itensor::Index &ind2){
+			if(itensor::dim(ind1) != itensor::dim(ind2)){
+				std::cerr << "Error: Index lengths " << itensor::dim(ind1) << " and " << itensor::dim(ind2) << " do not match" << std::endl;
+			}
+			switch(type){
+				case I : return identity(ind1, ind2); break;
+				case SP: return spinplus(ind1, ind2); break;
+				case SM: return spinminus(ind1, ind2); break;
+				case SZ: return spinz(ind1, ind2); break;
+				case SX: return spinx(ind1, ind2); break;
+				case SZ2: return spinzsquared(ind1, ind2); break;
+			}
+		}
+
+};
+
+class Term{
+	protected:
+		std::list<int> sites;
+		std::list<Spinop> ops;
+		double factor;
+	public:
+		int num_sites;
+		Term(){
+			factor = 1;
+			num_sites = 0;
+		}
+		Term(double f){
+			factor = f;
+			num_sites = 0;
+		}
+		void extra_factor(double ef){
+			factor *= ef;
+		}
+		void add_site(int site_number, Spinop op){
+			sites.push_back(site_number);
+			ops.push_back(op);
+			num_sites ++;
+		}
+
+		void add_site(int site_number, OpType type){
+			Spinop s(type);
+			add_site(site_number, s);
+		}
+
+		double eval(MCKPEPS &PEPS1, MCKPEPS &PEPS2){
+			auto sites_it = sites.begin();
+			auto ops_it = ops.begin();
+			std::list<itensor::ITensor> old_peps_tensors;
+			for(int op_index = 0; op_index < num_sites; op_index++){
+				itensor::ITensor T = ops_it->tensor(PEPS1.site_indices[*sites_it]);
+				auto [i,j,k] = PEPS1.position_of_site(*sites_it);
+				old_peps_tensors.push_back(itensor::ITensor(PEPS1._site_tensors[i][j][k]));
+				//Apply the op to PEPS1 
+				PEPS1._site_tensors[i][j][k] *= T;
+				PEPS1._site_tensors[i][j][k] *= itensor::delta(PEPS1.site_indices[*sites_it], itensor::prime(PEPS1.site_indices[*sites_it]));
+				sites_it++;
+				ops_it++;
+			}
+			double matrix_element = PEPS1.inner_product(PEPS2);
+			//Restore the original tensors
+			sites_it = sites.begin();
+			for(auto old_peps_it = old_peps_tensors.begin(); old_peps_it != old_peps_tensors.end(); old_peps_it++){
+				auto [i,j,k] = PEPS1.position_of_site(*sites_it);
+				PEPS1._site_tensors[i][j][k] = *old_peps_it;
+				sites_it++;
+			}
+			return matrix_element;
+		}
+};
+
+//A PEPS operator that takes in single-site and two-site terms
+//Can evaluate using brute-force methods
+class PEPSop{
+	protected:
+		std::vector<Term> terms;
+	public:
+		PEPSop(){}
+		void add_term(Term t){
+			terms.push_back(t);
+		}
+		//Add the S+S- and S-S+ terms (not including the extra 0.5 factor in front)
+		void add_spm(int site_1, int site_2, double factor){
+			Term t1(factor);
+			t1.add_site(site_1, OpType::SP);
+			t1.add_site(site_2, OpType::SM);
+			terms.push_back(t1);
+			Term t2(factor);
+			t2.add_site(site_1, OpType::SM);
+			t2.add_site(site_2, OpType::SP);
+			terms.push_back(t2);
+		}
+		//Add the SzSz term
+		void add_szz(int site_1, int site_2, double factor){
+			Term t1(factor);
+			t1.add_site(site_1, OpType::SZ);
+			t1.add_site(site_2, OpType::SZ);
+			terms.push_back(t1);
+		}
+		//Evaluates using a brute force method (i.e. taking the sum of <Psi|Hi|Psi> for all the terms Hi in the operator)
+		double eval(MCKPEPS &PEPS1, MCKPEPS &PEPS2){
+			double result = 0;
+			for(int term_index = 0; term_index < terms.size(); term_index++){
+				result += terms[term_index].eval(PEPS1, PEPS2);
+			}
+			return result;
+		}
+};
+
+PEPSop Heisenberg::toPEPSop(){
+	PEPSop pop;
+	std::vector<double> J{0, _J1, _J2, _Jd};
+	for(int site_1 = 0; site_1 < _num_sites; site_1 ++){
+		for(auto bond : bonds.at(site_1)){
+			int site_2 = bond.first;
+			pop.add_spm(site_1, site_2, J[bond.second]*0.5);
+			pop.add_szz(site_1, site_2, J[bond.second]*_Jz);
+		}
+	}
+	return pop;
+}
+
+#endif

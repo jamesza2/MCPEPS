@@ -58,7 +58,6 @@ class Heisenberg : public MCOperator{
 			bonds.set_dimensions(Nx, Ny);
 		}
 
-
 		double eval(std::vector<int> &spin_config_1, std::vector<int> &spin_config_2) override{
 			//First check where spin_config_1 and spin_config_2 differ
 			//Bonds can only cover all the difference point
