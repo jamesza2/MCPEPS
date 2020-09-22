@@ -4,6 +4,8 @@
 
 #include "neighbors.h"
 
+class PEPSop;
+
 class MCOperator{
 	//A class that keeps a certain Site set in mind and has an eval method
 	//Eval takes two spin configurations and calculates the matrix element
@@ -103,6 +105,7 @@ class Heisenberg : public MCOperator{
 				return matrix_element;
 			}
 		}
+		PEPSop toPEPSop();
 };
 
 class Sz2 : public MCOperator{

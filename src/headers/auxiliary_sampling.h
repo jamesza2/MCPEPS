@@ -412,7 +412,7 @@ double sample_l_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 		//Create right auxiliary tensors
 		int Nd = imax-imin;
 		std::vector<itensor::ITensor> lr_auxiliaries(2*Nd+1);
-		lr_auxiliaires[2*Nd] = itensor::ITensor(1);
+		lr_auxiliaries[2*Nd] = itensor::ITensor(1);
 		for(int i = imax-1; i >= imin; i--){
 			for(int k = 1; k >= 0; k--){
 				int H = 2*(i-imin) + k;
@@ -420,7 +420,7 @@ double sample_l_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 				lr_auxiliaries[H] = ((lr_auxiliaries[H+1]*ld_it->MPS[H])*psi._site_tensors[i][j][k])*LUi.MPS[H];
 			}
 		}
-		double old_wavefunction = lr_auxiliaries[0];
+		double old_wavefunction = itensor::norm(lr_auxiliaries[0]);
 		itensor::ITensor ll_auxiliary(1);
 		for(int i = imin; i < imax; i++){
 			int H = 2*(i-imin);
@@ -439,43 +439,47 @@ double sample_l_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 				row_h_contracted.push_back(LUi.MPS[H]*psi._site_tensors[i][j][0]);
 				row_h_contracted.push_back(LUi.MPS[H+1]*psi._site_tensors[i][j][1]);
 			}
-		}
-		//Truncate the bond dimensions of the contracted row h
-		for(int H = 0; H < 2*Nd-1; H++){
-			auto forward_links = itensor::commonInds(row_h_contracted[H], row_h_contracted[H+1]);
-			auto [forward_tensor, sing_vals, back_tensor] = itensor::svd(row_h_contracted[H], forward_links, {"MaxDim", psi.Dc()});
-			row_h_contracted[H] = back_tensor;
-			row_h_contracted[H+1] *= (sing_vals*forward_tensor);
-		}
-		std::vector<itensor::ITensor> row_hp_unsplit;
-		for(int i = imin; i < imax; i++){
-			int H = 2*(i-imin);
-			int j = h-i;
-			row_hp_unsplit.push_back((psi._site_tensors[i][j][2]*row_h_contracted[H])*row_h_contracted[H+1]);
-		}
+			//Truncate the bond dimensions of the contracted row h
+			for(int H = 0; H < 2*Nd-1; H++){
+				auto forward_links = itensor::commonInds(row_h_contracted[H], row_h_contracted[H+1]);
+				auto [forward_tensor, sing_vals, back_tensor] = itensor::svd(row_h_contracted[H], forward_links, {"MaxDim", psi.Dc()});
+				row_h_contracted[H] = back_tensor;
+				row_h_contracted[H+1] *= (sing_vals*forward_tensor);
+			}
+			std::vector<itensor::ITensor> row_hp_unsplit;
+			for(int i = imin; i < imax; i++){
+				int H = 2*(i-imin);
+				int j = h-i;
+				row_hp_unsplit.push_back((psi._site_tensors[i][j][2]*row_h_contracted[H])*row_h_contracted[H+1]);
+			}
 
-		LUi.clear();
+			LUi.clear();
 
-		//Split the row h+1, creating scalar 1-tensors when necessary
-		for(int i = imin; i < imax; i++){
-			int j = h-i;
-			if(j+1 >= psi.Ny()){ //If the next diagonal has an (imin, j+1) space, add an extra 1-tensor at the front
-				LUi.add_tensor(itensor::ITensor(1));
-			}
-			if((j+1 < psi.Ny()) && (i+1 < psi.Nx())){
-				auto forward_links = itensor::commonInds(row_hp_unsplit[i-imin], psi._site_tensors[i+1][j][0]);
-				if(i < imax-1){forward_links = itensor::unionInds(forward_links, itensor::commonInds(row_hp_unsplit[i-imin], row_hp_unsplit[i-imin+1]));}
-				auto [forward_tensor, sing_vals, back_tensor] = itensor::svd(row_hp_unsplit[i-imin], forward_links, {"MaxDim", psi.Dc()});
-				LUi.add_tensor(back_tensor);
-				LUi.add_tensor(forward_tensor*sing_vals);
-			}
-			else{
-				LUi.add_tensor(row_hp_unsplit[i-imin]);
-			}
-			if(i+1 >= psi.Nx()){
-				LUi.add_tensor(itensor::ITensor(1));
+			//Split the row h+1, creating scalar 1-tensors when necessary
+			for(int i = imin; i < imax; i++){
+				int j = h-i;
+				if(j+1 >= psi.Ny()){ //If the next diagonal has an (imin, j+1) space, add an extra 1-tensor at the front
+					itensor::ITensor blank(1);
+					LUi.add_tensor(blank);
+				}
+				if((j+1 < psi.Ny()) && (i+1 < psi.Nx())){
+					auto forward_links = itensor::commonInds(row_hp_unsplit[i-imin], psi._site_tensors[i+1][j][0]);
+					if(i < imax-1){forward_links = itensor::unionInds(forward_links, itensor::commonInds(row_hp_unsplit[i-imin], row_hp_unsplit[i-imin+1]));}
+					auto [forward_tensor, sing_vals, back_tensor] = itensor::svd(row_hp_unsplit[i-imin], forward_links, {"MaxDim", psi.Dc()});
+					LUi.add_tensor(back_tensor);
+					itensor::ITensor forward_combined = forward_tensor*sing_vals;
+					LUi.add_tensor(forward_combined);
+				}
+				else{
+					LUi.add_tensor(row_hp_unsplit[i-imin]);
+				}
+				if(i+1 >= psi.Nx()){
+					itensor::ITensor blank(1);
+					LUi.add_tensor(blank);
+				}
 			}
 		}
+		
 	}
 
 	return old_wavefunction;

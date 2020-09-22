@@ -73,7 +73,7 @@ int main(int argc, char *argv[]){
 
 	Heisenberg H(Nx, Ny, physical_dims);
 	H.set_Jz(Jvals);
-	HPEPO = H.toPEPSop();
+	PEPSop HPEPO = H.toPEPSop();
 
 	std::string version = "_";
 	version += std::to_string(Nx) + "x" + std::to_string(Ny);
@@ -121,8 +121,9 @@ int main(int argc, char *argv[]){
 		std::cerr << "Sampling s direction..." << std::endl;
 		sample_s_direction(PEPS1, spin_config, r);
 		std::cerr << "Sampling l direction..." << std::endl;
-		sample_l_direction(PEPS1, spin_config, r);
+		double wavefn = sample_l_direction(PEPS1, spin_config, r);
 		std::cerr << "Evaluating final value..." << std::endl;
+		double wavefn = 
 		wavefunctions.push_back(wavefn);
 		values.push_back(H.eval(spin_config, spin_config));
 	}

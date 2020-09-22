@@ -61,18 +61,20 @@ class Spinop{
 		Spinop(){type = OpType::I;}
 		Spinop(OpType t){type = t;}
 
-		itensor::ITensor tensor(itensor::Index &ind1){return tensor(ind1, itensor::prime(ind1));}
+		itensor::ITensor tensor(itensor::Index &ind1){
+			itensor::Index ind1p = itensor::prime(ind1);
+			return tensor(ind1, ind1p);
+		}
 		itensor::ITensor tensor(itensor::Index &ind1, itensor::Index &ind2){
 			if(itensor::dim(ind1) != itensor::dim(ind2)){
 				std::cerr << "Error: Index lengths " << itensor::dim(ind1) << " and " << itensor::dim(ind2) << " do not match" << std::endl;
 			}
 			switch(type){
-				case I : return identity(ind1, ind2); break;
-				case SP: return spinplus(ind1, ind2); break;
-				case SM: return spinminus(ind1, ind2); break;
-				case SZ: return spinz(ind1, ind2); break;
-				case SX: return spinx(ind1, ind2); break;
-				case SZ2: return spinzsquared(ind1, ind2); break;
+				case OpType::I : return identity(ind1, ind2); break;
+				case OpType::SP: return spinplus(ind1, ind2); break;
+				case OpType::SM: return spinminus(ind1, ind2); break;
+				case OpType::SZ: return spinz(ind1, ind2); break;
+				case OpType::SZ2: return spinzsquared(ind1, ind2); break;
 			}
 		}
 
