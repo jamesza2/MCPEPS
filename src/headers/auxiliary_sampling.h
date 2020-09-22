@@ -501,7 +501,7 @@ double sample_l_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 				std::cerr << "New LU length: " << LUi.length << std::endl;
 			}
 		}
-		
+		ld_it++;
 	}
 
 	return old_wavefunction;
