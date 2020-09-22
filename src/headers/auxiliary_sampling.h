@@ -466,16 +466,19 @@ double sample_l_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			//Split the row h+1, creating scalar 1-tensors when necessary
 			std::cout << "Creating split version of row h+1..." << std::endl;
 			for(int i = imin; i < imax; i++){
-				std::cout << "  i=" << i << std::endl;
+				std::cout << "  i=" << i << "...";
 				int j = h-i;
 				if(j+1 >= psi.Ny()){ //If the next diagonal has an (imin, j+1) space, add an extra 1-tensor at the front
 					itensor::ITensor blank(1);
 					LUi.add_tensor(blank);
 				}
 				if((j+1 < psi.Ny()) && (i+1 < psi.Nx())){
+					std::cout << " gathering inds...";
 					auto forward_links = itensor::commonInds(row_hp_unsplit[i-imin], psi._site_tensors[i+1][j][0]);
 					if(i < imax-1){forward_links = itensor::unionInds(forward_links, itensor::commonInds(row_hp_unsplit[i-imin], row_hp_unsplit[i-imin+1]));}
+					std::cout << "svd...";
 					auto [forward_tensor, sing_vals, back_tensor] = itensor::svd(row_hp_unsplit[i-imin], forward_links, {"MaxDim", psi.Dc()});
+					std::cout << "adding tensors...";
 					LUi.add_tensor(back_tensor);
 					itensor::ITensor forward_combined = forward_tensor*sing_vals;
 					LUi.add_tensor(forward_combined);
