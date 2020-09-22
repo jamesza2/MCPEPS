@@ -130,7 +130,13 @@ int main(int argc, char *argv[]){
 		double wavefn = sample_l_direction(PEPS1, spin_config, r);
 		std::cerr << "Evaluating final value..." << std::endl;
 		wavefunctions.push_back(wavefn);
-		values.push_back(H.eval(spin_config, spin_config));
+		auto possible_mes = H.possible_matrix_elements(spin_config);
+		double local_energy = 0;
+		for(int me_index = 0; me_index < possible_mes.size(); me_index++){
+			double new_wavefn = wavefunction(possible_mes[me_index].first);
+			local_energy += new_wavefn*possible_mes[me_index].second/wavefn;
+		}
+		values.push_back(local_energy);
 	}
 
 	double mc_time = std::difftime(std::time(NULL), timestart);

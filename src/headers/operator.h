@@ -60,9 +60,45 @@ class Heisenberg : public MCOperator{
 			bonds.set_dimensions(Nx, Ny);
 		}
 
+		//Given a spin config, returns all spin configs that have a possible nonzero matrix element with it
+		std::vector<std::pair<std::vector<int>, double>> possible_matrix_elements(std::vector<int> &spin_config){
+			std::vector<std::pair<std::vector<int>, double>> possible_configs;
+			possible_configs.push_back(std::make_pair(spin_config,0));//The like-like config's matrix element is the sum of all Szi*Szj matrix elements, to be computed later
+			std::vector<double> J{0, _J1, _J2, _Jd};
+			for(int site_1 = 0; site_1 < _num_sites; site_1++){
+				for(auto bond : bonds.at(site_1)){
+					//Add the spin configs who differ by +/-1 at these bonds, and add the Szi*Szj matrix element to the like-like config
+					if(J[bond.second] == 0){continue;}
+					int site_2 = bond.first;
+					double s = 0.5*(_d-1);
+					double m1 = spin_config[site_1]-s;
+					double m2 = spin_config[site_2]-s;
+					possible_configs[0].second += m1*m2*J[bond.second]*_Jz; //SzSz matrix element on like-like config
+					//S+S- part of the matrix element
+					if((spin_config[site_1] < _d-1) && (spin_config[site_2] > 0)){
+						std::vector<int> new_config(spin_config);
+						new_config[site_1] += 1;
+						new_config[site_2] -= 1;
+						double matrix_element = 0.5*J[bond.second]*std::sqrt((s*(s+1) - m1*(m1+1))*(s*(s+1) - m2*(m2-1)))
+						possible_configs.push_back(std::make_pair(new_config, matrix_element));
+					}
+					//S-S+ part of the matrix element
+					if((spin_config[site_1] > 0) && (spin_config[site_2] < _d-1)){
+						std::vector<int> new_config(spin_config);
+						new_config[site_1] -= 1;
+						new_config[site_2] += 1;
+						double matrix_element = 0.5*J[bond.second]*std::sqrt((s*(s+1) - m1*(m1-1))*(s*(s+1) - m2*(m2+1)))
+						possible_configs.push_back(std::make_pair(new_config, matrix_element));
+					}
+				}
+			}
+			return possible_configs;
+		}
+
+
 		double eval(std::vector<int> &spin_config_1, std::vector<int> &spin_config_2) override{
 			//First check where spin_config_1 and spin_config_2 differ
-			//Bonds can only cover all the difference point
+			//Bonds can only cover all the difference points
 			std::vector<int> different_sites;
 			for(int site = 0; site < _num_sites; site++){
 				if(spin_config_1[site] != spin_config_2[site]){
