@@ -77,11 +77,14 @@ int main(int argc, char *argv[]){
 
 	std::string version = "_";
 	version += std::to_string(Nx) + "x" + std::to_string(Ny);
+	version += "_J1"+std::to_string(std::static_cast<int>(J1*1000000));
+	version += "_Jz"+std::to_string(std::static_cast<int>(Jz*1000000));
+	version += "_J2"+std::to_string(std::static_cast<int>(J2*1000000));
 	version += "_D"+std::to_string(standard_dims);
 	version += "_X"+std::to_string(max_truncation_dims);
 	version += "_d"+std::to_string(physical_dims);
 	version += "_" + std::to_string(num_trials) + "trials";
-	if(log_file_name == "AUTO"){ //../../logs/sz2_test_{Nx}x{Ny}_D{D}_X{Chi}_d{d}_{}trials
+	if(log_file_name == "AUTO"){ //../../logs/energy_test_{Nx}x{Ny}_J1_1000000_Jz_1000000_J2_0_Jd_0_D{D}_X{Chi}_d{d}_{}trials
 		log_file_name = "../../logs/energy_test" + version;
 	}
 
