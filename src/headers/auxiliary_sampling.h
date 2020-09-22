@@ -429,7 +429,7 @@ double sample_l_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			}
 		}
 		Print(lr_auxiliaries[0]);
-		double old_wavefunction = itensor::norm(lr_auxiliaries[0]);
+		old_wavefunction = itensor::norm(lr_auxiliaries[0]);
 		std::cerr << "Testing bonds..." << std::endl;
 		itensor::ITensor ll_auxiliary(1);
 		for(int i = imin; i < imax; i++){
