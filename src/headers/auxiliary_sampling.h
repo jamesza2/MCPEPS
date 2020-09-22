@@ -481,7 +481,7 @@ double sample_l_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 					if(i < imax-1){forward_links = itensor::unionInds(forward_links, itensor::commonInds(row_hp_unsplit[i-imin], row_hp_unsplit[i-imin+1]));}
 					std::cerr << "svd...";
 					auto [forward_tensor, sing_vals, back_tensor] = itensor::svd(row_hp_unsplit[i-imin], forward_links, {"MaxDim", psi.Dc()});
-					std::cerr << "adding tensors..."; << std::endl;
+					std::cerr << "adding tensors..." << std::endl;
 					LUi.add_tensor(back_tensor);
 					itensor::ITensor forward_combined = forward_tensor*sing_vals;
 					LUi.add_tensor(forward_combined);
