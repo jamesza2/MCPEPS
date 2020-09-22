@@ -434,22 +434,28 @@ double sample_l_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 		}
 		//Create new LU auxiliary MPS
 		if(h < psi.Nx()+psi.Ny()-2){
+			std::cout << "Contracting old LU auxiliary..." << std::endl;
 			std::vector<itensor::ITensor> row_h_contracted;
 			for(int i = imin; i < imax; i++){
+				std::cout << "  i=" << i << std::endl;
 				int H = 2*(i-imin);
 				int j = h-i;
 				row_h_contracted.push_back(LUi.MPS[H]*psi._site_tensors[i][j][0]);
 				row_h_contracted.push_back(LUi.MPS[H+1]*psi._site_tensors[i][j][1]);
 			}
+			std::cout << "Truncating bond dimensions..." << std::endl;
 			//Truncate the bond dimensions of the contracted row h
 			for(int H = 0; H < 2*Nd-1; H++){
+				std::cout << "  H=" << H << std::endl;
 				auto forward_links = itensor::commonInds(row_h_contracted[H], row_h_contracted[H+1]);
 				auto [forward_tensor, sing_vals, back_tensor] = itensor::svd(row_h_contracted[H], forward_links, {"MaxDim", psi.Dc()});
 				row_h_contracted[H] = back_tensor;
 				row_h_contracted[H+1] *= (sing_vals*forward_tensor);
 			}
+			std::cout << "Creating unsplit version of row h+1..." << std::endl;
 			std::vector<itensor::ITensor> row_hp_unsplit;
 			for(int i = imin; i < imax; i++){
+				std::cout << "  i=" << i << std::endl;
 				int H = 2*(i-imin);
 				int j = h-i;
 				row_hp_unsplit.push_back((psi._site_tensors[i][j][2]*row_h_contracted[H])*row_h_contracted[H+1]);
@@ -458,7 +464,9 @@ double sample_l_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			LUi.clear();
 
 			//Split the row h+1, creating scalar 1-tensors when necessary
+			std::cout << "Creating split version of row h+1..." << std::endl;
 			for(int i = imin; i < imax; i++){
+				std::cout << "  i=" << i << std::endl;
 				int j = h-i;
 				if(j+1 >= psi.Ny()){ //If the next diagonal has an (imin, j+1) space, add an extra 1-tensor at the front
 					itensor::ITensor blank(1);
