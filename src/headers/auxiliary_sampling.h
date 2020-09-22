@@ -403,8 +403,10 @@ double sample_l_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 	std::list<AuxMPS> ld_list = psi.get_ld_auxiliaries();
 	double old_wavefunction = -1;
 	AuxMPS LUi(AuxType::LU);//Create the up auxiliary (won't have some links between certain sites though)
-	LUi.add_tensor(itensor::ITensor(1));//Very first up auxiliary is nonexistent, just two scalar 1 tensors
-	LUi.add_tensor(itensor::ITensor(1));
+	itensor::ITensor blank1(1);
+	itensor::ITensor blank2(1);
+	LUi.add_tensor(blank1);//Very first up auxiliary is nonexistent, just two scalar 1 tensors
+	LUi.add_tensor(blank2);
 	auto ld_it = ld_list.begin();
 	for(int h = 0; h < psi.Nx() + psi.Ny() - 1; h++){//h = i+j
 		int imin = std::max(0, h - psi.Ny()+1);
@@ -425,9 +427,9 @@ double sample_l_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 		for(int i = imin; i < imax; i++){
 			int H = 2*(i-imin);
 			int j = h-i;
-			old_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,0,i,j,1,ll_auxiliary, sr_auxiliaries[H+2], LUi.MPS[H], LUi.MPS[H+1], ld_it->MPS[H], ld_it->MPS[H+1], old_wavefunction, r, WAVEFUNCTION_NORMALIZATION_CONSTANT);
+			old_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,0,i,j,1,ll_auxiliary, lr_auxiliaries[H+2], LUi.MPS[H], LUi.MPS[H+1], ld_it->MPS[H], ld_it->MPS[H+1], old_wavefunction, r, WAVEFUNCTION_NORMALIZATION_CONSTANT);
 			if(i < imax-1){
-				old_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,1,i+1,j-1,0,ll_auxiliary, sr_auxiliaries[H+3], LUi.MPS[H+1], LUi.MPS[H+2], ld_it->MPS[H+1], ld_it->MPS[H+2], old_wavefunction, r, WAVEFUNCTION_NORMALIZATION_CONSTANT);
+				old_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,1,i+1,j-1,0,ll_auxiliary, lr_auxiliaries[H+3], LUi.MPS[H+1], LUi.MPS[H+2], ld_it->MPS[H+1], ld_it->MPS[H+2], old_wavefunction, r, WAVEFUNCTION_NORMALIZATION_CONSTANT);
 			}
 		}
 		//Create new LU auxiliary MPS

@@ -123,7 +123,6 @@ int main(int argc, char *argv[]){
 		std::cerr << "Sampling l direction..." << std::endl;
 		double wavefn = sample_l_direction(PEPS1, spin_config, r);
 		std::cerr << "Evaluating final value..." << std::endl;
-		double wavefn = 
 		wavefunctions.push_back(wavefn);
 		values.push_back(H.eval(spin_config, spin_config));
 	}
