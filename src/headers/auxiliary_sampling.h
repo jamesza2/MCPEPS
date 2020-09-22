@@ -421,9 +421,14 @@ double sample_l_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			for(int k = 1; k >= 0; k--){
 				int H = 2*(i-imin) + k;
 				int j = h - i;
+				Print(lr_auxiliaries[H+1]);
+				Print(ld_it->MPS[H]);
+				Print(psi._site_tensors[i][j][k]);
+				Print(LUi.MPS[H]);
 				lr_auxiliaries[H] = ((lr_auxiliaries[H+1]*ld_it->MPS[H])*psi._site_tensors[i][j][k])*LUi.MPS[H];
 			}
 		}
+		Print(lr_auxiliaries[0]);
 		double old_wavefunction = itensor::norm(lr_auxiliaries[0]);
 		std::cerr << "Testing bonds..." << std::endl;
 		itensor::ITensor ll_auxiliary(1);
