@@ -409,10 +409,12 @@ double sample_l_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 	LUi.add_tensor(blank2);
 	auto ld_it = ld_list.begin();
 	for(int h = 0; h < psi.Nx() + psi.Ny() - 1; h++){//h = i+j
+		std::cerr << "h=" << h << " sampling..." << std::endl;
 		int imin = std::max(0, h - psi.Ny()+1);
 		int imax = std::min(psi.Nx(), h+1);
 		//Create right auxiliary tensors
 		int Nd = imax-imin;
+		std::cerr << "Creating right auxiliaries..." << std::endl;
 		std::vector<itensor::ITensor> lr_auxiliaries(2*Nd+1);
 		lr_auxiliaries[2*Nd] = itensor::ITensor(1);
 		for(int i = imax-1; i >= imin; i--){
@@ -423,6 +425,7 @@ double sample_l_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			}
 		}
 		double old_wavefunction = itensor::norm(lr_auxiliaries[0]);
+		std::cerr << "Testing bonds..." << std::endl;
 		itensor::ITensor ll_auxiliary(1);
 		for(int i = imin; i < imax; i++){
 			int H = 2*(i-imin);
@@ -478,7 +481,7 @@ double sample_l_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 					if(i < imax-1){forward_links = itensor::unionInds(forward_links, itensor::commonInds(row_hp_unsplit[i-imin], row_hp_unsplit[i-imin+1]));}
 					std::cerr << "svd...";
 					auto [forward_tensor, sing_vals, back_tensor] = itensor::svd(row_hp_unsplit[i-imin], forward_links, {"MaxDim", psi.Dc()});
-					std::cerr << "adding tensors...";
+					std::cerr << "adding tensors..."; << std::endl;
 					LUi.add_tensor(back_tensor);
 					itensor::ITensor forward_combined = forward_tensor*sing_vals;
 					LUi.add_tensor(forward_combined);
