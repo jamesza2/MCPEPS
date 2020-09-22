@@ -133,7 +133,7 @@ int main(int argc, char *argv[]){
 		auto possible_mes = H.possible_matrix_elements(spin_config);
 		double local_energy = 0;
 		for(int me_index = 0; me_index < possible_mes.size(); me_index++){
-			double new_wavefn = wavefunction(possible_mes[me_index].first);
+			double new_wavefn = wavefunction(possible_mes[me_index].first, PEPS1);
 			local_energy += new_wavefn*possible_mes[me_index].second/wavefn;
 		}
 		values.push_back(local_energy);

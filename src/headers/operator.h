@@ -79,7 +79,7 @@ class Heisenberg : public MCOperator{
 						std::vector<int> new_config(spin_config);
 						new_config[site_1] += 1;
 						new_config[site_2] -= 1;
-						double matrix_element = 0.5*J[bond.second]*std::sqrt((s*(s+1) - m1*(m1+1))*(s*(s+1) - m2*(m2-1)))
+						double matrix_element = 0.5*J[bond.second]*std::sqrt((s*(s+1) - m1*(m1+1))*(s*(s+1) - m2*(m2-1)));
 						possible_configs.push_back(std::make_pair(new_config, matrix_element));
 					}
 					//S-S+ part of the matrix element
@@ -87,7 +87,7 @@ class Heisenberg : public MCOperator{
 						std::vector<int> new_config(spin_config);
 						new_config[site_1] -= 1;
 						new_config[site_2] += 1;
-						double matrix_element = 0.5*J[bond.second]*std::sqrt((s*(s+1) - m1*(m1-1))*(s*(s+1) - m2*(m2+1)))
+						double matrix_element = 0.5*J[bond.second]*std::sqrt((s*(s+1) - m1*(m1-1))*(s*(s+1) - m2*(m2+1)));
 						possible_configs.push_back(std::make_pair(new_config, matrix_element));
 					}
 				}
