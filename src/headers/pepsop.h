@@ -117,11 +117,13 @@ class Term{
 				itensor::ITensor T = ops_it->tensor(PEPS1.site_indices[*sites_it]);
 				auto [i,j,k] = PEPS1.position_of_site(*sites_it);
 				old_peps_tensors.push_back(itensor::ITensor(PEPS1._site_tensors[i][j][k]));
+				Print(PEPS1._site_tensors[i][j][k]);
 				//Apply the op to PEPS1 
 				PEPS1._site_tensors[i][j][k] *= T;
 				PEPS1._site_tensors[i][j][k] *= itensor::delta(PEPS1.site_indices[*sites_it], itensor::prime(PEPS1.site_indices[*sites_it]));
 				sites_it++;
 				ops_it++;
+				Print(PEPS1._site_tensors[i][j][k]);
 			}
 			double matrix_element = PEPS1.inner_product(PEPS2);
 			//Restore the original tensors
@@ -130,6 +132,7 @@ class Term{
 				auto [i,j,k] = PEPS1.position_of_site(*sites_it);
 				PEPS1._site_tensors[i][j][k] = *old_peps_it;
 				sites_it++;
+				Print(PEPS1._site_tensors[i][j][k]);
 			}
 			return matrix_element;
 		}
