@@ -135,7 +135,7 @@ double test_bond(NoSitePEPS &no_site, MCKPEPS &original, std::vector<int> &spin_
 		}
 	}
 	else{
-		std::cout << "Spin config " << "(" << new_sz_1 << ", " << new_sz_2 << ") invalid..." << std::endl;;
+		//std::cout << "Spin config " << "(" << new_sz_1 << ", " << new_sz_2 << ") invalid..." << std::endl;;
 	}
 	//No matter if the move is accepted or rejected, we should update the auxiliary tensor accordingly
 	l_aux *= u_aux_1;

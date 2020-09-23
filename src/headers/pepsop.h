@@ -110,6 +110,7 @@ class Term{
 		}
 
 		double eval(MCKPEPS &PEPS1, MCKPEPS &PEPS2){
+			if(factor == 0){return 0;}
 			auto sites_it = sites.begin();
 			auto ops_it = ops.begin();
 			std::list<itensor::ITensor> old_peps_tensors;
@@ -117,22 +118,22 @@ class Term{
 				itensor::ITensor T = ops_it->tensor(PEPS1.site_indices[*sites_it]);
 				auto [i,j,k] = PEPS1.position_of_site(*sites_it);
 				old_peps_tensors.push_back(itensor::ITensor(PEPS1._site_tensors[i][j][k]));
-				Print(PEPS1._site_tensors[i][j][k]);
+				//Print(PEPS1._site_tensors[i][j][k]);
 				//Apply the op to PEPS1 
 				PEPS1._site_tensors[i][j][k] *= T;
 				PEPS1._site_tensors[i][j][k] *= itensor::delta(PEPS1.site_indices[*sites_it], itensor::prime(PEPS1.site_indices[*sites_it]));
 				sites_it++;
 				ops_it++;
-				Print(PEPS1._site_tensors[i][j][k]);
+				//Print(PEPS1._site_tensors[i][j][k]);
 			}
-			double matrix_element = PEPS1.inner_product(PEPS2);
+			double matrix_element = PEPS1.inner_product(PEPS2)*factor;
 			//Restore the original tensors
 			sites_it = sites.begin();
 			for(auto old_peps_it = old_peps_tensors.begin(); old_peps_it != old_peps_tensors.end(); old_peps_it++){
 				auto [i,j,k] = PEPS1.position_of_site(*sites_it);
 				PEPS1._site_tensors[i][j][k] = *old_peps_it;
 				sites_it++;
-				Print(PEPS1._site_tensors[i][j][k]);
+				//Print(PEPS1._site_tensors[i][j][k]);
 			}
 			return matrix_element;
 		}
