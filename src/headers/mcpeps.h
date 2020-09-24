@@ -907,7 +907,21 @@ class MCKPEPS : public NoSitePEPS{
 			return MCKPEPS(site_indices, _Nx, _Ny, 1, _Dc);
 		}
 
-
+		//Multiplies an extra value favoring the bias_spin_config on all sites in their first link index element
+		void add_bias(std::vector<int> bias_spin_config, double fuzziness = 0.3){
+			for(int site = 0; site < _num_sites; site++){
+				auto [i,j,k] = position_of_site(site);
+				itensor::Index site_index = site_indices[site];
+				itensor::ITensor partial_projector(site_index, itensor::prime(site_index));
+				for(int spin_index = 1; spin_index <= site_index.dim(); spin_index++){
+					int bias_value = bias_spin_config[site];
+					double bias_factor = std::pow(fuzziness, std::abs(bias_value-spin_index+1));
+					partial_projector.set(spin_index, spin_index, bias_factor);
+				}
+				_site_tensors[i][j][k] *= partial_projector;
+				_site_tensors[i][j][k].noPrime("Site");
+			}
+		}
 		
 	
 	protected:

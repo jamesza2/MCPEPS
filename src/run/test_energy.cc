@@ -101,6 +101,17 @@ int main(int argc, char *argv[]){
 	itensor::IndexSet sites(sites_vector);
 
 	auto PEPS1 = MCKPEPS(sites, Nx, Ny, standard_dims, max_truncation_dims);
+
+	std::vector<int> spin_config(num_sites, 0);
+	Randomizer r;
+	randomize_in_sector(spin_config, physical_dims, r.gen, r.dist);
+
+	PEPS1.add_bias(spin_config);
+	std::cerr << "Biased to spin config ";
+	for(int sc : spin_config){std::cerr << sc << " ";}
+	std::cerr << std::endl;
+	
+	randomize_in_sector(spin_config, physical_dims, r.gen, r.dist);
 	MCKPEPS PEPS2 = PEPS1;
 	PEPS2.prime();
 	PEPS1.set_log_file(log_file_name);
@@ -118,9 +129,7 @@ int main(int argc, char *argv[]){
 	std::cerr << "Performing Monte Carlo inner product..." << std::endl;
 	std::vector<double> wavefunctions;
 	std::vector<double> values;
-	std::vector<int> spin_config(num_sites, 0);
-	Randomizer r;
-	randomize_in_sector(spin_config, physical_dims, r.gen, r.dist);
+	
 	for(int trial = 0; trial < num_trials; trial++){
 		std::cerr << "Sampling v direction..." << std::endl;
 		sample_v_direction(PEPS1, spin_config, r);
