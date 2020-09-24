@@ -112,7 +112,8 @@ double test_bond(NoSitePEPS &no_site, MCKPEPS &original, std::vector<int> &spin_
 		if((new_sz_1 > 0) && (new_sz_2 < spin_max-1)){ new_num_choices += 1; }
 		if((new_sz_1 < spin_max-1) && (new_sz_2 > 0)){ new_num_choices += 1; }*/
 		double transition_probability = new_wavefunction*new_wavefunction/(old_wavefunction*old_wavefunction);
-		if(r.rand() < transition_probability){ //Transition is a success, change to new spin config
+		double choice = r.rand();
+		if(choice < transition_probability){ //Transition is a success, change to new spin config
 			//config.set_spin(i,j,1,new_sz_1, WAVEFUNCTION_NORMALIZATION_CONSTANT);
 			//config.set_spin(i,j,2,new_sz_2, WAVEFUNCTION_NORMALIZATION_CONSTANT);
 			update_site_tensor(no_site, original, i1,j1,k1, new_sz_1, wavefunction_normalization);
@@ -121,7 +122,9 @@ double test_bond(NoSitePEPS &no_site, MCKPEPS &original, std::vector<int> &spin_
 			spin_config[no_site.site_index_from_position(i2,j2,k2)] = new_sz_2;
 			std::cout << "Spin config ";
 			for(int sp : spin_config){std::cout << sp << " ";}
-			std::cout << "Accepted with wavefunction " << new_wavefunction << std::endl;
+			std::cout << "Accepted with wavefunction " << new_wavefunction;
+			std::cout << " (Transition probability " << transition_probability << ",";
+			std::cout << " Rolled " << choice << ")" << std::endl;
 			wavefn_to_return = new_wavefunction;
 		}
 		else{
