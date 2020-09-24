@@ -39,6 +39,15 @@ itensor::ITensor create_sz2_op(int site, itensor::IndexSet &sites){
 	return op;
 }
 
+int squared_distance(std::vector<int> vec1, std::vector<int> vec2){
+	int sd = 0;
+	if(vec1.size() != vec2.size()){std::cerr << "ERROR: VECTOR SIZES " << vec1.size() << " AND " << vec2.size() << " INCOMPATIBLE";}
+	for(int i = 0; i < vec1.size(); i++){
+		sd += (vec1[i]-vec2[i])*(vec1[i]-vec2[i]);
+	}
+	return sd;
+}
+
 int main(int argc, char *argv[]){
 	int target_argc = 2;
 	if(argc != target_argc){
@@ -105,13 +114,14 @@ int main(int argc, char *argv[]){
 	std::vector<int> spin_config(num_sites, 0);
 	Randomizer r;
 	randomize_in_sector(spin_config, physical_dims, r.gen, r.dist);
-
-	PEPS1.add_bias(spin_config);
+	std::vector<int> bias_config(spin_config);
+	PEPS1.add_bias(bias_config);
 	std::cerr << "Biased to spin config ";
-	for(int sc : spin_config){std::cerr << sc << " ";}
+	for(int sc : bias_config){std::cerr << sc << " ";}
 	std::cerr << std::endl;
 	
 	randomize_in_sector(spin_config, physical_dims, r.gen, r.dist);
+
 	MCKPEPS PEPS2 = PEPS1;
 	PEPS2.prime();
 	PEPS1.set_log_file(log_file_name);
@@ -129,7 +139,9 @@ int main(int argc, char *argv[]){
 	std::cerr << "Performing Monte Carlo inner product..." << std::endl;
 	std::vector<double> wavefunctions;
 	std::vector<double> values;
-	
+	std::vector<int> squared_distances;
+
+
 	for(int trial = 0; trial < num_trials; trial++){
 		std::cerr << "Sampling v direction..." << std::endl;
 		sample_v_direction(PEPS1, spin_config, r);
@@ -146,6 +158,7 @@ int main(int argc, char *argv[]){
 			local_energy += new_wavefn*possible_mes[me_index].second/wavefn;
 		}
 		values.push_back(local_energy);
+		squared_distances.push_back(squared_distance(bias_config, spin_config));
 	}
 
 	double mc_time = std::difftime(std::time(NULL), timestart);
@@ -158,6 +171,8 @@ int main(int argc, char *argv[]){
 	out.addInteger("NUM_TRIALS", num_trials);
 	out.addDouble("DIRECT_INNER_PRODUCT", inner_product);
 	out.addDouble("DIRECT_ENERGY", total_energy);
+	out.addVector("BIAS_CONFIG", bias_config);
+	out.addVector("SQUARED_DISTANCES", squared_distances);
 	out.addVector("WAVEFUNCTIONS", wavefunctions);
 	out.addVector("VALUES", values);
 
