@@ -149,7 +149,7 @@ int main(int argc, char *argv[]){
 		sample_s_direction(PEPS1, spin_config, r);
 		std::cerr << "Sampling l direction..." << std::endl;
 		double wavefn = sample_l_direction(PEPS1, spin_config, r);
-		std::cerr << "Evaluating final value..." << std::endl;
+		std::cerr << "Evaluating local energy...";
 		wavefunctions.push_back(wavefn);
 		auto possible_mes = H.possible_matrix_elements(spin_config);
 		double local_energy = 0;
@@ -157,6 +157,7 @@ int main(int argc, char *argv[]){
 			double new_wavefn = wavefunction(possible_mes[me_index].first, PEPS1);
 			local_energy += new_wavefn*possible_mes[me_index].second/wavefn;
 		}
+		std::cerr << local_energy << std::endl;
 		values.push_back(local_energy);
 		squared_distances.push_back(squared_distance(bias_config, spin_config));
 	}
