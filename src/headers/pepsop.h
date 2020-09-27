@@ -80,6 +80,7 @@ class Spinop{
 
 };
 
+//A product of spinops, e.g. 0.5*S+S- or SzSz
 class Term{
 	protected:
 		std::list<int> sites;
@@ -171,7 +172,9 @@ class PEPSop{
 		double eval(MCKPEPS &PEPS1, MCKPEPS &PEPS2){
 			double result = 0;
 			for(int term_index = 0; term_index < terms.size(); term_index++){
-				result += terms[term_index].eval(PEPS1, PEPS2);
+				double term_ip = terms[term_index].eval(PEPS1, PEPS2);
+				result += term_ip;
+				std::cerr << "Term value: " << term_ip << std::endl;
 			}
 			return result;
 		}
@@ -184,7 +187,9 @@ PEPSop Heisenberg::toPEPSop(){
 		for(auto bond : bonds.at(site_1)){
 			int site_2 = bond.first;
 			pop.add_spm(site_1, site_2, J[bond.second]*0.5);
-			pop.add_szz(site_1, site_2, J[bond.second]*_Jz);
+			if(_Jz != 0){
+				pop.add_szz(site_1, site_2, J[bond.second]*_Jz);
+			}
 		}
 	}
 	return pop;
