@@ -573,7 +573,7 @@ class MCKPEPS : public NoSitePEPS{
 				}
 			}
 			Print(brute_force_combined_tensor);
-			return itensor::norm(brute_force_combined_tensor);
+			return itensor::elt(brute_force_combined_tensor);
 		}
 
 		double brute_force_inner_product_old(MCKPEPS &other){
@@ -589,7 +589,7 @@ class MCKPEPS : public NoSitePEPS{
 				}
 			}
 			Print(brute_force_combined_tensor);
-			return itensor::norm(brute_force_combined_tensor);
+			return itensor::elt(brute_force_combined_tensor);
 		}
 
 		//Combines this PEPS with other but doesn't contract the link indices, instead returning a PEPS with no site indices
@@ -873,7 +873,7 @@ class MCKPEPS : public NoSitePEPS{
 				std::cout.rdbuf(coutbuf);
 				log_file_stream.close();
 			}
-			return itensor::norm(contracted_tensor);
+			return itensor::elt(contracted_tensor);
 
 		}
 
