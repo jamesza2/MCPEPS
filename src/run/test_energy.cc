@@ -134,6 +134,7 @@ int main(int argc, char *argv[]){
 	std::cerr << "Evaluating matrix element..." << std::endl;
 	double total_energy = HPEPO.eval(PEPS1, PEPS2)/inner_product;
 	std::cerr << "Matrix element energy: " << total_energy << std::endl;
+	std::cerr << "Inner product after eval: " << PEPS1.inner_product(PEPS2) << std::endl;
 	double efficient_time = std::difftime(std::time(NULL), timestart);
 	timestart = std::time(NULL);
 

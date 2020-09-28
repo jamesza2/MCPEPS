@@ -110,7 +110,7 @@ int main(int argc, char *argv[]){
 	PEPS2.prime();
 	PEPS1.set_log_file(log_file_name);
 
-	double total_Sz2;
+	double total_Sz2 = 0;
 	std::cerr << "Performing efficient inner product..." << std::endl;
 	auto timestart = std::time(NULL);
 	double inner_product = PEPS1.inner_product(PEPS2);
