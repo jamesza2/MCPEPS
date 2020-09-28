@@ -39,6 +39,15 @@ itensor::ITensor create_sz2_op(int site, itensor::IndexSet &sites){
 	return op;
 }
 
+int squared_distance(std::vector<int> vec1, std::vector<int> vec2){
+	int sd = 0;
+	if(vec1.size() != vec2.size()){std::cerr << "ERROR: VECTOR SIZES " << vec1.size() << " AND " << vec2.size() << " INCOMPATIBLE";}
+	for(int i = 0; i < vec1.size(); i++){
+		sd += (vec1[i]-vec2[i])*(vec1[i]-vec2[i]);
+	}
+	return sd;
+}
+
 int main(int argc, char *argv[]){
 	int target_argc = 2;
 	if(argc != target_argc){
@@ -130,6 +139,7 @@ int main(int argc, char *argv[]){
 		wavefunctions.push_back(wavefn);
 		Sz2 sz2op(Nx, Ny, physical_dims);
 		values.push_back(sz2op.eval(spin_config, spin_config));
+		squared_distances.push_back(squared_distance(bias_config, spin_config));
 	}
 
 	double mc_time = std::difftime(std::time(NULL), timestart);
