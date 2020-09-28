@@ -73,6 +73,7 @@ int main(int argc, char *argv[]){
 	int num_trials = input.testInteger("num_trials", 10000);
 	std::string out_file_name = input.testString("out_file", "");
 	int physical_dims = input.testInteger("physical_dims", 4);
+	double bias_dropoff = input.testDouble("bias_dropoff", 0.4);
 
 	std::map<std::string, double> Jvals;
 	Jvals["J1"] = input.testDouble("J1", 1);
@@ -115,7 +116,7 @@ int main(int argc, char *argv[]){
 	Randomizer r;
 	randomize_in_sector(spin_config, physical_dims, r.gen, r.dist);
 	std::vector<int> bias_config(spin_config);
-	PEPS1.add_bias(bias_config);
+	PEPS1.add_bias(bias_config, bias_dropoff);
 	std::cerr << "Biased to spin config ";
 	for(int sc : bias_config){std::cerr << sc << " ";}
 	std::cerr << std::endl;
@@ -172,6 +173,7 @@ int main(int argc, char *argv[]){
 	out.addInteger("D", standard_dims);
 	out.addInteger("CHI", max_truncation_dims);
 	out.addInteger("NUM_TRIALS", num_trials);
+	out.addDouble("BIAS_DROPOFF", bias_dropoff);
 	out.addDouble("DIRECT_INNER_PRODUCT", inner_product);
 	out.addDouble("DIRECT_ENERGY", total_energy);
 	out.addVector("BIAS_CONFIG", bias_config);
