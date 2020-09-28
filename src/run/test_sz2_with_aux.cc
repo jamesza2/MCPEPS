@@ -117,8 +117,7 @@ int main(int argc, char *argv[]){
 	std::cerr << "Performing Monte Carlo inner product..." << std::endl;
 	std::vector<double> wavefunctions;
 	std::vector<double> values;
-	std::vector<int> spin_config(num_sites, 0);
-	Randomizer r;
+	std::vector<int> squared_distances;
 	randomize_in_sector(spin_config, physical_dims, r.gen, r.dist);
 	for(int trial = 0; trial < num_trials; trial++){
 		std::cerr << "Sampling v direction..." << std::endl;
