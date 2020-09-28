@@ -85,6 +85,18 @@ int main(int argc, char *argv[]){
 	itensor::IndexSet sites(sites_vector);
 
 	auto PEPS1 = MCKPEPS(sites, Nx, Ny, standard_dims, max_truncation_dims);
+
+	std::vector<int> spin_config(num_sites, 0);
+	Randomizer r;
+	randomize_in_sector(spin_config, physical_dims, r.gen, r.dist);
+	std::vector<int> bias_config(spin_config);
+	PEPS1.add_bias(bias_config);
+	std::cerr << "Biased to spin config ";
+	for(int sc : bias_config){std::cerr << sc << " ";}
+	std::cerr << std::endl;
+	
+	randomize_in_sector(spin_config, physical_dims, r.gen, r.dist);
+
 	MCKPEPS PEPS2 = PEPS1;
 	PEPS2.prime();
 	PEPS1.set_log_file(log_file_name);
@@ -114,7 +126,7 @@ int main(int argc, char *argv[]){
 		std::cerr << "Sampling s direction..." << std::endl;
 		sample_s_direction(PEPS1, spin_config, r);
 		std::cerr << "Sampling l direction..." << std::endl;
-		sample_l_direction(PEPS1, spin_config, r);
+		double wavefn = sample_l_direction(PEPS1, spin_config, r);
 		std::cerr << "Evaluating final value..." << std::endl;
 		wavefunctions.push_back(wavefn);
 		Sz2 sz2op(Nx, Ny, physical_dims);
@@ -131,6 +143,8 @@ int main(int argc, char *argv[]){
 	out.addInteger("NUM_TRIALS", num_trials);
 	out.addDouble("DIRECT_INNER_PRODUCT", inner_product);
 	out.addDouble("DIRECT_SZ2", total_Sz2);
+	out.addVector("BIAS_CONFIG", bias_config);
+	out.addVector("SQUARED_DISTANCES", squared_distances);
 	out.addVector("WAVEFUNCTIONS", wavefunctions);
 	out.addVector("VALUES", values);
 
