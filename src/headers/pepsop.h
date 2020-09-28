@@ -174,7 +174,7 @@ class PEPSop{
 			for(int term_index = 0; term_index < terms.size(); term_index++){
 				double term_ip = terms[term_index].eval(PEPS1, PEPS2);
 				result += term_ip;
-				std::cerr << "Term value: " << term_ip << std::endl;
+				//std::cerr << "Term value: " << term_ip << std::endl;
 			}
 			return result;
 		}
@@ -186,10 +186,13 @@ PEPSop Heisenberg::toPEPSop(){
 	for(int site_1 = 0; site_1 < _num_sites; site_1 ++){
 		for(auto bond : bonds.at(site_1)){
 			int site_2 = bond.first;
-			pop.add_spm(site_1, site_2, J[bond.second]*0.5);
-			if(_Jz != 0){
-				pop.add_szz(site_1, site_2, J[bond.second]*_Jz);
+			if(J[bond.second] != 0){
+				pop.add_spm(site_1, site_2, J[bond.second]*0.5);
+				if(_Jz != 0){
+					pop.add_szz(site_1, site_2, J[bond.second]*_Jz);
+				}
 			}
+			
 		}
 	}
 	return pop;
