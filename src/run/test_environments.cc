@@ -91,7 +91,7 @@ int main(int argc, char *argv[]){
 	std::cerr << "Getting environments..." << std::endl;
 	std::vector<itensor::ITensor> envs = nsp.environments(PEPS1.site_indices, spin_config);
 
-	for(int site_index = 0; site_index < envs.length(); site_index++){
+	for(int site_index = 0; site_index < envs.size(); site_index++){
 		itensor::ITensor product = envs[site_index]*(*PEPS1.tensor_at(site_index));
 		if(itensor::length(product.inds()) == 0){
 			std::cerr << "Product #" << site_index << ": " << itensor::elt(product) << " Original: " << inner_product << std::endl;
