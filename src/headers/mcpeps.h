@@ -136,11 +136,11 @@ class NoSitePEPS
 				//Fourth step: Splitting the intermediate row tensors
 				prior_aux.clear();
 				for(int j = 0; j < _Ny-1; j++){
-					itensor::IndexSet forward_indices = itensor::commonInds(unsplit_MPS[j], unsplit_MPS[j+1]);
+					itensor::IndexSet forward_indices = itensor::commonInds(unsplit_MPS.MPS[j], unsplit_MPS.MPS[j+1]);
 					if((i > 0) && (j<_Ny-1)){
-						forward_indices = itensor::unionInds(forward_indices, itensor::commonInds(unsplit_MPS[j], _site_tensors[i-1][j+1][1]));
+						forward_indices = itensor::unionInds(forward_indices, itensor::commonInds(unsplit_MPS.MPS[j], _site_tensors[i-1][j+1][1]));
 					}
-					auto [forward, sing_vals, back] = itensor::svd(unsplit_MPS[j], forward_indices, {"MaxDim", _Dc});
+					auto [forward, sing_vals, back] = itensor::svd(unsplit_MPS.MPS[j], forward_indices, {"MaxDim", _Dc});
 					prior_aux.add_tensor(back);
 					prior_aux.add_tensor(sing_vals*forward);
 				}
@@ -203,7 +203,7 @@ class NoSitePEPS
 		}
 
 		//Gets the environment of every site 
-		std::vector<itensor::ITensor> environments(const &itensor::IndexSet(site_indices), const std::vector<int> &spin_config){
+		std::vector<itensor::ITensor> environments(const itensor::IndexSet &site_indices, const std::vector<int> &spin_config){
 			AuxMPS up_aux(2*_Nx);
 			std::vector<itensor::ITensor> envs(_num_sites);
 			std::list<AuxMPS> down_auxes = get_vd_auxiliaries();
@@ -242,7 +242,7 @@ class NoSitePEPS
 					//Get the k=0 environment
 					itensor::ITensor left_int = left_aux;
 					itensor::ITensor right_int = right_auxes[j+1]*down_aux_it->MPS[2*j];
-					if(j > 0){left_int *= down_aux_it->MPS[2*j-1]};
+					if(j > 0){left_int *= down_aux_it->MPS[2*j-1];}
 					left_int *= _site_tensors[i][j][1];//The k=1 intermediate, contracted with nearby tensors
 					right_int *= _site_tensors[i][j][2];//The k=2 intermediate, contracted with nearby tensors
 					itensor::ITensor k0env = right_int*left_int;
@@ -539,7 +539,7 @@ class NoSitePEPS
 			return out;
 		}
 
-		void print_self(){
+		void print_self() const{
 			bool _log = (_log_file != "");
 			std::streambuf *coutbuf = std::cout.rdbuf();
 			std::ofstream log_file_stream(_log_file, std::ofstream::app);
@@ -566,7 +566,7 @@ class NoSitePEPS
 				log_file_stream.close();
 			}
 		}
-		std::tuple<int, int, int> position_of_site(int site_index){
+		std::tuple<int, int, int> position_of_site(int site_index) const{
 			int k = site_index % UNIT_CELL_SIZE;
 			site_index = (site_index - k)/UNIT_CELL_SIZE;
 			int j = site_index % _Ny;
@@ -575,11 +575,11 @@ class NoSitePEPS
 			return std::make_tuple(i, j, k);
 		}
 
-		itensor::ITensor site_tensor(int i, int j, int k){
+		itensor::ITensor site_tensor(int i, int j, int k) const{
 			return _site_tensors[i][j][k];
 		}
 
-		void set_site_tensor(int i, int j, int k, itensor::ITensor &new_tensor){
+		void set_site_tensor(int i, int j, int k, itensor::ITensor &new_tensor) const{
 			if(!itensor::hasSameInds(_site_tensors[i][j][k].inds(), new_tensor.inds())){
 				std::cerr << "Warning: index mismatch" << std::endl;
 				Print(_site_tensors[i][j][k]);
@@ -588,7 +588,7 @@ class NoSitePEPS
 			_site_tensors[i][j][k] = new_tensor;
 		}
 
-		int pair_to_link_index(int i, int j){
+		int pair_to_link_index(int i, int j) const{
 			if(i < j){
 				return i*_num_sites + j;
 			}
@@ -597,7 +597,7 @@ class NoSitePEPS
 			}
 		}
 
-		std::tuple<int, int> link_index_to_pair(int link_index){
+		std::tuple<int, int> link_index_to_pair(int link_index) const{
 			int j = link_index % _num_sites;
 			int i = (link_index - j)/_num_sites;
 			return std::make_tuple(i,j);
@@ -607,18 +607,18 @@ class NoSitePEPS
 			return i*_Ny*UNIT_CELL_SIZE + j*UNIT_CELL_SIZE + k;
 		}
 
-		int link_index_from_position(int i1, int j1, int k1, int i2, int j2, int k2){
+		int link_index_from_position(int i1, int j1, int k1, int i2, int j2, int k2) const{
 			return pair_to_link_index(site_index_from_position(i1, j1, k1), site_index_from_position(i2, j2, k2));
 		}
-		int lifp(int i1, int j1, int k1, int i2, int j2, int k2){
+		int lifp(int i1, int j1, int k1, int i2, int j2, int k2) const{
 			return link_index_from_position(i1, j1, k1, i2, j2, k2);
 		}
 
-		itensor::Index link_index(int site_1, int site_2){
+		itensor::Index link_index(int site_1, int site_2) const{
 			return _link_indices[pair_to_link_index(site_1, site_2)];
 		}
 
-		itensor::Index link_index(int i1, int j1, int k1, int i2, int j2, int k2){
+		itensor::Index link_index(int i1, int j1, int k1, int i2, int j2, int k2) const{
 			return link_index(site_index_from_position(i1, j1, k1), site_index_from_position(i2, j2, k2));
 		}
 
@@ -718,7 +718,7 @@ class MCKPEPS : public NoSitePEPS{
 			_D = to
 		}*/
 		
-		int physical_dims(){ return site_indices(1).dim(); }
+		int physical_dims() const{ return site_indices(1).dim(); }
 
 		
 		//First combines the three sites in each size-3 unit cell, then combines the unit cell tensors
@@ -774,7 +774,7 @@ class MCKPEPS : public NoSitePEPS{
 		}*/
 
 		//Combines this PEPS with other but doesn't contract the link indices, instead returning a PEPS with no site indices
-		NoSitePEPS contract(const MCKPEPS &other){
+		NoSitePEPS contract(const MCKPEPS &other) const{
 			bool _log = (_log_file != "");
 			std::streambuf *coutbuf = std::cout.rdbuf();
 			std::ofstream log_file_stream(_log_file, std::ofstream::app);
@@ -783,12 +783,12 @@ class MCKPEPS : public NoSitePEPS{
 			}
 
 			std::vector<std::vector<std::vector<itensor::ITensor>>> combined_tensors;
-			if(_log){
+			/*if(_log){
 				std::cout << "PEPS 1: \n";
 				print_self();
 				std::cout << "PEPS 2: \n";
 				other.print_self();
-			}
+			}*/
 			for(int i = 0; i < _Nx; i++){
 				std::vector<std::vector<itensor::ITensor>> combined_tensors_rank2;
 				for(int j = 0; j < _Ny; j++){
@@ -1151,7 +1151,7 @@ class MCKPEPS : public NoSitePEPS{
 		}
 		void add_link(int i1, int j1, int k1, int i2, int j2, int k2, 
 			std::map<int, itensor::Index> &links, 
-			std::vector<std::vector<std::vector<itensor::ITensor>>> &tns){
+			std::vector<std::vector<std::vector<itensor::ITensor>>> &tns) const{
 			links[lifp(i1, j1, k1, i2, j2, k2)] = itensor::commonIndex(tns[i1][j1][k1], tns[i2][j2][k2]);
 		}
 };

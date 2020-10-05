@@ -60,7 +60,7 @@ class AuxMPS{
 
 		//Canonizes to the desired position
 		//Tensors might have multiple sets of links with each other, that's fine
-		void position(int desired_pos){
+		void set_position(int desired_pos){
 			if(position == -1){
 				for(int i = 0; i < desired_pos; i++){
 					itensor::IndexSet forward_indices = itensor::commonInds(MPS[i], MPS[i+1]);
@@ -102,7 +102,7 @@ class AuxMPS{
 
 		void truncate(int truncation_index){
 			for(int i = 0; i < length-1; i++){
-				position(i);
+				set_position(i);
 				itensor::IndexSet forward_indices = itensor::commonInds(MPS[i], MPS[i+1]);
 				if(itensor::length(forward_indices) == 0){continue;}
 				auto [forward, diag, back] = itensor::svd(MPS[i], forward_indices, {"MaxDim", truncation_index});
