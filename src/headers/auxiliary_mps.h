@@ -12,23 +12,33 @@ enum class AuxType{NA, VU, VD, SU, SD, LU, LD, BLANK};
 
 class AuxMPS{
 	public:
+		int position;
 		AuxType type;
 		std::vector<itensor::ITensor> MPS;
 		int length;
 		AuxMPS(){
 			type=AuxType::NA;
 			length = 0;
+			position = -1;
 		}
 		AuxMPS(AuxType input_type){
 			type = input_type;
 			length = 0;
+			position = -1;
 		}
 		AuxMPS(int input_length){
 			type=AuxType::BLANK;
 			length = input_length;
 			for(int i = 0; i < length; i++){
-				MPS.push_back(itensor::ITensor(1));
+				itensor::ITensor blank(1);
+				MPS.push_back(blank);
 			}
+		}
+		AuxMPS(const AuxMPS &to_copy){
+			MPS = std::vector<itensor::ITensor>(to_copy.MPS);
+			length = to_copy.length;
+			type = to_copy.type;
+			position = to_copy.position;
 		}
 		void set_type(AuxType proposed_type){
 			type = proposed_type;
@@ -45,6 +55,60 @@ class AuxMPS{
 		void clear(){
 			MPS.clear();
 			length = 0;
+			position = -1;
+		}
+
+		//Canonizes to the desired position
+		//Tensors might have multiple sets of links with each other, that's fine
+		void position(int desired_pos){
+			if(position == -1){
+				for(int i = 0; i < desired_pos; i++){
+					itensor::IndexSet forward_indices = itensor::commonInds(MPS[i], MPS[i+1]);
+					auto [forward, diag, back] = itensor::svd(MPS[i], forward_indices);
+					MPS[i] = back;
+					MPS[i+1] *= (forward*diag);
+					//Perform SVD on tensor i
+					//Push S*Vt onto the tensor above
+				}
+				for(int i = length-1; i > desired_pos; i--){
+					itensor::IndexSet back_indices = itensor::commonInds(MPS[i], MPS[i-1]);
+					auto [back, diag, forward] = itensor::svd(MPS[i], back_indices);
+					MPS[i] = forward;
+					MPS[i-1] *= (back*diag);
+					//Perform SVD on tensor i
+					//Push U onto the tensor below
+				}
+			}
+			else{
+				if(position < desired_pos){
+					for(int i = position; i < desired_pos; i++){
+						itensor::IndexSet forward_indices = itensor::commonInds(MPS[i], MPS[i+1]);
+						auto [forward, diag, back] = itensor::svd(MPS[i], forward_indices);
+						MPS[i] = back;
+						MPS[i+1] *= (forward*diag);
+					}
+				}
+				if(position > desired_pos){
+					for(int i = position; i > desired_pos; i--){
+						itensor::IndexSet back_indices = itensor::commonInds(MPS[i], MPS[i-1]);
+						auto [back, diag, forward] = itensor::svd(MPS[i], back_indices);
+						MPS[i] = forward;
+						MPS[i-1] *= (back*diag);
+					}
+				}
+			}
+			position = desired_pos;
+		}
+
+		void truncate(int truncation_index){
+			for(int i = 0; i < length-1; i++){
+				position(i);
+				itensor::IndexSet forward_indices = itensor::commonInds(MPS[i], MPS[i+1]);
+				if(itensor::length(forward_indices) == 0){continue;}
+				auto [forward, diag, back] = itensor::svd(MPS[i], forward_indices, {"MaxDim", truncation_index});
+				MPS[i] = back;
+				MPS[i+1] *= (forward*diag);
+			}
 		}
 
 		std::vector<itensor::ITensor>::iterator begin(){return MPS.begin();}
