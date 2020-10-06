@@ -64,6 +64,8 @@ class AuxMPS{
 			if(position == -1){
 				for(int i = 0; i < desired_pos; i++){
 					itensor::IndexSet forward_indices = itensor::commonInds(MPS[i], MPS[i+1]);
+					Print(MPS[i]);
+					Print(MPS[i+1]);
 					auto [forward, diag, back] = itensor::svd(MPS[i], forward_indices);
 					MPS[i] = back;
 					MPS[i+1] *= (forward*diag);
@@ -72,6 +74,8 @@ class AuxMPS{
 				}
 				for(int i = length-1; i > desired_pos; i--){
 					itensor::IndexSet back_indices = itensor::commonInds(MPS[i], MPS[i-1]);
+					Print(MPS[i]);
+					Print(MPS[i-1]);
 					auto [back, diag, forward] = itensor::svd(MPS[i], back_indices);
 					MPS[i] = forward;
 					MPS[i-1] *= (back*diag);
@@ -105,6 +109,8 @@ class AuxMPS{
 				set_position(i);
 				itensor::IndexSet forward_indices = itensor::commonInds(MPS[i], MPS[i+1]);
 				if(itensor::length(forward_indices) == 0){continue;}
+				Print(MPS[i]);
+				Print(MPS[i+1]);
 				auto [forward, diag, back] = itensor::svd(MPS[i], forward_indices, {"MaxDim", truncation_index});
 				MPS[i] = back;
 				MPS[i+1] *= (forward*diag);
