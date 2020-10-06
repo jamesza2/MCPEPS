@@ -87,7 +87,7 @@ int main(int argc, char *argv[]){
 	SpinConfigPEPS scp(PEPS1, spin_config, 1);
 	double inner_product = PEPS1.inner_product(scp);
 
-	NoSitePEPS nsp = MCPEPS::contract(PEPS1,scp,1);
+	NoSitePEPS nsp = PEPS1.contract(scp);
 	std::cerr << "Getting environments..." << std::endl;
 	std::vector<itensor::ITensor> envs = nsp.environments(PEPS1.site_indices, spin_config);
 
