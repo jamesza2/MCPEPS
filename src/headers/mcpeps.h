@@ -216,6 +216,7 @@ class NoSitePEPS
 		//Gets the environment of every site 
 		std::vector<itensor::ITensor> environments(const itensor::IndexSet &site_indices, const std::vector<int> &spin_config){
 			AuxMPS up_aux(2*_Nx);
+			AuxMPS old_up_aux(2*_Nx);
 			std::vector<itensor::ITensor> envs(_num_sites);
 			std::list<AuxMPS> down_auxes = get_vd_auxiliaries();
 			auto down_aux_it = down_auxes.begin();
@@ -225,8 +226,9 @@ class NoSitePEPS
 				//Get the up aux at row i-1 and the down aux at row i+1
 				if(i > 0){
 					std::cerr << "Getting up auxiliary..." << std::endl;
-					up_aux = get_vu_auxiliary(i-1, up_aux, i-2);
+					up_aux = get_vu_auxiliary(i-1, old_up_aux, i-2);
 					up_aux.print_self("UP_AUX");
+					old_up_aux = AuxMPS(up_aux);
 					//Contract the up aux with the rest of row i-1
 					for(int j = 0; j < _Ny; j++){
 						up_aux.MPS.at(2*j) *= _site_tensors[i-1][j][1];
