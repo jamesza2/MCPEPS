@@ -40,12 +40,16 @@ itensor::ITensor adapt_tensor(NoSitePEPS &target_PEPS, NoSitePEPS &original_PEPS
 		new_tensor *= itensor::delta(links[l].first, links[l].second);
 	}
 	//Check new tensor contains the same indices as no site tensor except for the extra site index
-	if(itensor::length(itensor::uniqueInds(new_tensor.inds(), target_PEPS._site_tensors[i][j][k].inds())) != 1){
+	/*if(itensor::length(itensor::uniqueInds(new_tensor.inds(), target_PEPS._site_tensors[i][j][k].inds())) != 1){
 		std::cout << "WARNING: Index sets of original no-site tensor and new tensor different" << std::endl;
 		Print(target_PEPS._site_tensors[i][j][k]);
 		Print(new_tensor);
-	}
+	}*/
 	return new_tensor;
+}
+itensor::ITensor adapt_tensor(NoSitePEPS &target_PEPS, NoSitePEPS &original_PEPS, int site){
+	auto [i,j,k] = target_PEPS.position_of_site(site);
+	return adapt_tensor(target_PEPS, original_PEPS, i,j,k);
 }
 
 void update_site_tensor(NoSitePEPS &no_site, MCKPEPS &original, int i, int j, int k, int new_sz, double wavefunction_normalization = 1){
