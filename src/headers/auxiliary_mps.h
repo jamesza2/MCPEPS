@@ -111,6 +111,10 @@ class AuxMPS{
 				set_position(i);
 				itensor::IndexSet forward_indices = itensor::commonInds(MPS[i], MPS[i+1]);
 				if(itensor::length(forward_indices) == 0){continue;}
+				if(itensor::length(forward_indices) == itensor::length(MPS[i].inds())){ //If MPS[i] is just an orphaned site, contract it into MPS[i+1]
+					MPS[i+1] *= MPS[i];
+					MPS[i] = itensor::ITensor(1);
+				}
 				Print(MPS[i]);
 				Print(MPS[i+1]);
 				auto [forward, diag, back] = itensor::svd(MPS[i], forward_indices, {"MaxDim", truncation_index});
