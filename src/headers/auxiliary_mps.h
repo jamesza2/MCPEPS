@@ -114,6 +114,7 @@ class AuxMPS{
 				if(itensor::length(forward_indices) == itensor::length(MPS[i].inds())){ //If MPS[i] is just an orphaned site, contract it into MPS[i+1]
 					MPS[i+1] *= MPS[i];
 					MPS[i] = itensor::ITensor(1);
+					continue;
 				}
 				Print(MPS[i]);
 				Print(MPS[i+1]);
