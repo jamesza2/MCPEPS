@@ -151,8 +151,8 @@ class AuxMPS{
 
 		void print_self(){
 			for(int i = 0; i < length; i++){
-				std::cerr << "Site " << i << ": "
-				Print(MPS[i]);
+				std::cerr << "Site " << i << ": ";
+				Print(MPS.at(i));
 			}
 		}
 
