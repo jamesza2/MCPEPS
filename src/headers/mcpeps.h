@@ -12,6 +12,8 @@
 #include <map>
 #include <list>
 
+class SpinConfigPEPS;
+
 //Normal: Uses the previous 2 total weights to estimate energy, then attempts to make the total walker weight num_walkers
 //Constant: Uses a single estimate for the energy and nothing else
 //Antitrunc: Just tries to compensate for the truncation
@@ -874,11 +876,6 @@ class MCKPEPS : public NoSitePEPS{
 			return nsp;
 		}
 
-		NoSitePEPS contract(const std::vector<int> &other, double wavefunction_normalization = 1){
-			SpinConfigPEPS scp(*this, other, wavefunction_normalization);
-			return contract(scp);
-		}
-
 		double inner_product(MCKPEPS &other){
 			bool _log = (_log_file != "");
 			std::streambuf *coutbuf = std::cout.rdbuf();
@@ -1260,5 +1257,12 @@ class SpinConfigPEPS : public MCKPEPS
 		int _spin_max;
 
 };
+namespace MCPEPS{
+	NoSitePEPS contract(MCKPEPS &PEPS, const std::vector<int> &other, double wavefunction_normalization = 1){
+		SpinConfigPEPS scp(PEPS, other, wavefunction_normalization);
+		return PEPS.contract(scp);
+	}
+}
+
 
 #endif
