@@ -218,12 +218,15 @@ class NoSitePEPS
 			for(int i = 0; i < _Nx; i++){
 				//Get the up aux at row i-1 and the down aux at row i+1
 				if(i > 0){
+					std::cerr << "Getting up auxiliary..." << std::endl;
 					up_aux = get_vu_auxiliary(i-1, up_aux, i-2);
+					up_aux.print_self();
 					//Contract the up aux with the rest of row i-1
 					for(int j = 0; j < _Ny; j++){
-						up_aux.MPS[2*j] *= _site_tensors[i-1][j][1];
-						up_aux.MPS[2*j+1] *= _site_tensors[i-1][j][2];
+						up_aux.MPS.at(2*j) *= _site_tensors[i-1][j][1];
+						up_aux.MPS.at(2*j+1) *= _site_tensors[i-1][j][2];
 					}
+					up_aux.print_self();
 					up_aux.truncate(_Dc);
 				}
 				//Get the list of right auxiliaries
