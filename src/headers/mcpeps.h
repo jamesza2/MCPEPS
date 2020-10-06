@@ -169,6 +169,7 @@ class NoSitePEPS
 			}
 			for(int i = prior_index; i < target_index; i++){
 				//First step: Contracting the old AuxMPS into the current row
+				std::cerr << "Contracting old AuxMPS into row " << i << "..." << std::endl;
 				previous_row.clear();
 				for(int j = 0; j < _Ny; j++){
 					previous_row.add_tensor(_site_tensors[i][j][1]);
@@ -178,8 +179,11 @@ class NoSitePEPS
 					previous_row.MPS[aux_index] *= prior_aux.MPS[aux_index];
 				}
 				//Second step: Truncating the row
+				std::cerr << "Truncating row " << i << "..." << std::endl;
 				previous_row.truncate(_Dc);
+				previous_row.print_self("PREV_ROW");
 				//Third step: Contracting the row into the intermediate row below
+				std::cerr << "Contracting row " << i << " with row " << i+1 << std::endl;
 				unsplit_MPS.clear();
 				unsplit_MPS.add_tensor(_site_tensors[i+1][0][0]);
 				unsplit_MPS.MPS[0] *= (previous_row.MPS[0]*previous_row.MPS[1]);
@@ -191,13 +195,13 @@ class NoSitePEPS
 				}
 				unsplit_MPS.add_tensor(_site_tensors[i+1][_Ny-1][0]);
 				unsplit_MPS.MPS[_Ny-1] *= previous_row.MPS[2*_Ny-1];
+				unsplit_MPS.print_self("UNSPLIT_MPS");
 				//Fourth step: Splitting the intermediate row tensors
+				std::cerr << "Splitting unsplit row " << i+1 << "..." << std::endl;
 				prior_aux.clear();
-				for(int j = 0; j < _Ny-1; j++){
-					itensor::IndexSet forward_indices = itensor::commonInds(unsplit_MPS.MPS[j], unsplit_MPS.MPS[j+1]);
-					if((i > 0) && (j<_Ny-1)){
-						forward_indices = itensor::unionInds(forward_indices, itensor::commonInds(unsplit_MPS.MPS[j], _site_tensors[i-1][j+1][1]));
-					}
+				for(int j = 0; j < _Ny; j++){
+					itensor::IndexSet forward_indices = itensor::commonInds(unsplit_MPS.MPS[j], _site_tensors[i+1][j][2]);
+					if(j < _Ny-1){forward_indices = itensor::unionInds(forward_indices, itensor::commonInds(unsplit_MPS.MPS[j], unsplit_MPS.MPS[j+1]))};
 					auto [forward, sing_vals, back] = itensor::svd(unsplit_MPS.MPS[j], forward_indices, {"MaxDim", _Dc});
 					prior_aux.add_tensor(back);
 					forward *= sing_vals;
@@ -220,13 +224,13 @@ class NoSitePEPS
 				if(i > 0){
 					std::cerr << "Getting up auxiliary..." << std::endl;
 					up_aux = get_vu_auxiliary(i-1, up_aux, i-2);
-					up_aux.print_self();
+					up_aux.print_self("UP_AUX");
 					//Contract the up aux with the rest of row i-1
 					for(int j = 0; j < _Ny; j++){
 						up_aux.MPS.at(2*j) *= _site_tensors[i-1][j][1];
 						up_aux.MPS.at(2*j+1) *= _site_tensors[i-1][j][2];
 					}
-					up_aux.print_self();
+					up_aux.print_self("UP_AUX_COMB");
 					up_aux.truncate(_Dc);
 				}
 				//Get the list of right auxiliaries

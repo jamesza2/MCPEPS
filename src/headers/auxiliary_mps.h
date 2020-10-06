@@ -149,9 +149,10 @@ class AuxMPS{
 			}
 		}
 
-		void print_self(){
+		void print_self(std::string name = ""){
+			if(name != ""){name += " ";}
 			for(int i = 0; i < length; i++){
-				std::cerr << "Site " << i << ": ";
+				std::cerr << name << "Site " << i << ": ";
 				Print(MPS.at(i));
 			}
 		}
