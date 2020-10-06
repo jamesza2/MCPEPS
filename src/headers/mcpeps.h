@@ -175,9 +175,11 @@ class NoSitePEPS
 					previous_row.add_tensor(_site_tensors[i][j][1]);
 					previous_row.add_tensor(_site_tensors[i][j][2]);
 				}
+				previous_row.print_self("PREV_ROW_UNCONTRACTED");
 				for(int aux_index = 0; aux_index < prior_aux.length; aux_index++){
 					previous_row.MPS[aux_index] *= prior_aux.MPS[aux_index];
 				}
+				previous_row.print_self("PREV_ROW");
 				//Second step: Truncating the row
 				std::cerr << "Truncating row " << i << "..." << std::endl;
 				previous_row.truncate(_Dc);
@@ -232,6 +234,7 @@ class NoSitePEPS
 					}
 					up_aux.print_self("UP_AUX_COMB");
 					up_aux.truncate(_Dc);
+					up_aux.print_self("UP_AUX_TRUNC");
 				}
 				//Get the list of right auxiliaries
 				std::vector<itensor::ITensor> right_auxes(_Ny+1);

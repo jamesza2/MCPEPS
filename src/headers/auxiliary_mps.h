@@ -61,7 +61,7 @@ class AuxMPS{
 		//Canonizes to the desired position
 		//Tensors might have multiple sets of links with each other, that's fine
 		void set_position(int desired_pos){
-			std::cerr << "In position..." << std::endl;
+			//std::cerr << "In position..." << std::endl;
 			if(position == -1){
 				for(int i = 0; i < desired_pos; i++){
 					itensor::IndexSet forward_indices = itensor::commonInds(MPS[i], MPS[i+1]);
@@ -71,8 +71,8 @@ class AuxMPS{
 						MPS[i] = itensor::ITensor(1);
 						continue;
 					}
-					Print(MPS[i]);
-					Print(MPS[i+1]);
+					//Print(MPS[i]);
+					//Print(MPS[i+1]);
 					auto [forward, diag, back] = itensor::svd(MPS[i], forward_indices);
 					MPS[i] = back;
 					MPS[i+1] *= (forward*diag);
@@ -87,8 +87,8 @@ class AuxMPS{
 						MPS[i] = itensor::ITensor(1);
 						continue;
 					}
-					Print(MPS[i]);
-					Print(MPS[i-1]);
+					//Print(MPS[i]);
+					//Print(MPS[i-1]);
 					auto [back, diag, forward] = itensor::svd(MPS[i], back_indices);
 					MPS[i] = forward;
 					MPS[i-1] *= (back*diag);
@@ -130,10 +130,10 @@ class AuxMPS{
 		}
 
 		void truncate(int truncation_index){
-			std::cerr << "In truncate..." << std::endl;
+			//std::cerr << "In truncate..." << std::endl;
 			for(int i = 0; i < length-1; i++){
 				set_position(i);
-				std::cerr << "In truncate..." << std::endl;
+				//std::cerr << "In truncate..." << std::endl;
 				itensor::IndexSet forward_indices = itensor::commonInds(MPS[i], MPS[i+1]);
 				if(itensor::length(forward_indices) == 0){continue;}
 				if(itensor::length(forward_indices) == itensor::length(MPS[i].inds())){ //If MPS[i] is just an orphaned site, contract it into MPS[i+1]
@@ -141,8 +141,8 @@ class AuxMPS{
 					MPS[i] = itensor::ITensor(1);
 					continue;
 				}
-				Print(MPS[i]);
-				Print(MPS[i+1]);
+				//Print(MPS[i]);
+				//Print(MPS[i+1]);
 				auto [forward, diag, back] = itensor::svd(MPS[i], forward_indices, {"MaxDim", truncation_index});
 				MPS[i] = back;
 				MPS[i+1] *= (forward*diag);
