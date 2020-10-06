@@ -65,6 +65,12 @@ class AuxMPS{
 			if(position == -1){
 				for(int i = 0; i < desired_pos; i++){
 					itensor::IndexSet forward_indices = itensor::commonInds(MPS[i], MPS[i+1]);
+					if(itensor::length(forward_indices) == 0){continue;}
+					if(itensor::length(forward_indices) == itensor::length(MPS[i].inds())){
+						MPS[i+1] *= MPS[i];
+						MPS[i] = itensor::ITensor(1);
+						continue;
+					}
 					Print(MPS[i]);
 					Print(MPS[i+1]);
 					auto [forward, diag, back] = itensor::svd(MPS[i], forward_indices);
@@ -75,6 +81,12 @@ class AuxMPS{
 				}
 				for(int i = length-1; i > desired_pos; i--){
 					itensor::IndexSet back_indices = itensor::commonInds(MPS[i], MPS[i-1]);
+					if(itensor::length(back_indices) == 0){continue;}
+					if(itensor::length(back_indices) == itensor::length(MPS[i].inds())){
+						MPS[i-1] *= MPS[i];
+						MPS[i] = itensor::ITensor(1);
+						continue;
+					}
 					Print(MPS[i]);
 					Print(MPS[i-1]);
 					auto [back, diag, forward] = itensor::svd(MPS[i], back_indices);
@@ -88,6 +100,12 @@ class AuxMPS{
 				if(position < desired_pos){
 					for(int i = position; i < desired_pos; i++){
 						itensor::IndexSet forward_indices = itensor::commonInds(MPS[i], MPS[i+1]);
+						if(itensor::length(forward_indices) == 0){continue;}
+						if(itensor::length(forward_indices) == itensor::length(MPS[i].inds())){
+							MPS[i+1] *= MPS[i];
+							MPS[i] = itensor::ITensor(1);
+							continue;
+						}
 						auto [forward, diag, back] = itensor::svd(MPS[i], forward_indices);
 						MPS[i] = back;
 						MPS[i+1] *= (forward*diag);
@@ -96,6 +114,12 @@ class AuxMPS{
 				if(position > desired_pos){
 					for(int i = position; i > desired_pos; i--){
 						itensor::IndexSet back_indices = itensor::commonInds(MPS[i], MPS[i-1]);
+						if(itensor::length(back_indices) == 0){continue;}
+						if(itensor::length(back_indices) == itensor::length(MPS[i].inds())){
+							MPS[i-1] *= MPS[i];
+							MPS[i] = itensor::ITensor(1);
+							continue;
+						}
 						auto [back, diag, forward] = itensor::svd(MPS[i], back_indices);
 						MPS[i] = forward;
 						MPS[i-1] *= (back*diag);
@@ -109,6 +133,7 @@ class AuxMPS{
 			std::cerr << "In truncate..." << std::endl;
 			for(int i = 0; i < length-1; i++){
 				set_position(i);
+				std::cerr << "In truncate..." << std::endl;
 				itensor::IndexSet forward_indices = itensor::commonInds(MPS[i], MPS[i+1]);
 				if(itensor::length(forward_indices) == 0){continue;}
 				if(itensor::length(forward_indices) == itensor::length(MPS[i].inds())){ //If MPS[i] is just an orphaned site, contract it into MPS[i+1]
