@@ -61,6 +61,7 @@ class AuxMPS{
 		//Canonizes to the desired position
 		//Tensors might have multiple sets of links with each other, that's fine
 		void set_position(int desired_pos){
+			std::cerr << "In position..." << std::endl;
 			if(position == -1){
 				for(int i = 0; i < desired_pos; i++){
 					itensor::IndexSet forward_indices = itensor::commonInds(MPS[i], MPS[i+1]);
@@ -105,6 +106,7 @@ class AuxMPS{
 		}
 
 		void truncate(int truncation_index){
+			std::cerr << "In truncate..." << std::endl;
 			for(int i = 0; i < length-1; i++){
 				set_position(i);
 				itensor::IndexSet forward_indices = itensor::commonInds(MPS[i], MPS[i+1]);
