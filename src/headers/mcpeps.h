@@ -201,7 +201,7 @@ class NoSitePEPS
 				prior_aux.clear();
 				for(int j = 0; j < _Ny; j++){
 					itensor::IndexSet forward_indices = itensor::commonInds(unsplit_MPS.MPS[j], _site_tensors[i+1][j][2]);
-					if(j < _Ny-1){forward_indices = itensor::unionInds(forward_indices, itensor::commonInds(unsplit_MPS.MPS[j], unsplit_MPS.MPS[j+1]))};
+					if(j < _Ny-1){forward_indices = itensor::unionInds(forward_indices, itensor::commonInds(unsplit_MPS.MPS[j], unsplit_MPS.MPS[j+1]));};
 					auto [forward, sing_vals, back] = itensor::svd(unsplit_MPS.MPS[j], forward_indices, {"MaxDim", _Dc});
 					prior_aux.add_tensor(back);
 					forward *= sing_vals;
