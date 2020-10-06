@@ -142,7 +142,8 @@ class NoSitePEPS
 					}
 					auto [forward, sing_vals, back] = itensor::svd(unsplit_MPS.MPS[j], forward_indices, {"MaxDim", _Dc});
 					prior_aux.add_tensor(back);
-					prior_aux.add_tensor(sing_vals*forward);
+					forward *= sing_vals;
+					prior_aux.add_tensor(forward);
 				}
 			}
 			return prior_aux;
@@ -157,10 +158,11 @@ class NoSitePEPS
 				prior_index = 0;
 				prior_aux = AuxMPS(AuxType::VU);
 				for(int j = 0; j < _Ny; j++){
-					itensor::IndexSet forward_index = itensor::commonInds(_site_tensors[i][j][0], _site_tensors[i][j][2]);
-					auto [forward, sing_vals, back] = itensor::svd(_site_tensors[i][j][0], forward_index, {"MaxDim", _Dc});
+					itensor::IndexSet forward_index = itensor::commonInds(_site_tensors[0][j][0], _site_tensors[0][j][2]);
+					auto [forward, sing_vals, back] = itensor::svd(_site_tensors[0][j][0], forward_index, {"MaxDim", _Dc});
 					prior_aux.add_tensor(back);
-					prior_aux.add_tensor(sing_vals*forward);
+					forward *= sing_vals;
+					prior_aux.add_tensor(forward);
 				}
 			}
 			for(int i = prior_index; i < target_index; i++){
@@ -178,8 +180,8 @@ class NoSitePEPS
 				//Third step: Contracting the row into the intermediate row below
 				unsplit_MPS.clear();
 				unsplit_MPS.add_tensor(_site_tensors[i+1][0][0]);
-				unsplit_MPS.MPS[j] *= (previous_row.MPS[0]*previous_row.MPS[1]);
-				unsplit_MPS.MPS[j] *= previous_row.MPS[2];
+				unsplit_MPS.MPS[0] *= (previous_row.MPS[0]*previous_row.MPS[1]);
+				unsplit_MPS.MPS[0] *= previous_row.MPS[2];
 				for(int j = 1; j < _Ny-1; j++){
 					unsplit_MPS.add_tensor(_site_tensors[i+1][j][0]);
 					unsplit_MPS.MPS[j] *= previous_row.MPS[2*j+1];
@@ -190,13 +192,14 @@ class NoSitePEPS
 				//Fourth step: Splitting the intermediate row tensors
 				prior_aux.clear();
 				for(int j = 0; j < _Ny-1; j++){
-					itensor::IndexSet forward_indices = itensor::commonInds(unsplit_MPS[j], unsplit_MPS[j+1]);
+					itensor::IndexSet forward_indices = itensor::commonInds(unsplit_MPS.MPS[j], unsplit_MPS.MPS[j+1]);
 					if((i > 0) && (j<_Ny-1)){
-						forward_indices = itensor::unionInds(forward_indices, itensor::commonInds(unsplit_MPS[j], _site_tensors[i-1][j+1][1]));
+						forward_indices = itensor::unionInds(forward_indices, itensor::commonInds(unsplit_MPS.MPS[j], _site_tensors[i-1][j+1][1]));
 					}
-					auto [forward, sing_vals, back] = itensor::svd(unsplit_MPS[j], forward_indices, {"MaxDim", _Dc});
+					auto [forward, sing_vals, back] = itensor::svd(unsplit_MPS.MPS[j], forward_indices, {"MaxDim", _Dc});
 					prior_aux.add_tensor(back);
-					prior_aux.add_tensor(sing_vals*forward);
+					forward *= sing_vals;
+					prior_aux.add_tensor(forward);
 				}
 			}
 			return prior_aux;
@@ -575,11 +578,11 @@ class NoSitePEPS
 			return std::make_tuple(i, j, k);
 		}
 
-		itensor::ITensor site_tensor(int i, int j, int k) const{
+		itensor::ITensor site_tensor(int i, int j, int k) {
 			return _site_tensors[i][j][k];
 		}
 
-		void set_site_tensor(int i, int j, int k, itensor::ITensor &new_tensor) const{
+		void set_site_tensor(int i, int j, int k, itensor::ITensor &new_tensor){
 			if(!itensor::hasSameInds(_site_tensors[i][j][k].inds(), new_tensor.inds())){
 				std::cerr << "Warning: index mismatch" << std::endl;
 				Print(_site_tensors[i][j][k]);
@@ -603,7 +606,7 @@ class NoSitePEPS
 			return std::make_tuple(i,j);
 		}
 
-		int site_index_from_position(int i, int j, int k){
+		int site_index_from_position(int i, int j, int k) const{
 			return i*_Ny*UNIT_CELL_SIZE + j*UNIT_CELL_SIZE + k;
 		}
 
@@ -614,11 +617,11 @@ class NoSitePEPS
 			return link_index_from_position(i1, j1, k1, i2, j2, k2);
 		}
 
-		itensor::Index link_index(int site_1, int site_2) const{
+		itensor::Index link_index(int site_1, int site_2){
 			return _link_indices[pair_to_link_index(site_1, site_2)];
 		}
 
-		itensor::Index link_index(int i1, int j1, int k1, int i2, int j2, int k2) const{
+		itensor::Index link_index(int i1, int j1, int k1, int i2, int j2, int k2){
 			return link_index(site_index_from_position(i1, j1, k1), site_index_from_position(i2, j2, k2));
 		}
 
@@ -820,8 +823,8 @@ class MCKPEPS : public NoSitePEPS{
 						//For link (site_i, site_j), create a combiner tensor and apply it to both
 						auto [site_i_x, site_i_y, site_i_z] = position_of_site(site_i);
 						auto [site_j_x, site_j_y, site_j_z] = position_of_site(site_j);
-						itensor::Index original_link_1 = _link_indices[link_index];
-						itensor::Index original_link_2 = other._link_indices[link_index];
+						itensor::Index original_link_1 = _link_indices.at(link_index);
+						itensor::Index original_link_2 = other._link_indices.at(link_index);
 						auto [Combiner_link, combined_index] = itensor::combiner(original_link_1, original_link_2);
 						combined_tensors[site_i_x][site_i_y][site_i_z] *= Combiner_link;
 						combined_tensors[site_j_x][site_j_y][site_j_z] *= Combiner_link;
@@ -1172,10 +1175,10 @@ class SpinConfigPEPS : public MCKPEPS
 			_spin_max = itensor::dim(base_state.site_indices[0]);
 		}
 
-		SpinConfigPEPS(MCKPEPS &base_state, std::vector<int> &spin_config, double wavefunction_normalization = 1) : MCKPEPS(base_state.site_indices, base_state.Nx(), base_state.Ny(), 1, 1, {"RandomizeSites",false}){
+		SpinConfigPEPS(MCKPEPS &base_state, std::vector<int> spin_config, const double wavefunction_normalization = 1) : MCKPEPS(base_state.site_indices, base_state.Nx(), base_state.Ny(), 1, 1, {"RandomizeSites",false}){
 			_spin_config = spin_config;
 			_spin_max = itensor::dim(base_state.site_indices[0]);
-			set_spins(spin_config, wavefunction_normalization);
+			set_spins(_spin_config, wavefunction_normalization);
 		}
 
 		void set_spin(int i , int j, int k, int spin_value, double wavefunction_normalization = 1){
@@ -1226,9 +1229,9 @@ class SpinConfigPEPS : public MCKPEPS
 			change_spin(std::get<0>(ijk), std::get<1>(ijk), std::get<2>(ijk),spin_value);
 		}
 
-		void set_spins(std::vector<int> &spin_config, double wavefunction_normalization = 1){
+		void set_spins(const std::vector<int> &spin_config, const double wavefunction_normalization = 1){
 			for(int spin_index = 0; spin_index < spin_config.size(); spin_index ++){
-				set_spin(spin_index, spin_config[spin_index], wavefunction_normalization);
+				set_spin(spin_index, spin_config.at(spin_index), wavefunction_normalization);
 			}
 		}
 
