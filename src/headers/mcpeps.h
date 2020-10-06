@@ -215,8 +215,8 @@ class NoSitePEPS
 
 		//Gets the environment of every site 
 		std::vector<itensor::ITensor> environments(const itensor::IndexSet &site_indices, const std::vector<int> &spin_config){
-			AuxMPS up_aux(2*_Nx);
-			AuxMPS old_up_aux(2*_Nx);
+			AuxMPS up_aux(2*_Ny);
+			AuxMPS old_up_aux(2*_Ny);
 			std::vector<itensor::ITensor> envs(_num_sites);
 			std::list<AuxMPS> down_auxes = get_vd_auxiliaries();
 			auto down_aux_it = down_auxes.begin();
