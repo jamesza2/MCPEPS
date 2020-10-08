@@ -38,7 +38,7 @@ void get_sample(MCKPEPS &psi, NoSitePEPS &contracted, std::vector<int> &spin_con
 		local_energy += new_wavefn*possible_mes[me_index].second/wavefn;
 	}
 	//std::cerr << "Finding environments..." << std::endl;
-	auto envs = nsp.environments(psi.site_indices, spin_config);
+	auto envs = contracted.environments(psi.site_indices, spin_config);
 	for(int site_index = 0; site_index < psi.size(); site_index++){
 		adapt_tensor(psi, contracted, envs[site_index], site_index);
 		Delta[site_index] += envs[site_index]/wavefn;
