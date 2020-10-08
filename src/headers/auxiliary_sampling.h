@@ -54,7 +54,7 @@ itensor::ITensor adapt_tensor(NoSitePEPS &target_PEPS, NoSitePEPS &original_PEPS
 
 void adapt_tensor(NoSitePEPS &target_PEPS, NoSitePEPS &original_PEPS, itensor::ITensor &original_tensor, int site){
 	auto [i,j,k] = target_PEPS.position_of_site(site);
-	adapt_tensor(target_PEPS, original_PEPS, original_tensor i,j,k);
+	adapt_tensor(target_PEPS, original_PEPS, original_tensor, i,j,k);
 }
 
 itensor::ITensor adapt_tensor(NoSitePEPS &target_PEPS, NoSitePEPS &original_PEPS, int site){
