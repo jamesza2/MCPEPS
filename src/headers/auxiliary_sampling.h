@@ -24,10 +24,8 @@ class Randomizer{
 		}
 };
 
-
-
-//adapt a original_PEPS tensor at (i,j,k) to use the link indices of target_PEPS instead
-itensor::ITensor adapt_tensor(NoSitePEPS &target_PEPS, NoSitePEPS &original_PEPS, int i, int j, int k){
+//adapt a original tensor with the same indices as the Original_PEPS' [i,j,k] indices to use the link indices of target_PEPS instead
+void adapt_tensor(NoSitePEPS &target_PEPS, NoSitePEPS &original_PEPS, itensor::ITensor &original_tensor, int i, int j, int k){
 	int site_index = target_PEPS.site_index_from_position(i,j,k);
 	std::vector<std::pair<itensor::Index, itensor::Index>> links;
 	for(int neighbor_index : target_PEPS.bonds.nn_at(site_index)){
@@ -35,18 +33,30 @@ itensor::ITensor adapt_tensor(NoSitePEPS &target_PEPS, NoSitePEPS &original_PEPS
 		itensor::Index original_link = original_PEPS.link_index(site_index, neighbor_index);
 		links.push_back(std::pair<itensor::Index, itensor::Index>(target_link, original_link));
 	}
-	itensor::ITensor new_tensor = original_PEPS._site_tensors[i][j][k];
 	for(int l = 0; l < links.size(); l++){
-		new_tensor *= itensor::delta(links[l].first, links[l].second);
+		original_tensor *= itensor::delta(links[l].first, links[l].second);
 	}
+}
+
+//adapt a original_PEPS tensor at (i,j,k) to use the link indices of target_PEPS instead
+itensor::ITensor adapt_tensor(NoSitePEPS &target_PEPS, NoSitePEPS &original_PEPS, int i, int j, int k){
+	
 	//Check new tensor contains the same indices as no site tensor except for the extra site index
 	/*if(itensor::length(itensor::uniqueInds(new_tensor.inds(), target_PEPS._site_tensors[i][j][k].inds())) != 1){
 		std::cout << "WARNING: Index sets of original no-site tensor and new tensor different" << std::endl;
 		Print(target_PEPS._site_tensors[i][j][k]);
 		Print(new_tensor);
 	}*/
+	itensor::ITensor new_tensor = original_PEPS._site_tensors[i][j][k];
+	adapt_tensor(target_PEPS, original_PEPS, new_tensor, int i, int j, int k);
 	return new_tensor;
 }
+
+void adapt_tensor(NoSitePEPS &target_PEPS, NoSitePEPS &original_PEPS, itensor::ITensor &original_tensor, int site){
+	auto [i,j,k] = target_PEPS.position_of_site(site);
+	adapt_tensor(target_PEPS, original_PEPS, original_tensor i,j,k);
+}
+
 itensor::ITensor adapt_tensor(NoSitePEPS &target_PEPS, NoSitePEPS &original_PEPS, int site){
 	auto [i,j,k] = target_PEPS.position_of_site(site);
 	return adapt_tensor(target_PEPS, original_PEPS, i,j,k);

@@ -22,14 +22,14 @@ itensor::ITensor signelts(itensor::ITensor site){
 }
 
 //Gets samples of Delta, DeltaE, etc. for one step
-void get_sample(MCKPEPS &psi, std::vector<int> &spin_config, const Heisenberg &H, std::vector<itensor::ITensor> &Delta, std::vector<itensor::ITensor> &DeltaE, double &E, const double update_size){
-	std::cerr << "    Taking sample...";
+void get_sample(MCKPEPS &psi, NoSitePEPS &contracted, std::vector<int> &spin_config, const Heisenberg &H, std::vector<itensor::ITensor> &Delta, std::vector<itensor::ITensor> &DeltaE, double &E, const double update_size){
+	//std::cerr << "    Taking sample...";
 	Randomizer r;
-	std::cerr << "v direction...";
+	//std::cerr << "v direction...";
 	sample_v_direction(psi, spin_config, r);
-	std::cerr << "s direction...";
+	//std::cerr << "s direction...";
 	sample_s_direction(psi, spin_config, r);
-	std::cerr << "l direction...";
+	//std::cerr << "l direction...";
 	double wavefn = sample_l_direction(psi, spin_config, r);
 	auto possible_mes = H.possible_matrix_elements(spin_config);
 	double local_energy = 0;
@@ -37,12 +37,10 @@ void get_sample(MCKPEPS &psi, std::vector<int> &spin_config, const Heisenberg &H
 		double new_wavefn = wavefunction(possible_mes[me_index].first, psi);
 		local_energy += new_wavefn*possible_mes[me_index].second/wavefn;
 	}
-	std::cerr << "Finding environments..." << std::endl;
-	SpinConfigPEPS scp(psi, spin_config, 1);
-	NoSitePEPS nsp = psi.contract(scp);
-	//nsp.print_self();
+	//std::cerr << "Finding environments..." << std::endl;
 	auto envs = nsp.environments(psi.site_indices, spin_config);
 	for(int site_index = 0; site_index < psi.size(); site_index++){
+		adapt_tensor(psi, contracted, envs[site_index], site_index);
 		Delta[site_index] += envs[site_index]/wavefn;
 		DeltaE[site_index] += envs[site_index]*local_energy/wavefn;
 	}
@@ -55,8 +53,10 @@ double update(MCKPEPS &psi, std::vector<int> &spin_config, const Heisenberg &H, 
 	std::vector<itensor::ITensor> Delta(psi.size());
 	std::vector<itensor::ITensor> DeltaE(psi.size());
 	double E = 0;
+	SpinConfigPEPS scp(psi, spin_config, 1);
+	NoSitePEPS nsp = psi.contract(scp);
 	for(int sample = 0; sample < M; sample++){
-		get_sample(psi, spin_config, H, Delta, DeltaE, E, update_size);
+		get_sample(psi, nsp, spin_config, H, Delta, DeltaE, E, update_size);
 	}
 	E /= M;
 	itensor::ITensor grad;
