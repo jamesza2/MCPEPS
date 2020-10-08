@@ -224,8 +224,8 @@ class NoSitePEPS
 			int prior_index = -1;
 			for(int i = 0; i < _Nx; i++){
 				//Get the up aux at row i-1 and the down aux at row i+1
+				std::cerr << "      Getting up auxiliary...";
 				if(i > 0){
-					//std::cerr << "Getting up auxiliary..." << std::endl;
 					up_aux = get_vu_auxiliary(i-1, old_up_aux, i-2);
 					//up_aux.print_self("UP_AUX");
 					old_up_aux = AuxMPS(up_aux);
@@ -239,6 +239,7 @@ class NoSitePEPS
 					//up_aux.print_self("UP_AUX_TRUNC");
 				}
 				//Get the list of right auxiliaries
+				std::cerr << "Getting right auxiliaries";
 				std::vector<itensor::ITensor> right_auxes(_Ny+1);
 				itensor::ITensor blank(1);
 				right_auxes[_Ny] = blank;
@@ -254,6 +255,7 @@ class NoSitePEPS
 					right_auxes[j] = left_int;
 				}
 				//Get the three environments
+				std::cerr << "Getting the environments..." << std::endl;
 				itensor::ITensor left_aux = up_aux.MPS[0];
 				for(int j = 0; j < _Ny; j++){
 					//Get the k=0 environment
@@ -895,7 +897,7 @@ class MCKPEPS : public NoSitePEPS{
 			if(_log){
 				std::cout.rdbuf(log_file_stream.rdbuf());
 			}
-			std::cout << "Checking dimensions...\n";
+			//std::cout << "Checking dimensions...\n";
 			if((_Nx != other._Nx) || (_Ny != other._Ny)){
 				std::cout << "ERROR: Can't contract PEPS of incompatible dimensions" << std::endl;
 			}
