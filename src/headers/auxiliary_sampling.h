@@ -48,7 +48,7 @@ itensor::ITensor adapt_tensor(NoSitePEPS &target_PEPS, NoSitePEPS &original_PEPS
 		Print(new_tensor);
 	}*/
 	itensor::ITensor new_tensor = original_PEPS._site_tensors[i][j][k];
-	adapt_tensor(target_PEPS, original_PEPS, new_tensor, int i, int j, int k);
+	adapt_tensor(target_PEPS, original_PEPS, new_tensor, i, j, k);
 	return new_tensor;
 }
 
