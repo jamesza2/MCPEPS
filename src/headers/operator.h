@@ -41,18 +41,18 @@ class Heisenberg : public MCOperator{
 		//Second int is the bond type (1 for NN, 2 for NNN, 3 for d)
 		Neighbors bonds;
 	public:
-		void set_J(std::map<std::string, double> &J_vals){
+		void set_J(const std::map<std::string, double> &J_vals){
 			if(J_vals.count("J1")){
-				_J1 = J_vals["J1"];
+				_J1 = J_vals.at("J1");
 			}
 			if(J_vals.count("J2")){
-				_J2 = J_vals["J2"];
+				_J2 = J_vals.at("J2");
 			}
 			if(J_vals.count("Jd")){
-				_Jd = J_vals["Jd"];
+				_Jd = J_vals.at("Jd");
 			}
 			if(J_vals.count("Jz")){
-				_Jz = J_vals["Jz"];
+				_Jz = J_vals.at("Jz");
 			}
 		}
 

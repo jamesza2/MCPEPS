@@ -38,11 +38,11 @@ class Neighbors{
 			}
 			set_up_bonds();
 		}
-		std::vector<std::pair<int, int>> at(int site){
-			return bond_matrices[site];
+		std::vector<std::pair<int, int>> at(int site) const{
+			return bond_matrices.at(site);
 		}
-		std::vector<int> nn_at(int site){
-			return nn_bonds[site];
+		std::vector<int> nn_at(int site) const{
+			return nn_bonds.at(site);
 		}
 	private:
 		void set_up_bonds(){

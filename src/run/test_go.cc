@@ -165,6 +165,6 @@ int main(int argc, char *argv[]){
 	
 	out.writeOutput(out_file_name);
 
-	std::cerr << "Final Energy: " << energies << " (" << opt_time << "s)" << std::endl;
+	std::cerr << "Final Energy: " << energies[energies.size()-1] << " (" << opt_time << "s)" << std::endl;
 	return 0;
 }
