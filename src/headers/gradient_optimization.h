@@ -7,7 +7,16 @@
 #include <ctime>
 
 itensor::ITensor signelts(itensor::ITensor site){
-	auto signelt = [](Real r) {return std::static_cast<double>((r>0)-(r<0));};
+	auto signelt = [](itensor::Real r) {
+		itensor::Real ret = 0;
+		if(r < 0){
+			ret -= 1;
+		}
+		if(r > 0){
+			ret += 1;
+		}
+		return ret;
+	};
 	site.apply(signelt);
 	return site;
 }
