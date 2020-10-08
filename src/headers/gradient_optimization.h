@@ -23,9 +23,13 @@ itensor::ITensor signelts(itensor::ITensor site){
 
 //Gets samples of Delta, DeltaE, etc. for one step
 void get_sample(MCKPEPS &psi, std::vector<int> &spin_config, const Heisenberg &H, std::vector<itensor::ITensor> &Delta, std::vector<itensor::ITensor> &DeltaE, double &E, const double update_size){
+	std::cerr << "    Taking sample...";
 	Randomizer r;
+	std::cerr << "v direction...";
 	sample_v_direction(psi, spin_config, r);
+	std::cerr << "s direction...";
 	sample_s_direction(psi, spin_config, r);
+	std::cerr << "l direction...";
 	double wavefn = sample_l_direction(psi, spin_config, r);
 	auto possible_mes = H.possible_matrix_elements(spin_config);
 	double local_energy = 0;
@@ -33,6 +37,7 @@ void get_sample(MCKPEPS &psi, std::vector<int> &spin_config, const Heisenberg &H
 		double new_wavefn = wavefunction(possible_mes[me_index].first, psi);
 		local_energy += new_wavefn*possible_mes[me_index].second/wavefn;
 	}
+	std::cerr << "Finding environments..." << std::endl;
 	SpinConfigPEPS scp(psi, spin_config, 1);
 	NoSitePEPS nsp = psi.contract(scp);
 	auto envs = nsp.environments(psi.site_indices, spin_config);
@@ -45,6 +50,7 @@ void get_sample(MCKPEPS &psi, std::vector<int> &spin_config, const Heisenberg &H
 
 //Updates the PEPS for one gradient optimization step. Returns the average energy.
 double update(MCKPEPS &psi, std::vector<int> &spin_config, const Heisenberg &H, const int M, const double update_size, Randomizer &r){
+	std::cerr << "Performing update..." << std::endl;
 	std::vector<itensor::ITensor> Delta(psi.size());
 	std::vector<itensor::ITensor> DeltaE(psi.size());
 	double E = 0;

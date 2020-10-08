@@ -334,8 +334,8 @@ class NoSitePEPS
 					//std::cout << "SVD Error: " << itensor::sqr(itensor::norm(unsplit_MPS[j]-left_tensor*sing_vals*right_tensor)/itensor::norm(unsplit_MPS[j])) << std::endl;
 					left_tensor *= sing_vals;
 					//std::cout << "Split tensors at i=" << i << ", j=" << j << std::endl;
-					Print(left_tensor);
-					Print(right_tensor);
+					//Print(left_tensor);
+					//Print(right_tensor);
 					aux.add_tensor(left_tensor);
 					aux.add_tensor(right_tensor);
 				}
@@ -990,7 +990,7 @@ class MCKPEPS : public NoSitePEPS{
 					}
 					
 					itensor::svd(row_tensors[j], left_tensor, sing_vals, right_tensor, {"MaxDim", _Dc});
-					std::cout << "SVD Error: " << itensor::sqr(itensor::norm(row_tensors[j]-left_tensor*sing_vals*right_tensor)/itensor::norm(row_tensors[j])) << std::endl;
+					//std::cout << "SVD Error: " << itensor::sqr(itensor::norm(row_tensors[j]-left_tensor*sing_vals*right_tensor)/itensor::norm(row_tensors[j])) << std::endl;
 					
 					left_tensor *= sing_vals;
 
@@ -1030,7 +1030,7 @@ class MCKPEPS : public NoSitePEPS{
 						left_tensor = itensor::ITensor(itensor::unionInds(links_left, link_up));
 					}
 					itensor::svd(combined_tensors[i-1][j][1], left_tensor, sing_vals, right_tensor, {"MaxDim", _Dc});
-					std::cout << "SVD Error: " << itensor::sqr(itensor::norm(combined_tensors[i-1][j][1]-left_tensor*sing_vals*right_tensor)/itensor::norm(combined_tensors[i-1][j][1])) << std::endl;
+					//std::cout << "SVD Error: " << itensor::sqr(itensor::norm(combined_tensors[i-1][j][1]-left_tensor*sing_vals*right_tensor)/itensor::norm(combined_tensors[i-1][j][1])) << std::endl;
 					
 					combined_tensors[i-1][j][1] = left_tensor;
 					combined_tensors[i-1][j][2] *= (sing_vals*right_tensor);
@@ -1041,7 +1041,7 @@ class MCKPEPS : public NoSitePEPS{
 						left_tensor = itensor::ITensor(link_up, links_left_2);
 						//TODO: Check that this doesn't modify the data on combined_tensors[i-1][j][1/2]?
 						itensor::svd(combined_tensors[i-1][j][2], left_tensor, sing_vals, right_tensor, {"MaxDim", _Dc});
-						std::cout << "SVD Error: " << itensor::sqr(itensor::norm(combined_tensors[i-1][j][2]-left_tensor*sing_vals*right_tensor)/itensor::norm(combined_tensors[i-1][j][2])) << std::endl;
+						//std::cout << "SVD Error: " << itensor::sqr(itensor::norm(combined_tensors[i-1][j][2]-left_tensor*sing_vals*right_tensor)/itensor::norm(combined_tensors[i-1][j][2])) << std::endl;
 						combined_tensors[i-1][j][2] = left_tensor;
 						combined_tensors[i-1][j+1][1] *= (sing_vals*right_tensor);
 					}
@@ -1065,7 +1065,7 @@ class MCKPEPS : public NoSitePEPS{
 					contracted_tensor *= combined_tensors[0][j][k];
 				}
 			}
-			Print(contracted_tensor);
+			//Print(contracted_tensor);
 
 			if(_log){
 				std::cout.rdbuf(coutbuf);
