@@ -40,11 +40,11 @@ void get_sample(MCKPEPS &psi, std::vector<int> &spin_config, const Heisenberg &H
 	std::cerr << "Finding environments..." << std::endl;
 	SpinConfigPEPS scp(psi, spin_config, 1);
 	NoSitePEPS nsp = psi.contract(scp);
-	nsp.print_self();
+	//nsp.print_self();
 	auto envs = nsp.environments(psi.site_indices, spin_config);
 	for(int site_index = 0; site_index < psi.size(); site_index++){
 		Delta[site_index] += envs[site_index]/wavefn;
-		DeltaE[site_index] *= envs[site_index]*local_energy/wavefn;
+		DeltaE[site_index] += envs[site_index]*local_energy/wavefn;
 	}
 	E += local_energy;
 }
