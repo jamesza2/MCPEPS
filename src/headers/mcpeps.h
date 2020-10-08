@@ -169,23 +169,23 @@ class NoSitePEPS
 			}
 			for(int i = prior_index; i < target_index; i++){
 				//First step: Contracting the old AuxMPS into the current row
-				std::cerr << "Contracting old AuxMPS into row " << i << "..." << std::endl;
+				//std::cerr << "Contracting old AuxMPS into row " << i << "..." << std::endl;
 				previous_row.clear();
 				for(int j = 0; j < _Ny; j++){
 					previous_row.add_tensor(_site_tensors[i][j][1]);
 					previous_row.add_tensor(_site_tensors[i][j][2]);
 				}
-				previous_row.print_self("PREV_ROW_UNCONTRACTED");
+				//previous_row.print_self("PREV_ROW_UNCONTRACTED");
 				for(int aux_index = 0; aux_index < prior_aux.length; aux_index++){
 					previous_row.MPS[aux_index] *= prior_aux.MPS[aux_index];
 				}
-				previous_row.print_self("PREV_ROW");
+				//previous_row.print_self("PREV_ROW");
 				//Second step: Truncating the row
-				std::cerr << "Truncating row " << i << "..." << std::endl;
+				//std::cerr << "Truncating row " << i << "..." << std::endl;
 				previous_row.truncate(_Dc);
-				previous_row.print_self("PREV_ROW");
+				//previous_row.print_self("PREV_ROW");
 				//Third step: Contracting the row into the intermediate row below
-				std::cerr << "Contracting row " << i << " with row " << i+1 << std::endl;
+				//std::cerr << "Contracting row " << i << " with row " << i+1 << std::endl;
 				unsplit_MPS.clear();
 				unsplit_MPS.add_tensor(_site_tensors[i+1][0][0]);
 				unsplit_MPS.MPS[0] *= (previous_row.MPS[0]*previous_row.MPS[1]);
@@ -197,9 +197,9 @@ class NoSitePEPS
 				}
 				unsplit_MPS.add_tensor(_site_tensors[i+1][_Ny-1][0]);
 				unsplit_MPS.MPS[_Ny-1] *= previous_row.MPS[2*_Ny-1];
-				unsplit_MPS.print_self("UNSPLIT_MPS");
+				//unsplit_MPS.print_self("UNSPLIT_MPS");
 				//Fourth step: Splitting the intermediate row tensors
-				std::cerr << "Splitting unsplit row " << i+1 << "..." << std::endl;
+				//std::cerr << "Splitting unsplit row " << i+1 << "..." << std::endl;
 				prior_aux.clear();
 				for(int j = 0; j < _Ny; j++){
 					itensor::IndexSet forward_indices = itensor::commonInds(unsplit_MPS.MPS[j], _site_tensors[i+1][j][2]);
@@ -225,18 +225,18 @@ class NoSitePEPS
 			for(int i = 0; i < _Nx; i++){
 				//Get the up aux at row i-1 and the down aux at row i+1
 				if(i > 0){
-					std::cerr << "Getting up auxiliary..." << std::endl;
+					//std::cerr << "Getting up auxiliary..." << std::endl;
 					up_aux = get_vu_auxiliary(i-1, old_up_aux, i-2);
-					up_aux.print_self("UP_AUX");
+					//up_aux.print_self("UP_AUX");
 					old_up_aux = AuxMPS(up_aux);
 					//Contract the up aux with the rest of row i-1
 					for(int j = 0; j < _Ny; j++){
 						up_aux.MPS.at(2*j) *= _site_tensors[i-1][j][1];
 						up_aux.MPS.at(2*j+1) *= _site_tensors[i-1][j][2];
 					}
-					up_aux.print_self("UP_AUX_COMB");
+					//up_aux.print_self("UP_AUX_COMB");
 					up_aux.truncate(_Dc);
-					up_aux.print_self("UP_AUX_TRUNC");
+					//up_aux.print_self("UP_AUX_TRUNC");
 				}
 				//Get the list of right auxiliaries
 				std::vector<itensor::ITensor> right_auxes(_Ny+1);
@@ -312,7 +312,7 @@ class NoSitePEPS
 
 			//Contract upwards and add each SVD split step into the AuxMPS list. Does not add the very last one.
 			for(int i = _Nx-1; i > 0; i--){
-				std::cout << "Contracting Row " << i << ":" << std::endl;
+				//std::cout << "Contracting Row " << i << ":" << std::endl;
 				unsplit_MPS.clear();
 				for(int j = 0; j < _Ny; j++){
 					unsplit_MPS.push_back((_site_tensors[i][j][0]*previous_row[2*j])*previous_row[2*j+1]);
@@ -331,9 +331,9 @@ class NoSitePEPS
 					}
 					
 					itensor::svd(unsplit_MPS[j], left_tensor, sing_vals, right_tensor, {"MaxDim", _Dc});
-					std::cout << "SVD Error: " << itensor::sqr(itensor::norm(unsplit_MPS[j]-left_tensor*sing_vals*right_tensor)/itensor::norm(unsplit_MPS[j])) << std::endl;
+					//std::cout << "SVD Error: " << itensor::sqr(itensor::norm(unsplit_MPS[j]-left_tensor*sing_vals*right_tensor)/itensor::norm(unsplit_MPS[j])) << std::endl;
 					left_tensor *= sing_vals;
-					std::cout << "Split tensors at i=" << i << ", j=" << j << std::endl;
+					//std::cout << "Split tensors at i=" << i << ", j=" << j << std::endl;
 					Print(left_tensor);
 					Print(right_tensor);
 					aux.add_tensor(left_tensor);
@@ -363,7 +363,7 @@ class NoSitePEPS
 			}
 			out.push_front(AuxMPS(AuxType::NA)); //The first row is a dummy AuxMPS that shouldn't ever have to be called
 			out.push_back(AuxMPS(2*_Ny-1)); //The last row is a blank AuxMPS of 1-tensors
-			std::cout << "Row 0 empty auxMPS pushed " << std::endl;
+			//std::cout << "Row 0 empty auxMPS pushed " << std::endl;
 			if(_log){
 				std::cout.rdbuf(coutbuf);
 				log_file_stream.close();
@@ -386,21 +386,21 @@ class NoSitePEPS
 				previous_row.push_back(_site_tensors[i][_Ny-1][0]);
 				previous_row.push_back(_site_tensors[i][_Ny-1][2]);
 			}
-			std::cout << "Creating starting row of size " << previous_row.size() << std::endl;
+			//std::cout << "Creating starting row of size " << previous_row.size() << std::endl;
 			//Contract to the left and add each SVD splitted column to the AuxMPS list. Does not contract the last column.
 			for(int j = _Ny-1; j > 0; j--){
 				/*std::cout << "Starting row:" << std::endl;
 				for(auto row_element : previous_row){
 					Print(row_element);
 				}*/
-				std::cout << "Contracting Column " << j << ":" << std::endl;
+				//std::cout << "Contracting Column " << j << ":" << std::endl;
 				unsplit_MPS.clear();
 				for(int i = 0; i < _Nx; i++){
 					unsplit_MPS.push_back((_site_tensors[i][j][1]*previous_row[2*i])*previous_row[2*i+1]);
 				}
 				AuxMPS aux(AuxType::SD);
 				for(int i = 0; i <_Nx-1; i++){
-					std::cout << "    At row " << i << ":" << std::endl;
+					//std::cout << "    At row " << i << ":" << std::endl;
 					itensor::Index left_upper_link = itensor::commonIndex(unsplit_MPS[i], _site_tensors[i][j-1][2]);
 					itensor::ITensor sing_vals, right_tensor;
 					itensor::ITensor left_tensor(left_upper_link);
@@ -409,7 +409,7 @@ class NoSitePEPS
 						left_tensor = itensor::ITensor(left_upper_link, left_link);
 					}
 					itensor::svd(unsplit_MPS[i], left_tensor, sing_vals, right_tensor, {"MaxDim", _Dc});
-					std::cout << "SVD Error: " << itensor::sqr(itensor::norm(unsplit_MPS[i]-left_tensor*sing_vals*right_tensor)/itensor::norm(unsplit_MPS[i])) << std::endl;
+					//std::cout << "SVD Error: " << itensor::sqr(itensor::norm(unsplit_MPS[i]-left_tensor*sing_vals*right_tensor)/itensor::norm(unsplit_MPS[i])) << std::endl;
 					left_tensor *= sing_vals;
 					if(_log){
 						std::cout << "Split tensors at i=" << i << ", j=" << j << std::endl;
@@ -463,7 +463,7 @@ class NoSitePEPS
 			std::vector<itensor::ITensor> previous_row; //Unlike VD and SD case, previous row starts off empty
 			unsplit_MPS.push_back(_site_tensors[_Nx-1][_Ny-1][2]);
 			for(int h = _Nx+_Ny-2; h >= 0; h--){
-				std::cout << "Contracting Diagonal " << h << ":" << std::endl;
+				//std::cout << "Contracting Diagonal " << h << ":" << std::endl;
 				//Split the (:,h,2) tensors with SVD
 				previous_row.clear();
 				int imin = std::max(0, h-_Ny+1);
@@ -480,7 +480,7 @@ class NoSitePEPS
 						left_tensor = itensor::ITensor(left_upper_link, left_link);
 					}
 					itensor::svd(unsplit_MPS[unsplit_index], left_tensor, sing_vals, right_tensor, {"MaxDim", _Dc});
-					std::cout << "SVD Error: " << itensor::sqr(itensor::norm(unsplit_MPS[unsplit_index]-left_tensor*sing_vals*right_tensor)/itensor::norm(unsplit_MPS[unsplit_index])) << std::endl;
+					//std::cout << "SVD Error: " << itensor::sqr(itensor::norm(unsplit_MPS[unsplit_index]-left_tensor*sing_vals*right_tensor)/itensor::norm(unsplit_MPS[unsplit_index])) << std::endl;
 					left_tensor *= sing_vals;
 					if(_log){
 						std::cout << "Split tensors at i=" << i << ", j=" << j << std::endl;

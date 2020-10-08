@@ -41,7 +41,7 @@ class Heisenberg : public MCOperator{
 		//Second int is the bond type (1 for NN, 2 for NNN, 3 for d)
 		Neighbors bonds;
 	public:
-		void set_Jz(std::map<std::string, double> &J_vals){
+		void set_J(std::map<std::string, double> &J_vals){
 			if(J_vals.count("J1")){
 				_J1 = J_vals["J1"];
 			}
@@ -61,7 +61,7 @@ class Heisenberg : public MCOperator{
 		}
 
 		//Given a spin config, returns all spin configs that have a possible nonzero matrix element with it
-		std::vector<std::pair<std::vector<int>, double>> possible_matrix_elements(std::vector<int> &spin_config){
+		std::vector<std::pair<std::vector<int>, double>> possible_matrix_elements(std::vector<int> &spin_config) const{
 			std::vector<std::pair<std::vector<int>, double>> possible_configs;
 			possible_configs.push_back(std::make_pair(spin_config,0));//The like-like config's matrix element is the sum of all Szi*Szj matrix elements, to be computed later
 			std::vector<double> J{0, _J1, _J2, _Jd};
