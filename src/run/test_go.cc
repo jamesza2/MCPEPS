@@ -88,6 +88,7 @@ int main(int argc, char *argv[]){
 	int print_precision = input.testInteger("precision", -1);
 	if(print_precision != -1){
 		std::cout << std::setprecision(print_precision);
+		std::cerr << std::setprecision(print_precision);
 	}
 
 
