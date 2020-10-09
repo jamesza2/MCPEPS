@@ -1127,6 +1127,28 @@ class MCKPEPS : public NoSitePEPS{
 			auto [i,j,k] = position_of_site(site_index);
 			return &_site_tensors[i][j][k];
 		}
+
+		void operator*=(double factor){
+			double factor_foreach = std::pow(factor, 1./_num_sites);
+			for(int i = 0; i < _Nx; i++){
+				for(int j = 0; j < _Ny; j++){
+					for(int k = 0; k < UNIT_CELL_SIZE; k++){
+						_site_tensors[i][j][k] *= factor_foreach;
+					}
+				}
+			}
+		}
+
+		void operator/=(double factor){
+			double factor_foreach = std::pow(factor, 1./_num_sites);
+			for(int i = 0; i < _Nx; i++){
+				for(int j = 0; j < _Ny; j++){
+					for(int k = 0; k < UNIT_CELL_SIZE; k++){
+						_site_tensors[i][j][k] /= factor_foreach;
+					}
+				}
+			}
+		}
 		
 	
 	protected:

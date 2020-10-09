@@ -111,6 +111,10 @@ int main(int argc, char *argv[]){
 	itensor::IndexSet sites(sites_vector);
 
 	auto PEPS1 = MCKPEPS(sites, Nx, Ny, standard_dims, max_truncation_dims);
+	MCKPEPS PEPS2 = PEPS1;
+	PEPS2.prime();
+	double normsq = PEPS1.inner_product(PEPS2);
+	PEPS1 /= std::sqrt(normsq);
 
 	std::vector<int> spin_config(num_sites, 0);
 	Randomizer r;
