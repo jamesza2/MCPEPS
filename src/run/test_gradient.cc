@@ -3,6 +3,9 @@
 #include "../headers/output.h"
 #include "../headers/mcpeps.h"
 #include "../headers/gradient_optimization.h"
+#include "../headers/pepsop.h"
+#include "../headers/inner_sampling.h"
+#include <iomanip>
 #include <ctime>
 #include <cmath>
 #include <complex>
@@ -41,8 +44,8 @@ int main(int argc, char *argv[]){
 	InputClass input;
 	input.Read(input_file_reader);
 
-	int Nx = 3;
-	int Ny = 3;
+	int Nx = input.testInteger("Nx", 3);
+	int Ny = input.testInteger("Ny",3);
 	std::string log_file_name = input.testString("log_file", "");
 	int standard_dims = input.testInteger("D", 1);
 	int max_truncation_dims = input.testInteger("Dc", 1);
@@ -52,9 +55,9 @@ int main(int argc, char *argv[]){
 	double update_size_init = input.testDouble("update_size_init", 0.05);
 	int opt_steps = input.testInteger("optimization_steps", 100);
 
-	int target_i = 1;
-	int target_j = 1;
-	int target_k = 0;
+	int target_i = input.testInteger("target_i",1);
+	int target_j = input.testInteger("target_j",1);
+	int target_k = input.testInteger("target_k",1);
 
 	std::map<std::string, double> Jvals;
 	Jvals["J1"] = input.testDouble("J1", 1);
@@ -133,13 +136,13 @@ int main(int argc, char *argv[]){
 
 	//Get the approximated gradient
 	std::cerr << "Computing approximate gradient..." << std::endl;
-	std::vector<itensor::ITensor> Delta(psi.size());
-	std::vector<itensor::ITensor> DeltaE(psi.size());
+	std::vector<itensor::ITensor> Delta(PEPS1.size());
+	std::vector<itensor::ITensor> DeltaE(PEPS1.size());
 	double E = 0;
-	SpinConfigPEPS scp(psi, spin_config, 1);
-	NoSitePEPS nsp = psi.contract(scp);
+	SpinConfigPEPS scp(PEPS1, spin_config, 1);
+	NoSitePEPS nsp = PEPS1.contract(scp);
 	for(int sample = 0; sample < num_trials; sample++){
-		get_sample(psi, nsp, spin_config, H, Delta, DeltaE, E, update_size);
+		get_sample(PEPS1, nsp, spin_config, H, Delta, DeltaE, E, update_size);
 	}
 	E /= num_trials;
 	double grads_factor = 2./num_trials;
