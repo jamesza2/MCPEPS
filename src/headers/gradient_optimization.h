@@ -4,6 +4,7 @@
 #include "itensor/all.h"
 #include "mcpeps.h"
 #include "auxiliary_sampling.h"
+#include "inner_sampling.h"
 #include <ctime>
 
 itensor::ITensor signelts(itensor::ITensor site){

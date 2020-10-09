@@ -142,7 +142,7 @@ int main(int argc, char *argv[]){
 	SpinConfigPEPS scp(PEPS1, spin_config, 1);
 	NoSitePEPS nsp = PEPS1.contract(scp);
 	for(int sample = 0; sample < num_trials; sample++){
-		get_sample(PEPS1, nsp, spin_config, H, Delta, DeltaE, E, update_size);
+		get_sample(PEPS1, nsp, spin_config, H, Delta, DeltaE, E, update_size_init);
 	}
 	E /= num_trials;
 	double grads_factor = 2./num_trials;
