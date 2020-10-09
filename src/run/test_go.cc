@@ -9,6 +9,7 @@
 #include <ctime>
 #include <cmath>
 #include <complex>
+#include <iomanip>
 
 
 /*std::vector<itensor::ITensor> create_sz2_op(itensor::IndexSet &sites){
@@ -83,6 +84,11 @@ int main(int argc, char *argv[]){
 	Jvals["Jz"] = input.testDouble("Jz", 1);
 	Jvals["J2"] = input.testDouble("J2", 0);
 	Jvals["Jd"] = input.testDouble("Jd", 0);
+
+	int print_precision = input.testInteger("precision", -1);
+	if(print_precision != -1){
+		std::cout << std::setprecision(print_precision);
+	}
 
 
 	std::string version = "_";

@@ -49,7 +49,7 @@ void get_sample(MCKPEPS &psi, NoSitePEPS &contracted, std::vector<int> &spin_con
 
 //Updates the PEPS for one gradient optimization step. Returns the average energy.
 double update(MCKPEPS &psi, std::vector<int> &spin_config, const Heisenberg &H, const int M, const double update_size, Randomizer &r){
-	std::cerr << "Performing update..." << std::endl;
+	//std::cerr << "Performing update..." << std::endl;
 	std::vector<itensor::ITensor> Delta(psi.size());
 	std::vector<itensor::ITensor> DeltaE(psi.size());
 	double E = 0;
