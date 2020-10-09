@@ -21,6 +21,9 @@ itensor::ITensor incomplete_inner(MCKPEPS &PEPS1, MCKPEPS &PEPS2, int i_omit, in
 					product *= PEPS1._site_tensors[i][j][k];
 					product *= PEPS2._site_tensors[i][j][k];
 				}
+				else{
+					product *= PEPS1._site_tensors[i][j][k];
+				}
 			}
 		}
 	}
