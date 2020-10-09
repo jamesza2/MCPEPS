@@ -138,14 +138,24 @@ class Term{
 			}
 			return matrix_element;
 		}
+
+		void apply(MCKPEPS &PEPS1){
+			auto sites_it = sites.begin();
+			for(auto ops_it = ops.begin(); ops_it != ops.end(); ops_it++){
+				itensor::ITensor T = ops_it->tensor(PEPS1.site_indices[*sites_it]);
+				auto [i,j,k] = PEPS1.position_of_site(*sites_it);
+				PEPS1._site_tensors[i][j][k] *= T;
+				PEPS1._site_tensors[i][j][k] *= itensor::delta(PEPS1.site_indices[*sites_it], itensor::prime(PEPS1.site_indices[*sites_it]));
+				sites_it++;
+			}
+		}
 };
 
 //A PEPS operator that takes in single-site and two-site terms
 //Can evaluate using brute-force methods
 class PEPSop{
-	protected:
-		std::vector<Term> terms;
 	public:
+		std::vector<Term> terms;
 		PEPSop(){}
 		void add_term(Term t){
 			terms.push_back(t);

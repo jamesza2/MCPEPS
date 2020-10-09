@@ -753,7 +753,7 @@ class MCKPEPS : public NoSitePEPS{
 						cell_tensor *= _site_tensors[i][j][k];
 						cell_tensor *= other._site_tensors[i][j][k];
 					}
-					std::cerr << "Combined tensors at cell " << i << ", " << j << std::endl;
+					//std::cerr << "Combined tensors at cell " << i << ", " << j << std::endl;
 					cell_tensors_in_row.push_back(cell_tensor);
 				}
 				cell_tensors.push_back(cell_tensors_in_row);
@@ -763,7 +763,7 @@ class MCKPEPS : public NoSitePEPS{
 			for(int i = 0; i < _Nx; i++){
 				for(int j = 0; j < _Ny; j++){
 					brute_force_combined_tensor *= cell_tensors[i][j];
-					std::cerr << "Combined cell " << i << ", " << j << std::endl;
+					//std::cerr << "Combined cell " << i << ", " << j << std::endl;
 				}
 			}
 			Print(brute_force_combined_tensor);
