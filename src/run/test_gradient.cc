@@ -146,9 +146,9 @@ int main(int argc, char *argv[]){
 	NoSitePEPS nsp = PEPS1.contract(scp);
 	for(int sample = 0; sample < num_trials; sample++){
 		get_sample(PEPS1, nsp, spin_config, H, Delta, DeltaE, E, update_size_init);
-		Print(Delta.at(0));
-		Print(DeltaE.at(0));
-		std::cerr << "E: " << E << std::endl;
+		//Print(Delta.at(0));
+		//Print(DeltaE.at(0));
+		//std::cerr << "E: " << E << std::endl;
 	}
 	E /= num_trials;
 	double grads_factor = 2./num_trials;
