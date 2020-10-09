@@ -63,7 +63,8 @@ double update(MCKPEPS &psi, std::vector<int> &spin_config, const Heisenberg &H, 
 	double grads_factor = 2./M;
 	for(int site = 0; site < Delta.size(); site++){
 		grad = DeltaE[site]*grads_factor - Delta[site]*grads_factor*E;
-		//grad = signelts(grad);
+		//grad /= norm(grad);
+		grad = signelts(grad);
 		auto [i,j,k] = psi.position_of_site(site);
 		psi._site_tensors[i][j][k] -= update_size*r.rand()*grad;
 	}
