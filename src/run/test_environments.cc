@@ -90,6 +90,7 @@ int main(int argc, char *argv[]){
 	NoSitePEPS nsp = PEPS1.contract(scp);
 	std::cerr << "Getting environments..." << std::endl;
 	std::vector<itensor::ITensor> envs = nsp.environments(PEPS1.site_indices, spin_config);
+	PrintData(envs.at(0));
 
 	for(int site_index = 0; site_index < envs.size(); site_index++){
 		itensor::ITensor original_site = adapt_tensor(nsp, PEPS1, site_index);
