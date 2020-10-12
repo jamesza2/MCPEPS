@@ -23,9 +23,9 @@ itensor::ITensor signelts(itensor::ITensor site){
 }
 
 //Gets samples of Delta, DeltaE, etc. for one step
-void get_sample(MCKPEPS &psi, NoSitePEPS &contracted, std::vector<int> &spin_config, const Heisenberg &H, std::vector<itensor::ITensor> &Delta, std::vector<itensor::ITensor> &DeltaE, double &E, const double update_size){
+void get_sample(MCKPEPS &psi, NoSitePEPS &contracted, std::vector<int> &spin_config, const Heisenberg &H, std::vector<itensor::ITensor> &Delta, std::vector<itensor::ITensor> &DeltaE, double &E, const double update_size, Randomizer &r){
 	//std::cerr << "    Taking sample...";
-	Randomizer r;
+	//Randomizer r;
 	//std::cerr << "v direction...";
 	sample_v_direction(psi, spin_config, r);
 	//std::cerr << "s direction...";
@@ -66,7 +66,7 @@ double update(MCKPEPS &psi, std::vector<int> &spin_config, const Heisenberg &H, 
 	SpinConfigPEPS scp(psi, spin_config, 1);
 	NoSitePEPS nsp = psi.contract(scp);
 	for(int sample = 0; sample < M; sample++){
-		get_sample(psi, nsp, spin_config, H, Delta, DeltaE, E, update_size);
+		get_sample(psi, nsp, spin_config, H, Delta, DeltaE, E, update_size, r);
 	}
 	E /= M;
 	itensor::ITensor grad;

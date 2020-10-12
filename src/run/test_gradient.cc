@@ -149,7 +149,7 @@ int main(int argc, char *argv[]){
 	SpinConfigPEPS scp(PEPS1, spin_config, 1);
 	NoSitePEPS nsp = PEPS1.contract(scp);
 	for(int sample = 0; sample < num_trials; sample++){
-		get_sample(PEPS1, nsp, spin_config, H, Delta, DeltaE, E, update_size_init);
+		get_sample(PEPS1, nsp, spin_config, H, Delta, DeltaE, E, update_size_init, r);
 		//Print(Delta.at(0));
 		//Print(DeltaE.at(0));
 		//std::cerr << "E: " << E << std::endl;
