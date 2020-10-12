@@ -164,7 +164,8 @@ double test_bond(NoSitePEPS &no_site, MCKPEPS &original, std::vector<int> &spin_
 }
 
 double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Randomizer &r){
-	SpinConfigPEPS config(psi_sites, spin_config, WAVEFUNCTION_NORMALIZATION_CONSTANT);
+	double wavefunction_normalization = WAVEFUNCTION_NORMALIZATION_CONSTANT;
+	SpinConfigPEPS config(psi_sites, spin_config, wavefunction_normalization);
 	NoSitePEPS psi = psi_sites.contract(config);
 	std::list<AuxMPS> vd_list = psi.get_vd_auxiliaries();
 	//std::cout << "Creating up auxiliary..." << std::endl;
@@ -211,7 +212,7 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			itensor::ITensor vd_aux_1(1);
 			if(j > 0){vd_aux_1 = vd_it->MPS[J-1];}
 			//Print(vl_auxiliary);
-			old_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,1,i,j,2, vl_auxiliary, vr_auxiliaries[J+2],VUi.MPS[J],VUi.MPS[J+1],vd_aux_1, vd_it->MPS[J], old_wavefunction, r, WAVEFUNCTION_NORMALIZATION_CONSTANT);
+			old_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,1,i,j,2, vl_auxiliary, vr_auxiliaries[J+2],VUi.MPS[J],VUi.MPS[J+1],vd_aux_1, vd_it->MPS[J], old_wavefunction, r, wavefunction_normalization);
 			//std::cout << "Tensor data for " << i << ", " << j << ", 1-2..." << std::endl;
 			//Print(VUi.MPS[J]);
 			//Print(psi._site_tensors[i][j][1]);
@@ -222,7 +223,7 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			//Print(vr_auxiliaries[J+2]);
 			if(j < psi.Ny()-1){
 				//Print(vl_auxiliary);
-				old_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,2,i,j+1,1, vl_auxiliary, vr_auxiliaries[J+3],VUi.MPS[J+1],VUi.MPS[J+2],vd_it->MPS[J], vd_it->MPS[J+1], old_wavefunction, r, WAVEFUNCTION_NORMALIZATION_CONSTANT);
+				old_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,2,i,j+1,1, vl_auxiliary, vr_auxiliaries[J+3],VUi.MPS[J+1],VUi.MPS[J+2],vd_it->MPS[J], vd_it->MPS[J+1], old_wavefunction, r, wavefunction_normalization);
 				//std::cout << "Tensor data for " << i << ", " << j << ", 2-1+..." << std::endl;
 				//Print(VUi.MPS[J+1]);
 				//Print(psi._site_tensors[i][j][2]);
@@ -317,11 +318,13 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			}
 		}
 	}	
+	old_wavefunction *= std::pow(wavefunction_normalization, psi.size());
 	return old_wavefunction;
 }
 
 double sample_s_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Randomizer &r){
-	SpinConfigPEPS config(psi_sites, spin_config, WAVEFUNCTION_NORMALIZATION_CONSTANT);
+	double wavefunction_normalization = WAVEFUNCTION_NORMALIZATION_CONSTANT;
+	SpinConfigPEPS config(psi_sites, spin_config, wavefunction_normalization);
 	NoSitePEPS psi = psi_sites.contract(config);
 	std::list<AuxMPS> sd_list = psi.get_sd_auxiliaries();
 	double old_wavefunction = -1;
@@ -366,9 +369,9 @@ double sample_s_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			int I = 2*i;
 			itensor::ITensor sd_aux_1(1);
 			if(i > 0){sd_aux_1 = sd_it->MPS[I-1];}
-			old_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,0,i,j,2, sl_auxiliary, sr_auxiliaries[I+2], SUi.MPS[I],SUi.MPS[I+1],sd_aux_1, sd_it->MPS[I], old_wavefunction, r, WAVEFUNCTION_NORMALIZATION_CONSTANT);
+			old_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,0,i,j,2, sl_auxiliary, sr_auxiliaries[I+2], SUi.MPS[I],SUi.MPS[I+1],sd_aux_1, sd_it->MPS[I], old_wavefunction, r, wavefunction_normalization);
 			if(i < psi.Nx()-1){
-				old_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,2,i+1,j,0, sl_auxiliary, sr_auxiliaries[I+3],SUi.MPS[I+1],SUi.MPS[I+2],sd_it->MPS[I], sd_it->MPS[I+1], old_wavefunction, r, WAVEFUNCTION_NORMALIZATION_CONSTANT);
+				old_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,2,i+1,j,0, sl_auxiliary, sr_auxiliaries[I+3],SUi.MPS[I+1],SUi.MPS[I+2],sd_it->MPS[I], sd_it->MPS[I+1], old_wavefunction, r, wavefunction_normalization);
 			}
 		}
 		if(j < psi.Ny()-1){
@@ -413,11 +416,13 @@ double sample_s_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			}
 		}
 	}	
+	old_wavefunction *= std::pow(wavefunction_normalization, psi.size());
 	return old_wavefunction;
 }
 
 double sample_l_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Randomizer &r){
-	SpinConfigPEPS config(psi_sites, spin_config, WAVEFUNCTION_NORMALIZATION_CONSTANT);
+	double wavefunction_normalization = WAVEFUNCTION_NORMALIZATION_CONSTANT;
+	SpinConfigPEPS config(psi_sites, spin_config, wavefunction_normalization);
 	NoSitePEPS psi = psi_sites.contract(config);
 	std::list<AuxMPS> ld_list = psi.get_ld_auxiliaries();
 	double old_wavefunction = -1;
@@ -454,9 +459,9 @@ double sample_l_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 		for(int i = imin; i < imax; i++){
 			int H = 2*(i-imin);
 			int j = h-i;
-			old_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,0,i,j,1,ll_auxiliary, lr_auxiliaries[H+2], LUi.MPS[H], LUi.MPS[H+1], ld_it->MPS[H], ld_it->MPS[H+1], old_wavefunction, r, WAVEFUNCTION_NORMALIZATION_CONSTANT);
+			old_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,0,i,j,1,ll_auxiliary, lr_auxiliaries[H+2], LUi.MPS[H], LUi.MPS[H+1], ld_it->MPS[H], ld_it->MPS[H+1], old_wavefunction, r, wavefunction_normalization);
 			if(i < imax-1){
-				old_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,1,i+1,j-1,0,ll_auxiliary, lr_auxiliaries[H+3], LUi.MPS[H+1], LUi.MPS[H+2], ld_it->MPS[H+1], ld_it->MPS[H+2], old_wavefunction, r, WAVEFUNCTION_NORMALIZATION_CONSTANT);
+				old_wavefunction = test_bond(psi, psi_sites, spin_config, i,j,1,i+1,j-1,0,ll_auxiliary, lr_auxiliaries[H+3], LUi.MPS[H+1], LUi.MPS[H+2], ld_it->MPS[H+1], ld_it->MPS[H+2], old_wavefunction, r, wavefunction_normalization);
 			}
 		}
 		//Create new LU auxiliary MPS
@@ -522,7 +527,7 @@ double sample_l_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 		}
 		ld_it++;
 	}
-
+	old_wavefunction *= std::pow(wavefunction_normalization, psi.size());
 	return old_wavefunction;
 	
 }
