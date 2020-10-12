@@ -145,6 +145,7 @@ class Term{
 				itensor::ITensor T = ops_it->tensor(PEPS1.site_indices[*sites_it]);
 				auto [i,j,k] = PEPS1.position_of_site(*sites_it);
 				PEPS1._site_tensors[i][j][k] *= T;
+				PEPS1._site_tensors[i][j][k] *= factor;
 				PEPS1._site_tensors[i][j][k] *= itensor::delta(PEPS1.site_indices[*sites_it], itensor::prime(PEPS1.site_indices[*sites_it]));
 				sites_it++;
 			}
