@@ -214,7 +214,7 @@ class NoSitePEPS
 		}
 
 		//Gets the environment of every site 
-		std::vector<itensor::ITensor> environments(const itensor::IndexSet &site_indices, const std::vector<int> &spin_config){
+		std::vector<itensor::ITensor> environments(const itensor::IndexSet &site_indices, const std::vector<int> &spin_config, double wavefunction_normalization = 1.){
 			AuxMPS up_aux(2*_Ny);
 			AuxMPS old_up_aux(2*_Ny);
 			std::vector<itensor::ITensor> envs(_num_sites);
@@ -269,7 +269,7 @@ class NoSitePEPS
 					if(j < _Ny-1){top_int *= up_aux.MPS[2*j+2];}
 					k0env *= top_int;
 					int site_index = site_index_from_position(i,j,0);
-					k0env *= itensor::setElt(site_indices[site_index]=(spin_config[site_index]+1));//Multiplies with a tensor containing the physical index
+					k0env *= itensor::setElt(site_indices[site_index]=(spin_config[site_index]+1))/wavefunction_normalization;//Multiplies with a tensor containing the physical index
 					envs[site_index] = k0env;
 					//Get the k=1 environment
 					site_index ++;
@@ -277,13 +277,13 @@ class NoSitePEPS
 					itensor::ITensor k1env = top_int*right_int;
 					if(j>0){k1env *= (left_aux*down_aux_it->MPS[2*j-1]);}
 					else{k1env *= left_aux;}
-					k1env *= itensor::setElt(site_indices[site_index]=(spin_config[site_index]+1));
+					k1env *= itensor::setElt(site_indices[site_index]=(spin_config[site_index]+1))/wavefunction_normalization;
 					envs[site_index] = k1env;
 					//Get the k=2 environment
 					site_index++;
 					itensor::ITensor k2env = top_int*left_int;
 					k2env *= (right_auxes[j+1]*down_aux_it->MPS[2*j]);
-					k2env *= itensor::setElt(site_indices[site_index]=(spin_config[site_index]+1));
+					k2env *= itensor::setElt(site_indices[site_index]=(spin_config[site_index]+1))/wavefunction_normalization;
 					envs[site_index] = k2env;
 					//Get new left auxiliary
 					left_aux = left_int*top_int;

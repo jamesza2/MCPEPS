@@ -40,7 +40,9 @@ void get_sample(MCKPEPS &psi, NoSitePEPS &contracted, std::vector<int> &spin_con
 	}
 	//std::cerr << "Finding environments..." << std::endl;
 	auto envs = contracted.environments(psi.site_indices, spin_config);
-	PrintData(envs.at(0));
+	std::cerr<<"Delta0 norm: " << std::norm(envs[0]) << std::endl;
+	std::cerr << "Wavefunction: " << std::norm(wavefn) << std::endl;
+
 	for(int site_index = 0; site_index < psi.size(); site_index++){
 		adapt_tensor(psi, contracted, envs[site_index], site_index);
 		Delta[site_index] += envs[site_index]/wavefn;

@@ -125,17 +125,21 @@ int main(int argc, char *argv[]){
 	//Compute the exact gradient
 	std::cerr << "Computing exact gradient..." << std::endl;
 	itensor::ITensor exact_grad;
+	double grad_oom_estimate;
+	double energy=0;
 	for(Term t : HPEPO.terms){
 		MCKPEPS PEPS_applied = PEPS2;
 		t.apply(PEPS_applied);
 		auto me1 = incomplete_inner(PEPS_applied, PEPS1, target_i, target_j, target_k);
 		auto me2 = incomplete_inner(PEPS2, PEPS1, target_i, target_j, target_k);
-		me2 *= t.eval(PEPS1, PEPS2);
+		double energy_part = t.eval(PEPS1, PEPS2);
+		me2 *= energy_part;
+		energy += energy_part;
 		me2 /= normsq;
 		exact_grad += (me1+me2);
 	}
 	exact_grad *= (2./normsq);
-
+	grad_oom_estimate = energy/itensor::norm(PEPS1._site_tensors[target_i][target_j][target_k]);
 
 	//Get the approximated gradient
 	std::cerr << "Computing approximate gradient..." << std::endl;
@@ -158,5 +162,16 @@ int main(int argc, char *argv[]){
 	
 	PrintData(exact_grad);
 	PrintData(approx_grad);
+	std::cerr << "Energies: " << energy << std::endl;
+	std::cerr << "Exact OOM estimate: " << grad_oom_estimate << std::endl;
+	std::cerr << "Delta norms: ";
+	for(auto d : Delta){
+		std::cerr << itensor::norm(d) << " ";
+	}
+	std::cerr << "\nDeltaE norms: ";
+	for(auto d : DeltaE){
+		std::cerr << itensor::norm(d) << " ";
+	}
+	std::cerr << "\nApprox grad norm: " << itensor::norm(approx_grad) << std::endl;
 	return 0;
 }
