@@ -7,9 +7,9 @@
 
 
 
-double wavefunction(std::vector<int> &spin_config, MCKPEPS &state){
+double wavefunction(std::vector<int> &spin_config, MCKPEPS &state, double wavefunction_normalization = 1){
 	SpinConfigPEPS spins(state);
-	spins.set_spins(spin_config, WAVEFUNCTION_NORMALIZATION_CONSTANT);
+	spins.set_spins(spin_config, wavefunction_normalization);
 	return state.inner_product(spins);
 }
 

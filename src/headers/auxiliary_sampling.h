@@ -163,8 +163,8 @@ double test_bond(NoSitePEPS &no_site, MCKPEPS &original, std::vector<int> &spin_
 	return wavefn_to_return;
 }
 
-double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Randomizer &r){
-	double wavefunction_normalization = WAVEFUNCTION_NORMALIZATION_CONSTANT;
+double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Randomizer &r, double wavefunction_normalization = 1){
+	//double wavefunction_normalization = WAVEFUNCTION_NORMALIZATION_CONSTANT;
 	SpinConfigPEPS config(psi_sites, spin_config, wavefunction_normalization);
 	NoSitePEPS psi = psi_sites.contract(config);
 	std::list<AuxMPS> vd_list = psi.get_vd_auxiliaries();
@@ -322,8 +322,7 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 	return old_wavefunction;
 }
 
-double sample_s_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Randomizer &r){
-	double wavefunction_normalization = WAVEFUNCTION_NORMALIZATION_CONSTANT;
+double sample_s_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Randomizer &r, double wavefunction_normalization = 1){
 	SpinConfigPEPS config(psi_sites, spin_config, wavefunction_normalization);
 	NoSitePEPS psi = psi_sites.contract(config);
 	std::list<AuxMPS> sd_list = psi.get_sd_auxiliaries();
@@ -420,8 +419,7 @@ double sample_s_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 	return old_wavefunction;
 }
 
-double sample_l_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Randomizer &r){
-	double wavefunction_normalization = WAVEFUNCTION_NORMALIZATION_CONSTANT;
+double sample_l_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Randomizer &r, double wavefunction_normalization = 1){
 	SpinConfigPEPS config(psi_sites, spin_config, wavefunction_normalization);
 	NoSitePEPS psi = psi_sites.contract(config);
 	std::list<AuxMPS> ld_list = psi.get_ld_auxiliaries();
