@@ -42,6 +42,7 @@ void get_sample(MCKPEPS &psi, NoSitePEPS &contracted, std::vector<int> &spin_con
 	//std::cerr << "Finding environments..." << std::endl;
 	auto envs = contracted.environments(psi.site_indices, spin_config);
 	std::cerr<<"Env0 norm: " << itensor::norm(envs[0]);
+	std::cerr << " Product norm: " << itensor::norm(envs[0]*psi._site_tensors[0][0][0]);
 	std::cerr << " Wavefunction: " << wavefn;
 	std::cerr << " Rea Wavefunction: " << real_wavefn;
 	std::cerr << " Local Energy: " << local_energy << std::endl;

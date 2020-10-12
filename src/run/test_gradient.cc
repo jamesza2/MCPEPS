@@ -136,7 +136,7 @@ int main(int argc, char *argv[]){
 		me2 *= energy_part;
 		energy += energy_part/normsq;
 		me2 /= normsq;
-		exact_grad += (me1+me2);
+		exact_grad += (me1-me2);
 	}
 	exact_grad *= (2./normsq);
 	grad_oom_estimate = energy/itensor::norm(PEPS1._site_tensors[target_i][target_j][target_k]);
