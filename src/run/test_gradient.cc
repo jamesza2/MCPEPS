@@ -134,7 +134,7 @@ int main(int argc, char *argv[]){
 		auto me2 = incomplete_inner(PEPS2, PEPS1, target_i, target_j, target_k);
 		double energy_part = t.eval(PEPS1, PEPS2);
 		me2 *= energy_part;
-		energy += energy_part;
+		energy += energy_part/normsq;
 		me2 /= normsq;
 		exact_grad += (me1+me2);
 	}

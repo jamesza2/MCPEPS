@@ -32,6 +32,7 @@ void get_sample(MCKPEPS &psi, NoSitePEPS &contracted, std::vector<int> &spin_con
 	sample_s_direction(psi, spin_config, r);
 	//std::cerr << "l direction...";
 	double wavefn = sample_l_direction(psi, spin_config, r);
+	double real_wavefn = wavefunction(spin_config, psi);
 	auto possible_mes = H.possible_matrix_elements(spin_config);
 	double local_energy = 0;
 	for(int me_index = 0; me_index < possible_mes.size(); me_index++){
@@ -42,6 +43,7 @@ void get_sample(MCKPEPS &psi, NoSitePEPS &contracted, std::vector<int> &spin_con
 	auto envs = contracted.environments(psi.site_indices, spin_config);
 	std::cerr<<"Env0 norm: " << itensor::norm(envs[0]);
 	std::cerr << " Wavefunction: " << wavefn;
+	std::cerr << " Rea Wavefunction: " << real_wavefn;
 	std::cerr << " Local Energy: " << local_energy << std::endl;
 
 	for(int site_index = 0; site_index < psi.size(); site_index++){
