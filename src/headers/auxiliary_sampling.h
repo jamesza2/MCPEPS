@@ -134,21 +134,21 @@ double test_bond(NoSitePEPS &no_site, MCKPEPS &original, std::vector<int> &spin_
 			update_site_tensor(no_site, original, i2,j2,k2, new_sz_2, wavefunction_normalization);
 			spin_config[no_site.site_index_from_position(i1,j1,k1)] = new_sz_1;
 			spin_config[no_site.site_index_from_position(i2,j2,k2)] = new_sz_2;
-			//std::cout << "Spin config ";
-			//for(int sp : spin_config){std::cout << sp << " ";}
-			//std::cout << "Accepted with wavefunction " << new_wavefunction;
-			//std::cout << " (Transition probability " << transition_probability << ",";
-			//std::cout << " Rolled " << choice << ")" << std::endl;
+			std::cout << "Spin config ";
+			for(int sp : spin_config){std::cout << sp << " ";}
+			std::cout << "Accepted with wavefunction " << new_wavefunction;
+			std::cout << " (Transition probability " << transition_probability << ",";
+			std::cout << " Rolled " << choice << ")" << std::endl;
 			wavefn_to_return = new_wavefunction;
 		}
 		else{
 			spin_config[no_site.site_index_from_position(i1,j1,k1)] = new_sz_1;
 			spin_config[no_site.site_index_from_position(i2,j2,k2)] = new_sz_2;
-			/*std::cout << "Spin config ";
+			std::cout << "Spin config ";
 			for(int sp : spin_config){std::cout << sp << " ";}
 			std::cout << "Rejected with wavefunction " << new_wavefunction;
 			std::cout << " (Transition probability " << transition_probability << ",";
-			std::cout << " Rolled " << choice << ")" << std::endl;*/
+			std::cout << " Rolled " << choice << ")" << std::endl;
 			spin_config[no_site.site_index_from_position(i1,j1,k1)] = old_sz_1;
 			spin_config[no_site.site_index_from_position(i2,j2,k2)] = old_sz_2;
 		}
