@@ -203,6 +203,10 @@ int main(int argc, char *argv[]){
 					auto me1 = incomplete_inner(PEPS_applied, PEPS1, i, j, k);
 					auto me2 = incomplete_inner(PEPS2, PEPS1, i, j, k);
 					me2 *= energy_part/normsq;
+					if(site==0){
+						Print(me1);
+						Print(me2);
+					}
 					exact_grad[site] += (me1-me2);
 				}
 			}
