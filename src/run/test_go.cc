@@ -200,6 +200,11 @@ int main(int argc, char *argv[]){
 			for(Term t : HPEPO.terms){
 				MCKPEPS PEPS_applied = PEPS2;
 				t.apply(PEPS_applied);
+				if(t.factor == 0){
+					if(itensor::norm(PEPS_applied._site_tensors[0][0][0]) != 0){
+						std::cerr << "Zero peps site norm: " << itensor::norm(PEPS_applied._site_tensors[0][0][0]);
+					}
+				}
 				double energy_part = t.eval(PEPS_applied, PEPS1)/normsq;
 				energy += energy_part;
 				for(int site = 0; site < num_sites; site++){
@@ -208,6 +213,7 @@ int main(int argc, char *argv[]){
 					auto me2 = incomplete_inner(PEPS2, PEPS1, i, j, k);
 					me2 *= energy_part;
 					if(site==0){
+						std::cerr << "Term " << t.to_string << ": " std::endl;
 						PrintData(me1);
 						PrintData(me2);
 						PrintData(PEPS1._site_tensors[0][0][0]);
