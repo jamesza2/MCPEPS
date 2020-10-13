@@ -132,7 +132,7 @@ int main(int argc, char *argv[]){
 		t.apply(PEPS_applied);
 		auto me1 = incomplete_inner(PEPS_applied, PEPS1, target_i, target_j, target_k);
 		auto me2 = incomplete_inner(PEPS2, PEPS1, target_i, target_j, target_k);
-		double energy_part = t.eval(PEPS1, PEPS2);
+		double energy_part = t.eval(PEPS_applied, PEPS1);
 		me2 *= energy_part;
 		energy += energy_part/normsq;
 		me2 /= normsq;

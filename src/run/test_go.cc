@@ -196,7 +196,7 @@ int main(int argc, char *argv[]){
 			for(Term t : HPEPO.terms){
 				MCKPEPS PEPS_applied = PEPS2;
 				t.apply(PEPS_applied);
-				double energy_part = t.eval(PEPS1, PEPS2);
+				double energy_part = t.eval(PEPS_applied, PEPS1);
 				energy += energy_part/normsq;
 				for(int site = 0; site < num_sites; site++){
 					auto [i,j,k] = PEPS1.position_of_site(site);
@@ -208,8 +208,11 @@ int main(int argc, char *argv[]){
 			}
 			for(int site = 0; site < num_sites; site++){
 				auto [i,j,k] = PEPS1.position_of_site(site);
+				if(itensor::norm(exact_grad[site]*PEPS1._site_tensors[i][j][k]) > 0.000001){
+					std::cerr << "Exact grad product: " << itensor::norm(exact_grad[site]*PEPS1._site_tensors[i][j][k]) << std::endl;
+				}
 				exact_grad[site] = signelts(exact_grad[site]);
-				PEPS1._site_tensors[i][j][k] += update_size*r.rand()*exact_grad[site];
+				PEPS1._site_tensors[i][j][k] -= update_size*r.rand()*exact_grad[site];
 			}
 			PEPS2 = PEPS1;
 			PEPS2.prime();
