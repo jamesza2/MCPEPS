@@ -209,9 +209,11 @@ int main(int argc, char *argv[]){
 					}*/
 					exact_grad[site] += (me1-me2);
 				}
-				PEPS_applied.print_self("Applied PEPS");
-				PEPS2.print_self("PEPS2");
+				//PEPS_applied.print_self("Applied PEPS");
+				//PEPS2.print_self("PEPS2");
 			}
+			PrintData(exact_grad[0]);
+			PrintData(PEPS1.site_tensors[0][0][0]);
 			for(int site = 0; site < num_sites; site++){
 				auto [i,j,k] = PEPS1.position_of_site(site);
 				if(itensor::norm(exact_grad[site]*PEPS1._site_tensors[i][j][k]) > 0.000001){
@@ -222,7 +224,7 @@ int main(int argc, char *argv[]){
 			}
 			PEPS2 = PEPS1;
 			PEPS2.prime();
-			PEPS2.print_self("PEPS2 after update");
+			//PEPS2.print_self("PEPS2 after update");
 			update_size *= 0.99;
 			brute_force_energies.push_back(energy);
 			std::cerr << "BFSTEP #" << step+1 << " HAS ENERGY " << energy << " AND NORM " << normsq << std::endl;
