@@ -558,13 +558,14 @@ class NoSitePEPS
 			return out;
 		}
 
-		void print_self() const{
+		void print_self(std::string name = "") const{
 			bool _log = (_log_file != "");
 			std::streambuf *coutbuf = std::cout.rdbuf();
 			std::ofstream log_file_stream(_log_file, std::ofstream::app);
 			if(_log){
 				std::cout.rdbuf(log_file_stream.rdbuf());
 			}
+			if(name != ""){std::cout << name << std::endl;}
 			std::cout << "TENSOR DATA:" << std::endl;
 			for(int i = 0; i < _Nx; i++){
 				for(int j = 0; j < _Ny; j++){

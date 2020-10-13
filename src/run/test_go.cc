@@ -209,7 +209,8 @@ int main(int argc, char *argv[]){
 					}*/
 					exact_grad[site] += (me1-me2);
 				}
-				Print(PEPS2._site_tensors[0][0][0]);
+				PEPS_applied.print_self("Applied PEPS");
+				PEPS2.print_self("PEPS2");
 			}
 			for(int site = 0; site < num_sites; site++){
 				auto [i,j,k] = PEPS1.position_of_site(site);
@@ -221,6 +222,7 @@ int main(int argc, char *argv[]){
 			}
 			PEPS2 = PEPS1;
 			PEPS2.prime();
+			PEPS2.print_self("PEPS2 after update");
 			update_size *= 0.99;
 			brute_force_energies.push_back(energy);
 			std::cerr << "BFSTEP #" << step+1 << " HAS ENERGY " << energy << " AND NORM " << normsq << std::endl;
