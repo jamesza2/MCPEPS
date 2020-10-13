@@ -190,6 +190,7 @@ int main(int argc, char *argv[]){
 		std::vector<double> brute_force_energies;
 		double update_size = update_size_init;
 		for(int step = 0; step < opt_steps; step++){
+			normsq = PEPS1.inner_product(PEPS2);
 			std::vector<itensor::ITensor> exact_grad(num_sites);
 			double energy = 0;
 			for(Term t : HPEPO.terms){
@@ -214,7 +215,7 @@ int main(int argc, char *argv[]){
 			PEPS2.prime();
 			update_size *= 0.99;
 			brute_force_energies.push_back(energy);
-			std::cerr << "BFSTEP #" << step+1 << " HAS ENERGY " << energy << std::endl;
+			std::cerr << "BFSTEP #" << step+1 << " HAS ENERGY " << energy << " AND NORM " << normsq << std::endl;
 		}
 		out.addVector("BRUTE_FORCE_ENERGIES", brute_force_energies);
 	}
