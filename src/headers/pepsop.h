@@ -75,6 +75,17 @@ class Spinop{
 				case OpType::SM: return spinminus(ind1, ind2); break;
 				case OpType::SZ: return spinz(ind1, ind2); break;
 				case OpType::SZ2: return spinzsquared(ind1, ind2); break;
+				default: return itensor::ITensor(ind1, ind2);
+			}
+		}
+		std::string to_string(){
+			switch(type){
+				case OpType::I : return "I"; break;
+				case OpType::SP: return "S+"; break;
+				case OpType::SM: return "S-"; break;
+				case OpType::SZ: return "Sz"; break;
+				case OpType::SZ2: return "Sz^2"; break;
+				default: return "ERR";
 			}
 		}
 
@@ -85,8 +96,8 @@ class Term{
 	protected:
 		std::list<int> sites;
 		std::list<Spinop> ops;
-		double factor;
 	public:
+		double factor;
 		int num_sites;
 		Term(){
 			factor = 1;
@@ -150,6 +161,18 @@ class Term{
 				sites_it++;
 			}
 			
+		}
+		std::string to_string(){
+			auto sites_it = sites.begin(); 
+			auto ops_it = ops.begin();
+			std::string to_return = "[";
+			while(ops_it != ops.end()){
+				to_return += ops_it->to_string() + "_" + std::to_string(*sites_it) + " ";
+				ops_it++;
+				sites_it++;
+			}
+			to_return += std::to_string(factor);
+			return to_return+"]";
 		}
 };
 
