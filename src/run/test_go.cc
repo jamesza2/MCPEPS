@@ -196,19 +196,20 @@ int main(int argc, char *argv[]){
 			for(Term t : HPEPO.terms){
 				MCKPEPS PEPS_applied = PEPS2;
 				t.apply(PEPS_applied);
-				double energy_part = t.eval(PEPS_applied, PEPS1);
-				energy += energy_part/normsq;
+				double energy_part = t.eval(PEPS_applied, PEPS1)/normsq;
+				energy += energy_part;
 				for(int site = 0; site < num_sites; site++){
 					auto [i,j,k] = PEPS1.position_of_site(site);
 					auto me1 = incomplete_inner(PEPS_applied, PEPS1, i, j, k);
 					auto me2 = incomplete_inner(PEPS2, PEPS1, i, j, k);
-					me2 *= energy_part/normsq;
-					if(site==0){
+					me2 *= energy_part;
+					/*if(site==0){
 						Print(me1);
 						Print(me2);
-					}
+					}*/
 					exact_grad[site] += (me1-me2);
 				}
+				Print(PEPS2._site_tensors[0][0][0]);
 			}
 			for(int site = 0; site < num_sites; site++){
 				auto [i,j,k] = PEPS1.position_of_site(site);

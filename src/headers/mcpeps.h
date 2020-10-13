@@ -730,6 +730,18 @@ class MCKPEPS : public NoSitePEPS{
 			create_site_tensors(sites, randomize);
 		}
 
+		MCKPEPS(const MCKPEPS &to_copy){
+			_Nx = to_copy._Nx;
+			_Ny = to_copy._Ny;
+			_num_sites = _Nx*_Ny*UNIT_CELL_SIZE;
+			bonds = to_copy.bonds;
+			_D = to_copy._D;
+			_log_file = to_copy._log_file;
+			_Dc = to_copy._Dc;
+			site_indices = to_copy.sit_indices;
+			_link_indices = to_copy._link_indices;
+			_site_tensors = to_copy._site_tensors;
+		}
 		/*MCKPEPS(MCKPEPS &to_copy){
 			_Nx = to_copy._Nx;
 			_Ny = to_copy._Ny;
