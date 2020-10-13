@@ -738,7 +738,7 @@ class MCKPEPS : public NoSitePEPS{
 			_D = to_copy._D;
 			_log_file = to_copy._log_file;
 			_Dc = to_copy._Dc;
-			site_indices = to_copy.sit_indices;
+			site_indices = to_copy.site_indices;
 			_link_indices = to_copy._link_indices;
 			_site_tensors = to_copy._site_tensors;
 		}
