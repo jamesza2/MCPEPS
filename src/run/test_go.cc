@@ -203,6 +203,9 @@ int main(int argc, char *argv[]){
 					auto me1 = incomplete_inner(PEPS_applied, PEPS1, i, j, k);
 					auto me2 = incomplete_inner(PEPS2, PEPS1, i, j, k);
 					me2 *= energy_part;
+					PrintData(me1);
+					PrintData(me2);
+					PrintData(PEPS1._site_tensors[i][j][k]);
 					/*if(site==0){
 						Print(me1);
 						Print(me2);
