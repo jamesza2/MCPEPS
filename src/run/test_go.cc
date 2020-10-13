@@ -28,6 +28,25 @@
 	return ops;
 }*/
 
+//Brute force inner product between PEPS1 and PEPS2, except for the tensor [i,j,k] on PEPS2
+itensor::ITensor incomplete_inner(MCKPEPS &PEPS1, MCKPEPS &PEPS2, int i_omit, int j_omit, int k_omit){
+	itensor::ITensor product(1);
+	for(int i = 0; i < PEPS1.Nx(); i++){
+		for(int j = 0; j < PEPS1.Ny(); j++){
+			for(int k = 0; k < UNIT_CELL_SIZE; k++){
+				if((i != i_omit) || (j != j_omit) || (k != k_omit)){
+					product *= PEPS1._site_tensors[i][j][k];
+					product *= PEPS2._site_tensors[i][j][k];
+				}
+				else{
+					product *= PEPS1._site_tensors[i][j][k];
+				}
+			}
+		}
+	}
+	return product;
+}
+
 itensor::ITensor create_sz2_op(int site, itensor::IndexSet &sites){
 	std::vector<itensor::ITensor> ops;
 	double s = 0.5*(itensor::dim(sites(1))-1);
@@ -160,6 +179,44 @@ int main(int argc, char *argv[]){
 	out.addDouble("BIAS_DROPOFF", bias_dropoff);
 	out.addVector("BIAS_CONFIG", bias_config);
 	out.addVector("ENERGIES", energies);
+
+	//Test gradient optimization by finding the gradient from a brute force method
+	bool brute_force_test = input.testBool("brute_force_test", false);
+	if(brute_force_test){
+		std::cerr << "Computing exact gradient..." << std::endl;
+		Heisenberg H(Nx, Ny, physical_dims);
+		H.set_J(Jvals);
+		PEPSop HPEPO = H.toPEPSop();
+		std::vector<double> brute_force_energies;
+		double update_size = update_size_init;
+		for(int step = 0; step < optimization_steps; step++){
+			std::vector<itensor::ITensor> exact_grad(num_sites);
+			double energy = 0;
+			for(Term t : HPEPO.terms){
+				MCKPEPS PEPS_applied = PEPS2;
+				t.apply(PEPS_applied);
+				double energy_part = t.eval(PEPS1, PEPS2);
+				energy += energy_part/normsq;
+				for(int site = 0; site < num_sites; site++){
+					auto [i,j,k] = PEPS1.position_of_site(site);
+					auto me1 = incomplete_inner(PEPS_applied, PEPS1, i, j, k);
+					auto me2 = incomplete_inner(PEPS2, PEPS1, i, j, k);
+					me2 *= energy_part/normsq;
+					exact_grad[site] += (me1-me2);
+				}
+			}
+			for(int site = 0; site < num_sites; site++){
+				auto [i,j,k] = PEPS1.position_of_site(site);
+				exact_grad[site] = signelts(exact_grad);
+				PEPS1._site_tensors[i][j][k] -= update_size*r.rand()*exact_grad;
+			}
+			PEPS2 = PEPS1;
+			PEPS2.prime();
+			update_size *= 0.97;
+			brute_force_energies.push_back(energy);
+		}
+		out.addVector("BRUTE_FORCE_ENERGIES", brute_forceenergies);
+	}
 
 	if(out_file_name == "AUTO"){
 		out_file_name = "../../out/go_test" + version;
