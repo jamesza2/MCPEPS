@@ -154,6 +154,7 @@ int main(int argc, char *argv[]){
 	randomize_in_sector(spin_config, physical_dims, r.gen, r.dist);
 
 	PEPS1.set_log_file(log_file_name);
+	MCKPEPS PEPS0 = PEPS1;
 
 	
 	std::cerr << "Performing optimization..." << std::endl;
@@ -183,6 +184,9 @@ int main(int argc, char *argv[]){
 	//Test gradient optimization by finding the gradient from a brute force method
 	bool brute_force_test = input.testBool("brute_force_test", false);
 	if(brute_force_test){
+		PEPS1 = PEPS0;
+		PEPS2 = PEPS1;
+		PEPS2.prime();
 		std::cerr << "Computing brute force gradient..." << std::endl;
 		Heisenberg H(Nx, Ny, physical_dims);
 		H.set_J(Jvals);
@@ -203,9 +207,11 @@ int main(int argc, char *argv[]){
 					auto me1 = incomplete_inner(PEPS_applied, PEPS1, i, j, k);
 					auto me2 = incomplete_inner(PEPS2, PEPS1, i, j, k);
 					me2 *= energy_part;
-					PrintData(me1);
-					PrintData(me2);
-					PrintData(PEPS1._site_tensors[i][j][k]);
+					if(site==0){
+						PrintData(me1);
+						PrintData(me2);
+						PrintData(PEPS1._site_tensors[0][0][0]);
+					}
 					/*if(site==0){
 						Print(me1);
 						Print(me2);
