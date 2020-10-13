@@ -189,7 +189,7 @@ int main(int argc, char *argv[]){
 		PEPSop HPEPO = H.toPEPSop();
 		std::vector<double> brute_force_energies;
 		double update_size = update_size_init;
-		for(int step = 0; step < optimization_steps; step++){
+		for(int step = 0; step < opt_steps; step++){
 			std::vector<itensor::ITensor> exact_grad(num_sites);
 			double energy = 0;
 			for(Term t : HPEPO.terms){
@@ -207,8 +207,8 @@ int main(int argc, char *argv[]){
 			}
 			for(int site = 0; site < num_sites; site++){
 				auto [i,j,k] = PEPS1.position_of_site(site);
-				exact_grad[site] = signelts(exact_grad);
-				PEPS1._site_tensors[i][j][k] -= update_size*r.rand()*exact_grad;
+				exact_grad[site] = signelts(exact_grad[site]);
+				PEPS1._site_tensors[i][j][k] -= update_size*r.rand()*exact_grad[site];
 			}
 			PEPS2 = PEPS1;
 			PEPS2.prime();
