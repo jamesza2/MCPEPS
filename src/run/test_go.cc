@@ -213,7 +213,7 @@ int main(int argc, char *argv[]){
 					auto me2 = incomplete_inner(PEPS2, PEPS1, i, j, k);
 					me2 *= energy_part;
 					if(site==0){
-						std::cerr << "Term " << t.to_string << ": " std::endl;
+						std::cerr << "Term " << t.to_string() << ": " std::endl;
 						PrintData(me1);
 						PrintData(me2);
 						PrintData(PEPS1._site_tensors[0][0][0]);
