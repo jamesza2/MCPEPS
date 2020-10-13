@@ -183,7 +183,7 @@ int main(int argc, char *argv[]){
 	//Test gradient optimization by finding the gradient from a brute force method
 	bool brute_force_test = input.testBool("brute_force_test", false);
 	if(brute_force_test){
-		std::cerr << "Computing exact gradient..." << std::endl;
+		std::cerr << "Computing brute force gradient..." << std::endl;
 		Heisenberg H(Nx, Ny, physical_dims);
 		H.set_J(Jvals);
 		PEPSop HPEPO = H.toPEPSop();
@@ -208,12 +208,13 @@ int main(int argc, char *argv[]){
 			for(int site = 0; site < num_sites; site++){
 				auto [i,j,k] = PEPS1.position_of_site(site);
 				exact_grad[site] = signelts(exact_grad[site]);
-				PEPS1._site_tensors[i][j][k] -= update_size*r.rand()*exact_grad[site];
+				PEPS1._site_tensors[i][j][k] += update_size*r.rand()*exact_grad[site];
 			}
 			PEPS2 = PEPS1;
 			PEPS2.prime();
 			update_size *= 0.97;
 			brute_force_energies.push_back(energy);
+			std::cerr << "BFSTEP #" << step+1 << " HAS ENERGY " << energy << std::endl;
 		}
 		out.addVector("BRUTE_FORCE_ENERGIES", brute_force_energies);
 	}
