@@ -215,7 +215,7 @@ int main(int argc, char *argv[]){
 			update_size *= 0.97;
 			brute_force_energies.push_back(energy);
 		}
-		out.addVector("BRUTE_FORCE_ENERGIES", brute_forceenergies);
+		out.addVector("BRUTE_FORCE_ENERGIES", brute_force_energies);
 	}
 
 	if(out_file_name == "AUTO"){
