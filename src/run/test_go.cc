@@ -212,7 +212,7 @@ int main(int argc, char *argv[]){
 			}
 			PEPS2 = PEPS1;
 			PEPS2.prime();
-			update_size *= 0.97;
+			update_size *= 0.99;
 			brute_force_energies.push_back(energy);
 			std::cerr << "BFSTEP #" << step+1 << " HAS ENERGY " << energy << std::endl;
 		}
