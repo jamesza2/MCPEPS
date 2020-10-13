@@ -27,6 +27,13 @@ class Neighbors{
 			}
 			set_up_bonds();
 		}
+		Neighbors(const Neighbors &to_copy){
+			_Nx = to_copy._Nx;
+			_Ny = to_copy._Ny;
+			_num_sites = Nx*Ny*UNIT_CELL_SIZE;
+			bond_matrices = to_copy.bond_matrices;
+			nn_bonds = to_copy.nn_bonds;
+		}
 		void set_dimensions(int Nx, int Ny){
 			_Nx = Nx;
 			_Ny = Ny;
