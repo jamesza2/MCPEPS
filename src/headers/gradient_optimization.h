@@ -54,6 +54,8 @@ void get_sample(MCKPEPS &psi, NoSitePEPS &contracted, std::vector<int> &spin_con
 		Delta[site_index] += envs[site_index]/wavefn;
 		DeltaE[site_index] += envs[site_index]*local_energy/wavefn;
 	}
+	std::cerr << "Update step #" << site_index << ": E=" local_energy << ", W=" << wavefn << std::endl;
+	PrintData(envs[0]);
 	E += local_energy;
 }
 
