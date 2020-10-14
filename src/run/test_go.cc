@@ -201,36 +201,32 @@ int main(int argc, char *argv[]){
 				MCKPEPS PEPS_applied = PEPS2;
 				t.apply(PEPS_applied);
 				if(t.factor == 0){
-					if(itensor::norm(PEPS_applied._site_tensors[0][0][0]) != 0){
+					/*if(itensor::norm(PEPS_applied._site_tensors[0][0][0]) != 0){
 						std::cerr << "Zero peps site norm: " << itensor::norm(PEPS_applied._site_tensors[0][0][0]);
-					}
+					}*/
 				}
 				double energy_part = t.eval(PEPS1, PEPS2)/normsq;
-				std::cerr << "Energy part of " << t.to_string() << ": " << energy_part << std::endl;
+				//std::cerr << "Energy part of " << t.to_string() << ": " << energy_part << std::endl;
 				energy += energy_part;
 				for(int site = 0; site < num_sites; site++){
 					auto [i,j,k] = PEPS1.position_of_site(site);
 					auto me1 = incomplete_inner(PEPS_applied, PEPS1, i, j, k);
 					auto me2 = incomplete_inner(PEPS2, PEPS1, i, j, k);
 					me2 *= energy_part;
-					if(site==0){
+					/*if(site==0){
 						std::cerr << "Term " << t.to_string() << ": " <<std::endl;
 						PrintData(me1);
 						PrintData(me2);
 						std::cerr << "Real norm: " << itensor::norm(me2) << std::endl;
 						PrintData(PEPS1._site_tensors[0][0][0]);
-					}
-					/*if(site==0){
-						Print(me1);
-						Print(me2);
 					}*/
 					exact_grad[site] += (me1-me2);
 				}
 				//PEPS_applied.print_self("Applied PEPS");
 				//PEPS2.print_self("PEPS2");
 			}
-			PrintData(exact_grad[0]);
-			PrintData(PEPS1._site_tensors[0][0][0]);
+			//PrintData(exact_grad[0]);
+			//PrintData(PEPS1._site_tensors[0][0][0]);
 			for(int site = 0; site < num_sites; site++){
 				auto [i,j,k] = PEPS1.position_of_site(site);
 				if(itensor::norm(exact_grad[site]*PEPS1._site_tensors[i][j][k]) > 0.000001){
@@ -242,7 +238,7 @@ int main(int argc, char *argv[]){
 			PEPS2 = PEPS1;
 			PEPS2.prime();
 			//PEPS2.print_self("PEPS2 after update");
-			update_size *= 0.99;
+			update_size *= 0.97;
 			brute_force_energies.push_back(energy);
 			std::cerr << "BFSTEP #" << step+1 << " HAS ENERGY " << energy << " AND NORM " << normsq << std::endl;
 		}
