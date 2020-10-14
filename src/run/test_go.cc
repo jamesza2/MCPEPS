@@ -206,6 +206,7 @@ int main(int argc, char *argv[]){
 					}
 				}
 				double energy_part = t.eval(PEPS_applied, PEPS1)/normsq;
+				std::cerr << "Energy part of " << t.to_string() << ": " << energy_part << std::endl;
 				energy += energy_part;
 				for(int site = 0; site < num_sites; site++){
 					auto [i,j,k] = PEPS1.position_of_site(site);
@@ -216,6 +217,7 @@ int main(int argc, char *argv[]){
 						std::cerr << "Term " << t.to_string() << ": " <<std::endl;
 						PrintData(me1);
 						PrintData(me2);
+						std::cerr << "Real norm: " << itensor::norm(me2) << std::endl;
 						PrintData(PEPS1._site_tensors[0][0][0]);
 					}
 					/*if(site==0){
