@@ -54,7 +54,7 @@ void get_sample(MCKPEPS &psi, NoSitePEPS &contracted, std::vector<int> &spin_con
 		Delta[site_index] += envs[site_index]/wavefn;
 		DeltaE[site_index] += envs[site_index]*local_energy/wavefn;
 	}
-	std::cerr << "Update step #" << site_index << ": E=" local_energy << ", W=" << wavefn << std::endl;
+	std::cerr << ": E=" local_energy << ", W=" << wavefn << std::endl;
 	PrintData(envs[0]);
 	E += local_energy;
 }
@@ -68,7 +68,9 @@ double update(MCKPEPS &psi, std::vector<int> &spin_config, const Heisenberg &H, 
 	SpinConfigPEPS scp(psi, spin_config, 1);
 	NoSitePEPS nsp = psi.contract(scp);
 	for(int sample = 0; sample < M; sample++){
+		std::cerr << "Update step #" << sample+1;
 		get_sample(psi, nsp, spin_config, H, Delta, DeltaE, E, update_size, r);
+
 	}
 	E /= M;
 	itensor::ITensor grad;
