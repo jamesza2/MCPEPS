@@ -170,14 +170,6 @@ int main(int argc, char *argv[]){
 		std::cerr << itensor::norm(DeltaE.at(delta_index))*grads_factor << " | ";
 		std::cerr << itensor::norm(DeltaE.at(delta_index)*grads_factor - Delta.at(delta_index)*grads_factor*E) << std::endl;
 	}
-	for(auto d : Delta){
-		std::cerr << itensor::norm(d)*grads_factor << " ";
-	}
-	std::cerr << "\nDeltaE norms: ";
-	for(auto d : DeltaE){
-		std::cerr << itensor::norm(d)*grads_factor << " ";
-	}
-	for(int delta_index )
 	std::cerr << "\nApprox grad norm: " << itensor::norm(approx_grad) << std::endl;
 	return 0;
 }
