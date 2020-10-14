@@ -205,7 +205,7 @@ int main(int argc, char *argv[]){
 						std::cerr << "Zero peps site norm: " << itensor::norm(PEPS_applied._site_tensors[0][0][0]);
 					}
 				}
-				double energy_part = t.eval(PEPS_applied, PEPS1)/normsq;
+				double energy_part = t.eval(PEPS1, PEPS2)/normsq;
 				std::cerr << "Energy part of " << t.to_string() << ": " << energy_part << std::endl;
 				energy += energy_part;
 				for(int site = 0; site < num_sites; site++){
