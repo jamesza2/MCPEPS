@@ -127,6 +127,7 @@ int main(int argc, char *argv[]){
 		log_file_name = "../../logs/go_test" + version;
 	}
 
+	std::cerr << "Evaluated input" << std::endl;
 
 	int num_sites = Nx*Ny*UNIT_CELL_SIZE;
 
