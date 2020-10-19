@@ -109,6 +109,10 @@ class ArbitraryPEPS
 			return _site_tensors[i][j][k];
 		}
 
+		itensor::ITensor& site_tensor(int i, int j, int k){
+			return _site_tensors[i][j][k];
+		}
+
 		//Get the auxiliary MPS's for the vertical, i.e. i, direction
 		//Warning: Only do this on a PEPS with very few site indices, to avoid exponentially large tensors at the end
 		std::list<AuxMPS> get_vd_auxiliaries(){
@@ -708,10 +712,10 @@ class NoSitePEPS : public ArbitraryPEPS
 			}
 		}
 		
-
+		/*
 		itensor::ITensor site_tensor(int i, int j, int k) {
 			return _site_tensors[i][j][k];
-		}
+		}*/
 
 		void set_site_tensor(int i, int j, int k, itensor::ITensor &new_tensor){
 			if(!itensor::hasSameInds(_site_tensors[i][j][k].inds(), new_tensor.inds())){
