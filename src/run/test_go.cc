@@ -220,7 +220,7 @@ int main(int argc, char *argv[]){
 			for(int site = 0; site < num_sites; site++){
 				itensor::ITensor direct_gradient = (me1[site] - energy*me2[site])*2/normsq;
 				direct_gradient = signelts(direct_gradient);
-				PEPS1._site_tensors[i][j][k] -= update_size*r.rand()*direct_gradient;
+				PEPS1.site_tensor(site) -= update_size*r.rand()*direct_gradient;
 			}
 			PEPS2 = PEPS1;
 			PEPS2.prime();
@@ -229,7 +229,7 @@ int main(int argc, char *argv[]){
 			direct_energies.push_back(energy);
 			std::cerr << "DIRECT STEP #" << step+1 << " HAS ENERGY " << energy << " AND NORM " << normsq << std::endl;
 		}
-		out.addVector("DIRECT_ENERGIES", brute_force_energies);
+		out.addVector("DIRECT_ENERGIES", direct_energies);
 	}
 	
 

@@ -104,7 +104,7 @@ class ArbitraryPEPS
 		int Nx(){ return _Nx; }
 		int Ny(){ return _Ny; }
 
-		itensor::ITensor& site_tensor(int site_index) const{
+		itensor::ITensor& site_tensor(int site_index){
 			auto [i,j,k] = position_of_site(site_index);
 			return _site_tensors[i][j][k];
 		}
@@ -120,8 +120,7 @@ class ArbitraryPEPS
 			}
 			std::list<AuxMPS> out;
 			std::vector<itensor::ITensor> unsplit_MPS;
-			AuxMPS previous_row(AuxType::VD);
-			std::vector<itensor::ITensor> previous_row; //Previous row is the row formed from (i,:,1) & (i,:,2) at the start of the contraction step
+			AuxMPS previous_row(AuxType::VD); //Previous row is the row formed from (i,:,1) & (i,:,2) at the start of the contraction step
 			for(int j = 0; j < _Ny; j++){
 				previous_row.add_tensor(_site_tensors[_Nx-1][j][1]);
 				previous_row.add_tensor(_site_tensors[_Nx-1][j][2]);
@@ -132,7 +131,7 @@ class ArbitraryPEPS
 				//std::cout << "Contracting Row " << i << ":" << std::endl;
 				unsplit_MPS.clear();
 				for(int j = 0; j < _Ny; j++){
-					unsplit_MPS.push_back((_site_tensors[i][j][0]*previous_row[2*j])*previous_row[2*j+1]);
+					unsplit_MPS.push_back((_site_tensors[i][j][0]*previous_row.MPS[2*j])*previous_row.MPS[2*j+1]);
 				}
 				AuxMPS aux(AuxType::VD);
 				//Create auxiliary tensors
