@@ -826,7 +826,7 @@ class MCKPEPS : public NoSitePEPS{
 			int input_max_truncation_bd,
 			itensor::Args const& args = itensor::Args::global())
 		{	
-			std::cerr << "Calling MCKPEPS constructor...";
+			std::cerr << "Calling MCKPEPS constructor..." << input_Nx << "x" << input_Ny;
 			_num_sites = input_Nx*input_Ny*UNIT_CELL_SIZE;
 			_Nx = input_Nx;
 			_Ny = input_Ny;

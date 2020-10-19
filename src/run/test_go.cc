@@ -137,7 +137,7 @@ int main(int argc, char *argv[]){
 	}
 	itensor::IndexSet sites(sites_vector);
 
-	std::cerr << "Creating PEPS...";
+	std::cerr << "Creating " << Nx << "x" << Ny << " PEPS...";
 	auto PEPS1 = MCKPEPS(sites, Nx, Ny, standard_dims, max_truncation_dims);
 	std::cerr << PEPS1.Nx() << "x" << PEPS1.Ny() << "x" << UNIT_CELL_SIZE << "...";
 
