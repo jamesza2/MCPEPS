@@ -49,12 +49,13 @@ class ArbitraryPEPS
 	public:
 		std::string _log_file;
 		std::vector<std::vector<std::vector<itensor::ITensor>>> _site_tensors;
-		ArbitraryPEPS(){}
+		ArbitraryPEPS(){std::cerr << "Calling APEPS default constructor...";}
 		ArbitraryPEPS(int input_Nx,
 			int input_Ny,
 			int input_max_truncation_bd,
 			itensor::Args const& args = itensor::Args::global())
-		{
+		{	
+			std::cerr << "Calling AKPEPS constructor...";
 			_num_sites = input_Nx*input_Ny*UNIT_CELL_SIZE;
 			_Nx = input_Nx;
 			_Ny = input_Ny;
@@ -381,13 +382,14 @@ class NoSitePEPS : public ArbitraryPEPS
 		std::string _log_file;
 		std::vector<std::vector<std::vector<itensor::ITensor>>> _site_tensors;
 		Neighbors bonds;
-		NoSitePEPS(){}
+		NoSitePEPS(){std::cerr << "Calling NSPEPS default constructor...";}
 		NoSitePEPS(int input_Nx,
 			int input_Ny,
 			int input_max_bd,
 			int input_max_truncation_bd,
 			itensor::Args const& args = itensor::Args::global())
 		{
+			std::cerr << "Calling NSPEPS constructor...";
 			_num_sites = input_Nx*input_Ny*UNIT_CELL_SIZE;
 			_Nx = input_Nx;
 			_Ny = input_Ny;
@@ -410,6 +412,7 @@ class NoSitePEPS : public ArbitraryPEPS
 			std::vector<std::vector<std::vector<itensor::ITensor>>> &input_site_tensors,
 			std::map<int, itensor::Index> &input_link_indices)
 		{
+			std::cerr << "Calling NSPEPS detailed constructor...";
 			_num_sites = input_Nx*input_Ny*UNIT_CELL_SIZE;
 			_Nx = input_Nx;
 			_Ny = input_Ny;
@@ -822,7 +825,8 @@ class MCKPEPS : public NoSitePEPS{
 			int input_max_bd,
 			int input_max_truncation_bd,
 			itensor::Args const& args = itensor::Args::global())
-		{
+		{	
+			std::cerr << "Calling MCKPEPS constructor...";
 			_num_sites = input_Nx*input_Ny*UNIT_CELL_SIZE;
 			_Nx = input_Nx;
 			_Ny = input_Ny;
@@ -840,6 +844,7 @@ class MCKPEPS : public NoSitePEPS{
 		}
 
 		MCKPEPS(const MCKPEPS &to_copy){
+			std::cerr << "Calling MCKPEPS copy constructor...";
 			_Nx = to_copy._Nx;
 			_Ny = to_copy._Ny;
 			_num_sites = _Nx*_Ny*UNIT_CELL_SIZE;
