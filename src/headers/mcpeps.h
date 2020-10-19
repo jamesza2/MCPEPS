@@ -49,11 +49,7 @@ class ArbitraryPEPS
 	public:
 		std::string _log_file;
 		std::vector<std::vector<std::vector<itensor::ITensor>>> _site_tensors;
-		ArbitraryPEPS(){
-			_Nx=0;
-			_Ny=0;
-			_num_sites=0;
-		}
+		ArbitraryPEPS(){}
 		ArbitraryPEPS(int input_Nx,
 			int input_Ny,
 			int input_max_truncation_bd,
@@ -1257,13 +1253,13 @@ class MCKPEPS : public NoSitePEPS{
 		//Multiplies an extra value favoring the bias_spin_config on all sites in their first link index element
 		void add_bias(std::vector<int> bias_spin_config, double fuzziness = 0.4){
 			for(int site = 0; site < _num_sites; site++){
-				std::cerr << "Position of " << site << "...";
+				//std::cerr << "Position of " << site << "...";
 				auto [i,j,k] = position_of_site(site);
 				itensor::Index site_index = site_indices[site];
 				itensor::ITensor partial_projector(site_index, itensor::prime(site_index));
 				for(int spin_index = 1; spin_index <= site_index.dim(); spin_index++){
 					int bias_value = bias_spin_config[site];
-					std::cerr << "bias_factor=" << fuzziness << "^" << std::abs(bias_value-spin_index+1) << "...";
+					//std::cerr << "bias_factor=" << fuzziness << "^" << std::abs(bias_value-spin_index+1) << "...";
 					double bias_factor = std::pow(fuzziness, std::abs(bias_value-spin_index+1));
 					partial_projector.set(spin_index, spin_index, bias_factor);
 				}
