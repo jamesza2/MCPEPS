@@ -49,7 +49,6 @@ class ArbitraryPEPS
 	public:
 		std::string _log_file;
 		std::vector<std::vector<std::vector<itensor::ITensor>>> _site_tensors;
-		ArbitraryPEPS(){}
 		ArbitraryPEPS(int input_Nx,
 			int input_Ny,
 			int input_max_truncation_bd,
@@ -381,11 +380,7 @@ class NoSitePEPS : public ArbitraryPEPS
 		std::string _log_file;
 		std::vector<std::vector<std::vector<itensor::ITensor>>> _site_tensors;
 		Neighbors bonds;
-		NoSitePEPS(){
-			_Nx = 0;
-			_Ny = 0;
-			_num_sites=0;
-		}
+		NoSitePEPS(){}
 		NoSitePEPS(int input_Nx,
 			int input_Ny,
 			int input_max_bd,
