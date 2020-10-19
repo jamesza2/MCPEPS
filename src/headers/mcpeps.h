@@ -49,6 +49,7 @@ class ArbitraryPEPS
 	public:
 		std::string _log_file;
 		std::vector<std::vector<std::vector<itensor::ITensor>>> _site_tensors;
+		ArbitraryPEPS(){}
 		ArbitraryPEPS(int input_Nx,
 			int input_Ny,
 			int input_max_truncation_bd,
