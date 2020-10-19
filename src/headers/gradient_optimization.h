@@ -32,6 +32,7 @@ void get_sample(MCKPEPS &psi, NoSitePEPS &contracted, std::vector<int> &spin_con
 	sample_s_direction(psi, spin_config, r);
 	//std::cerr << "l direction...";
 	double wavefn = sample_l_direction(psi, spin_config, r);
+	std::cerr << "finished sampling...";
 	double real_wavefn = wavefunction(spin_config, psi);
 	auto possible_mes = H.possible_matrix_elements(spin_config);
 	double local_energy = 0;
@@ -68,6 +69,7 @@ double update(MCKPEPS &psi, std::vector<int> &spin_config, const Heisenberg &H, 
 	SpinConfigPEPS scp(psi, spin_config, 1);
 	NoSitePEPS nsp = psi.contract(scp);
 	for(int sample = 0; sample < M; sample++){
+		std::cerr << "Getting sample #" << sample+1 << "...";
 		//std::cerr << "Update step #" << sample+1 << std::endl;
 		get_sample(psi, nsp, spin_config, H, Delta, DeltaE, E, update_size, r);
 
@@ -76,7 +78,8 @@ double update(MCKPEPS &psi, std::vector<int> &spin_config, const Heisenberg &H, 
 	itensor::ITensor grad;
 	double grads_factor = 2./M;
 	for(int site = 0; site < Delta.size(); site++){
-		grad = DeltaE[site]*grads_factor - Delta[site]*grads_factor*E;
+		std::cerr << "Assembling gradient#" << site+1 << "...";
+		grad = DeltaE.at(site)*grads_factor - Delta[site]*grads_factor*E;
 		//grad /= norm(grad);
 		grad = signelts(grad);
 		auto [i,j,k] = psi.position_of_site(site);

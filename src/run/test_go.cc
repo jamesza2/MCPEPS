@@ -160,7 +160,7 @@ int main(int argc, char *argv[]){
 	MCKPEPS PEPS2 = PEPS1;
 	PEPS2.prime();
 	double normsq = PEPS1.inner_product(PEPS2);
-	std::cerr << "Dividing by norm " << normsq << std::endl;
+	//std::cerr << "Dividing by norm " << normsq << std::endl;
 	PEPS1 /= std::sqrt(normsq);
 	
 	std::cerr << "Performing optimization..." << std::endl;
