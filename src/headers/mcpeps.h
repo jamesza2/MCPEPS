@@ -1262,6 +1262,7 @@ class MCKPEPS : public NoSitePEPS{
 				itensor::ITensor partial_projector(site_index, itensor::prime(site_index));
 				for(int spin_index = 1; spin_index <= site_index.dim(); spin_index++){
 					int bias_value = bias_spin_config[site];
+					std::cerr << "bias_factor=" << fuzziness << "^" << std::abs(bias_value-spin_index+1) << "...";
 					double bias_factor = std::pow(fuzziness, std::abs(bias_value-spin_index+1));
 					partial_projector.set(spin_index, spin_index, bias_factor);
 				}
