@@ -1257,6 +1257,7 @@ class MCKPEPS : public NoSitePEPS{
 		//Multiplies an extra value favoring the bias_spin_config on all sites in their first link index element
 		void add_bias(std::vector<int> bias_spin_config, double fuzziness = 0.4){
 			for(int site = 0; site < _num_sites; site++){
+				std::cerr << "Position of " << site << "...";
 				auto [i,j,k] = position_of_site(site);
 				itensor::Index site_index = site_indices[site];
 				itensor::ITensor partial_projector(site_index, itensor::prime(site_index));

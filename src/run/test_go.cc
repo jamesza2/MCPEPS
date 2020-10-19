@@ -139,6 +139,7 @@ int main(int argc, char *argv[]){
 
 	std::cerr << "Creating PEPS...";
 	auto PEPS1 = MCKPEPS(sites, Nx, Ny, standard_dims, max_truncation_dims);
+	std::cerr << PEPS1.Nx() << "x" << PEPS1.Ny() << "x" << UNIT_CELL_SIZE << "...";
 
 	std::vector<int> spin_config(num_sites, 0);
 	Randomizer r;
