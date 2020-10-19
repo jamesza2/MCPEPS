@@ -138,11 +138,7 @@ int main(int argc, char *argv[]){
 	itensor::IndexSet sites(sites_vector);
 
 	auto PEPS1 = MCKPEPS(sites, Nx, Ny, standard_dims, max_truncation_dims);
-	MCKPEPS PEPS2 = PEPS1;
-	PEPS2.prime();
-	double normsq = PEPS1.inner_product(PEPS2);
-	PEPS1 /= std::sqrt(normsq);
-
+	
 	std::vector<int> spin_config(num_sites, 0);
 	Randomizer r;
 	randomize_in_sector(spin_config, physical_dims, r.gen, r.dist);
@@ -157,6 +153,11 @@ int main(int argc, char *argv[]){
 	PEPS1.set_log_file(log_file_name);
 	MCKPEPS PEPS0 = PEPS1;
 
+	MCKPEPS PEPS2 = PEPS1;
+	PEPS2.prime();
+	double normsq = PEPS1.inner_product(PEPS2);
+	std::cerr << "Dividing by norm " << normsq << std::endl;
+	PEPS1 /= std::sqrt(normsq);
 	
 	std::cerr << "Performing optimization..." << std::endl;
 	auto timestart = std::time(NULL);
