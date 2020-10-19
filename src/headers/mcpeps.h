@@ -49,13 +49,13 @@ class ArbitraryPEPS
 	public:
 		std::string _log_file;
 		std::vector<std::vector<std::vector<itensor::ITensor>>> _site_tensors;
-		ArbitraryPEPS(){std::cerr << "Calling APEPS default constructor...";}
+		ArbitraryPEPS(){}
 		ArbitraryPEPS(int input_Nx,
 			int input_Ny,
 			int input_max_truncation_bd,
 			itensor::Args const& args = itensor::Args::global())
 		{	
-			std::cerr << "Calling AKPEPS constructor...";
+			//std::cerr << "Calling AKPEPS constructor...";
 			_num_sites = input_Nx*input_Ny*UNIT_CELL_SIZE;
 			_Nx = input_Nx;
 			_Ny = input_Ny;
@@ -369,11 +369,7 @@ class ArbitraryPEPS
 class NoSitePEPS : public ArbitraryPEPS
 {
 	protected:
-		int _Nx;
-		int _Ny;
-		int _num_sites;
 		int _D;
-		int _Dc;
 		
 		
 		std::map<int, itensor::Index> _link_indices;
@@ -382,14 +378,14 @@ class NoSitePEPS : public ArbitraryPEPS
 		std::string _log_file;
 		std::vector<std::vector<std::vector<itensor::ITensor>>> _site_tensors;
 		Neighbors bonds;
-		NoSitePEPS(){std::cerr << "Calling NSPEPS default constructor...";}
+		NoSitePEPS(){}
 		NoSitePEPS(int input_Nx,
 			int input_Ny,
 			int input_max_bd,
 			int input_max_truncation_bd,
 			itensor::Args const& args = itensor::Args::global())
 		{
-			std::cerr << "Calling NSPEPS constructor...";
+			//std::cerr << "Calling NSPEPS constructor...";
 			_num_sites = input_Nx*input_Ny*UNIT_CELL_SIZE;
 			_Nx = input_Nx;
 			_Ny = input_Ny;
@@ -412,7 +408,7 @@ class NoSitePEPS : public ArbitraryPEPS
 			std::vector<std::vector<std::vector<itensor::ITensor>>> &input_site_tensors,
 			std::map<int, itensor::Index> &input_link_indices)
 		{
-			std::cerr << "Calling NSPEPS detailed constructor...";
+			//std::cerr << "Calling NSPEPS detailed constructor...";
 			_num_sites = input_Nx*input_Ny*UNIT_CELL_SIZE;
 			_Nx = input_Nx;
 			_Ny = input_Ny;
@@ -826,7 +822,7 @@ class MCKPEPS : public NoSitePEPS{
 			int input_max_truncation_bd,
 			itensor::Args const& args = itensor::Args::global())
 		{	
-			std::cerr << "Calling MCKPEPS constructor..." << input_Nx << "x" << input_Ny;
+			//std::cerr << "Calling MCKPEPS constructor..." << input_Nx << "x" << input_Ny;
 			_num_sites = input_Nx*input_Ny*UNIT_CELL_SIZE;
 			_Nx = input_Nx;
 			_Ny = input_Ny;
@@ -844,7 +840,7 @@ class MCKPEPS : public NoSitePEPS{
 		}
 
 		MCKPEPS(const MCKPEPS &to_copy){
-			std::cerr << "Calling MCKPEPS copy constructor...";
+			//std::cerr << "Calling MCKPEPS copy constructor...";
 			_Nx = to_copy._Nx;
 			_Ny = to_copy._Ny;
 			_num_sites = _Nx*_Ny*UNIT_CELL_SIZE;
