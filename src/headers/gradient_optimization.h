@@ -85,19 +85,27 @@ double update(MCKPEPS &psi, std::vector<int> &spin_config, const Heisenberg &H, 
 	return E;
 }
 
-void optimize(MCKPEPS &psi, std::vector<double> &energies, const std::map<std::string, double> &Jvals, const int M, const double update_size_init = 0.05, const int opt_steps = 100){
+//Optimizes psi, storing the vector in energies
+void optimize(MCKPEPS &psi, std::vector<double> &energies, std::vector<double> &update_sizes, const std::map<std::string, double> &Jvals, const int M, const int opt_steps = 100){
 	std::vector<int> spin_config(psi.size(), 0);
 	Randomizer r;
 	randomize_in_sector(spin_config, psi.physical_dims(), r.gen, r.dist);
 	Heisenberg H(psi.Nx(), psi.Ny(), psi.physical_dims());
 	H.set_J(Jvals);
-	double update_size = update_size_init;
+	double update_size = 0.05;
+	if(update_sizes.size() > 0){update_size = update_sizes[0];}
+	else{update_sizes.push_back(0.05);}
+	//double update_size = update_size_init;
 	auto timestart = std::time(NULL);
 	for(int step = 0; step < opt_steps; step ++){
 		double energy = update(psi, spin_config, H, M, update_size, r);
 		energies.push_back(energy);
 		std::cerr << "STEP#" << step+1 << " HAS ENERGY " << energy << " (" << std::difftime(std::time(NULL), timestart) << "s)" << std::endl;
-		update_size *= 0.97;
+		if(update_sizes.size() > step+1){update_size = update_sizes[step+1];}
+		else{
+			update_size *= 0.97;
+			if(step != opt_steps-1){update_sizes.push_back(update_size);}
+		}
 		timestart = std::time(NULL);
 	}
 }

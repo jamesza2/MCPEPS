@@ -161,7 +161,8 @@ int main(int argc, char *argv[]){
 	auto timestart = std::time(NULL);
 
 	std::vector<double> energies;
-	optimize(PEPS1, energies, Jvals, num_trials, update_size_init, opt_steps);
+	std::vector<double> update_sizes(1, update_size_init);
+	optimize(PEPS1, energies, update_sizes, Jvals, num_trials, opt_steps);
 
 	double opt_time = std::difftime(std::time(NULL), timestart);
 	timestart = std::time(NULL);
@@ -179,7 +180,58 @@ int main(int argc, char *argv[]){
 	out.addInteger("NUM_TRIALS", num_trials);
 	out.addDouble("BIAS_DROPOFF", bias_dropoff);
 	out.addVector("BIAS_CONFIG", bias_config);
+	out.addVector("UPDATE_SIZES", update_sizes);
 	out.addVector("ENERGIES", energies);
+
+	//Test gradient optimization by finding the gradient from a direct contraction
+	bool direct_test = input.testBool("direct_test", false);
+	if(direct_test){
+		PEPS1 = PEPS0;
+		PEPS2 = PEPS1;
+		PEPS2.prime();
+		std::cerr << "Computing direct gradient..." << std::endl;
+		Heisenberg H(Nx, Ny, physical_dims);
+		H.set_J(Jvals);
+		PEPSop HPEPO = H.toPEPSop();
+		std::vector<double> direct_energies;
+		double update_size = update_size_init;
+		for(int step = 0; step < opt_steps; step++){
+			normsq = PEPS1.inner_product(PEPS2);
+			std::vector<itensor::ITensor> direct_grad(num_sites);
+			double energy = 0;
+			ArbitraryPEPS contracted = PEPS1.combine(PEPS2);
+			std::vector<itensor::ITensor> me1(num_sites); //Matrix elements of <psi|H|env>
+			std::vector<itensor::ITensor> me2 = contracted.environments(); //Matrix elements of <psi|env>
+			for(int site = 0; site < num_sites; site++){
+				me2[site] *= PEPS2.site_tensor(site);
+			}
+
+			for(Term t : HPEPO.terms){
+				MCKPEPS PEPS_applied = PEPS2;
+				t.apply(PEPS_applied);
+				double energy_part = t.eval(PEPS1, PEPS2)/normsq;
+				energy += energy_part;
+				ArbitraryPEPS contracted_applied = PEPS1.combine(PEPS_applied);
+				std::vector<itensor::ITensor> capp_envs = contracted_applied.environments();
+				for(int site = 0; site < num_sites; site++){
+					me1[site] += capp_envs[site]*PEPS_applied.site_tensor(site);
+				}
+			}
+			for(int site = 0; site < num_sites; site++){
+				itensor::ITensor direct_gradient = (me1[site] - energy*me2[site])*2/normsq;
+				direct_gradient = signelts(direct_gradient);
+				PEPS1._site_tensors[i][j][k] -= update_size*r.rand()*direct_gradient;
+			}
+			PEPS2 = PEPS1;
+			PEPS2.prime();
+			//PEPS2.print_self("PEPS2 after update");
+			update_size *= 0.97;
+			direct_energies.push_back(energy);
+			std::cerr << "DIRECT STEP #" << step+1 << " HAS ENERGY " << energy << " AND NORM " << normsq << std::endl;
+		}
+		out.addVector("DIRECT_ENERGIES", brute_force_energies);
+	}
+	
 
 	//Test gradient optimization by finding the gradient from a brute force method
 	bool brute_force_test = input.testBool("brute_force_test", false);
@@ -200,11 +252,11 @@ int main(int argc, char *argv[]){
 			for(Term t : HPEPO.terms){
 				MCKPEPS PEPS_applied = PEPS2;
 				t.apply(PEPS_applied);
-				if(t.factor == 0){
-					/*if(itensor::norm(PEPS_applied._site_tensors[0][0][0]) != 0){
+				/*if(t.factor == 0){
+					if(itensor::norm(PEPS_applied._site_tensors[0][0][0]) != 0){
 						std::cerr << "Zero peps site norm: " << itensor::norm(PEPS_applied._site_tensors[0][0][0]);
-					}*/
-				}
+					}
+				}*/
 				double energy_part = t.eval(PEPS1, PEPS2)/normsq;
 				//std::cerr << "Energy part of " << t.to_string() << ": " << energy_part << std::endl;
 				energy += energy_part;

@@ -18,8 +18,355 @@ class SpinConfigPEPS;
 //Constant: Uses a single estimate for the energy and nothing else
 //Antitrunc: Just tries to compensate for the truncation
 
-//PEPS with no site indices
-class NoSitePEPS
+//PEPS with arbitrary numbers of site and link indices on each tensor
+
+//Tries to perform SVD on the tensor, but if one of the resulting tensors would have zero indices, replaces it with a 1-tensor instead of throwing error
+std::tuple<itensor::ITensor, itensor::ITensor, itensor::ITensor> safesvd(itensor::ITensor site, const itensor::IndexSet &forward_indices, const itensor::Args &a = itensor::Args::global()){
+	itensor::ITensor blank1(1);
+	itensor::ITensor blank2(1);
+	if(itensor::length(forward_indices) == 0){
+		return std::make_tuple(blank1, blank2, site);
+	}
+	else{
+		if(itensor::length(forward_indices) == itensor::length(site.inds())){
+			return std::make_tuple(site, blank1, blank2);
+		}
+		else{
+			return itensor::svd(site, forward_indices, a);
+		}
+	}
+	return std::make_tuple(blank1, blank2, site);
+}
+
+class ArbitraryPEPS
+{
+	protected:
+		int _Nx;
+		int _Ny;
+		int _num_sites;
+		int _Dc;
+
+	public:
+		std::string _log_file;
+		std::vector<std::vector<std::vector<itensor::ITensor>>> _site_tensors;
+		ArbitraryPEPS(){
+			_Nx=0;
+			_Ny=0;
+			_num_sites=0;
+		}
+		ArbitraryPEPS(int input_Nx,
+			int input_Ny,
+			int input_max_truncation_bd,
+			itensor::Args const& args = itensor::Args::global())
+		{
+			_num_sites = input_Nx*input_Ny*UNIT_CELL_SIZE;
+			_Nx = input_Nx;
+			_Ny = input_Ny;
+			_log_file = "";
+			_Dc = input_max_truncation_bd;
+			bool randomize = args.getBool("RandomizeSites", true);
+
+			//Sets all site tensors to itensor::ITensor(1)
+			for(int i = 0; i < _Nx; i++){
+				std::vector<std::vector<itensor::ITensor>> site_array;
+				for(int j = 0; j < _Ny; j++){
+					std::vector<itensor::ITensor> site_vector;
+					for(int k = 0; k < UNIT_CELL_SIZE; k++){
+						itensor::ITensor blank(1);
+						site_vector.push_back(blank);
+					}
+					site_array.push_back(site_vector);
+				}
+				_site_tensors.push_back(site_array);
+			}
+		}
+
+		int site_index_from_position(int i, int j, int k) const{
+			return i*_Ny*UNIT_CELL_SIZE + j*UNIT_CELL_SIZE + k;
+		}
+
+		std::tuple<int, int, int> position_of_site(int site_index) const{
+			int k = site_index % UNIT_CELL_SIZE;
+			site_index = (site_index - k)/UNIT_CELL_SIZE;
+			int j = site_index % _Ny;
+			site_index = (site_index - j)/_Ny;
+			int i = site_index % _Nx;
+			return std::make_tuple(i, j, k);
+		}
+
+		void set_log_file(std::string log_file){
+			_log_file = log_file;
+		}
+
+		int size(){ return _num_sites; }
+		int Dc(){ return _Dc; }
+		int Chi(){ return _Dc; }
+		int Nx(){ return _Nx; }
+		int Ny(){ return _Ny; }
+
+		itensor::ITensor& site_tensor(int site_index) const{
+			auto [i,j,k] = position_of_site(site_index);
+			return _site_tensors[i][j][k];
+		}
+
+		//Get the auxiliary MPS's for the vertical, i.e. i, direction
+		//Warning: Only do this on a PEPS with very few site indices, to avoid exponentially large tensors at the end
+		std::list<AuxMPS> get_vd_auxiliaries(){
+			bool _log = (_log_file != "");
+			std::streambuf *coutbuf = std::cout.rdbuf();
+			std::ofstream log_file_stream(_log_file, std::ofstream::app);
+			if(_log){
+				std::cout.rdbuf(log_file_stream.rdbuf());
+			}
+			std::list<AuxMPS> out;
+			std::vector<itensor::ITensor> unsplit_MPS;
+			AuxMPS previous_row(AuxType::VD);
+			std::vector<itensor::ITensor> previous_row; //Previous row is the row formed from (i,:,1) & (i,:,2) at the start of the contraction step
+			for(int j = 0; j < _Ny; j++){
+				previous_row.add_tensor(_site_tensors[_Nx-1][j][1]);
+				previous_row.add_tensor(_site_tensors[_Nx-1][j][2]);
+			}
+
+			//Contract upwards and add each SVD split step into the AuxMPS list. Does not add the very last one.
+			for(int i = _Nx-1; i > 0; i--){
+				//std::cout << "Contracting Row " << i << ":" << std::endl;
+				unsplit_MPS.clear();
+				for(int j = 0; j < _Ny; j++){
+					unsplit_MPS.push_back((_site_tensors[i][j][0]*previous_row[2*j])*previous_row[2*j+1]);
+				}
+				AuxMPS aux(AuxType::VD);
+				//Create auxiliary tensors
+				for(int j = 0; j < _Ny-1; j++){
+					
+					itensor::IndexSet left_upper_links = itensor::commonInds(unsplit_MPS[j], _site_tensors[i-1][j][2]);
+					itensor::ITensor sing_vals, right_tensor;
+					itensor::ITensor left_tensor(left_upper_links);
+
+					if(j>0){
+						itensor::IndexSet left_links = itensor::commonInds(unsplit_MPS[j], unsplit_MPS[j-1]);
+						left_tensor = itensor::ITensor(itensor::unionInds(left_upper_links, left_links));
+					}
+					
+					if(itensor::length(left_tensor.inds()) == 0){
+						left_tensor = itensor::ITensor(1);
+						right_tensor = unsplit_MPS[j];
+					}
+					else{
+						if(itensor::length(left_tensor.inds()) == itensor::length(unsplit_MPS[j].inds())){
+							left_tensor = unsplit_MPS[j];
+							right_tensor = itensor::ITensor(1);
+						}
+						else{
+							itensor::svd(unsplit_MPS[j], left_tensor, sing_vals, right_tensor, {"MaxDim", _Dc});
+							//std::cout << "SVD Error: " << itensor::sqr(itensor::norm(unsplit_MPS[j]-left_tensor*sing_vals*right_tensor)/itensor::norm(unsplit_MPS[j])) << std::endl;
+							left_tensor *= sing_vals;
+						}
+					}
+					//std::cout << "Split tensors at i=" << i << ", j=" << j << std::endl;
+					//Print(left_tensor);
+					//Print(right_tensor);
+					aux.add_tensor(left_tensor);
+					aux.add_tensor(right_tensor);
+				}
+				aux.add_tensor(unsplit_MPS[_Ny-1]);
+				out.push_front(aux);
+				//Contract the auxiliary MPS into the next row
+				previous_row.clear();
+				for(int j = 0; j < _Ny; j++){
+					previous_row.add_tensor(_site_tensors[i-1][j][1]);
+					previous_row.add_tensor(_site_tensors[i-1][j][2]);
+				}
+				for(int aux_index = 0; aux_index < aux.length; aux_index++){
+					previous_row.MPS[aux_index+1] *= aux.MPS[aux_index];
+				}
+
+				//Use SVD to reduce the bond dimension of the row
+
+				previous_row.truncate(_Dc);
+				//Combines pr_index-1 and pr_index, then splits again with reduced BD
+				//Does not need to do the 0,1 link as the auxiliary MPS wasn't contracted into that
+				/*
+				for(int pr_index = 2; pr_index < previous_row.size(); pr_index++){
+					itensor::ITensor combined_link_tensor = previous_row[pr_index-1]*previous_row[pr_index];
+					auto left_links = itensor::commonInds(combined_link_tensor, previous_row[pr_index-1]);
+					auto [left_tensor, singular_vals, right_tensor] = itensor::svd(combined_link_tensor, left_links, {"MaxDim",_Dc});
+					previous_row.MPS[pr_index-1] = left_tensor;
+					previous_row.MPS[pr_index] = singular_vals*right_tensor;
+				}*/
+			}
+			out.push_front(AuxMPS(AuxType::NA)); //The first row is a dummy AuxMPS that shouldn't ever have to be called
+			out.push_back(AuxMPS(2*_Ny-1)); //The last row is a blank AuxMPS of 1-tensors
+			//std::cout << "Row 0 empty auxMPS pushed " << std::endl;
+			if(_log){
+				std::cout.rdbuf(coutbuf);
+				log_file_stream.close();
+			}
+			return out;
+		}
+
+
+		//Gets the upper boundary auxiliary at row target_index, with an optional starting point
+		AuxMPS get_vu_auxiliary(const int target_index, AuxMPS prior_aux = AuxMPS(), int prior_index = -1){
+			AuxMPS unsplit_MPS;
+			AuxMPS previous_row; //Previous row is the row formed from (i,:,1) & (i,:,2) at the start of the contraction step
+			if(prior_index == -1){
+				//Create the VU auxiliary for the first row (this should also be returnable if target_index=0)
+				prior_index = 0;
+				prior_aux = AuxMPS(AuxType::VU);
+				for(int j = 0; j < _Ny; j++){
+					itensor::IndexSet forward_index = itensor::commonInds(_site_tensors[0][j][0], _site_tensors[0][j][2]);
+					auto [forward, sing_vals, back] = safesvd(_site_tensors[0][j][0], forward_index, {"MaxDim", _Dc});
+					forward *= sing_vals;
+					prior_aux.add_tensor(back);
+					
+					prior_aux.add_tensor(forward);
+				}
+			}
+			for(int i = prior_index; i < target_index; i++){
+				//First step: Contracting the old AuxMPS into the current row
+				//std::cerr << "Contracting old AuxMPS into row " << i << "..." << std::endl;
+				previous_row.clear();
+				for(int j = 0; j < _Ny; j++){
+					previous_row.add_tensor(_site_tensors[i][j][1]);
+					previous_row.add_tensor(_site_tensors[i][j][2]);
+				}
+				//previous_row.print_self("PREV_ROW_UNCONTRACTED");
+				for(int aux_index = 0; aux_index < prior_aux.length; aux_index++){
+					previous_row.MPS[aux_index] *= prior_aux.MPS[aux_index];
+				}
+				//previous_row.print_self("PREV_ROW");
+				//Second step: Truncating the row
+				//std::cerr << "Truncating row " << i << "..." << std::endl;
+				previous_row.truncate(_Dc);
+				//previous_row.print_self("PREV_ROW");
+				//Third step: Contracting the row into the intermediate row below
+				//std::cerr << "Contracting row " << i << " with row " << i+1 << std::endl;
+				unsplit_MPS.clear();
+				unsplit_MPS.add_tensor(_site_tensors[i+1][0][0]);
+				unsplit_MPS.MPS[0] *= (previous_row.MPS[0]*previous_row.MPS[1]);
+				unsplit_MPS.MPS[0] *= previous_row.MPS[2];
+				for(int j = 1; j < _Ny-1; j++){
+					unsplit_MPS.add_tensor(_site_tensors[i+1][j][0]);
+					unsplit_MPS.MPS[j] *= previous_row.MPS[2*j+1];
+					unsplit_MPS.MPS[j] *= previous_row.MPS[2*j+2];
+				}
+				unsplit_MPS.add_tensor(_site_tensors[i+1][_Ny-1][0]);
+				unsplit_MPS.MPS[_Ny-1] *= previous_row.MPS[2*_Ny-1];
+				//unsplit_MPS.print_self("UNSPLIT_MPS");
+				//Fourth step: Splitting the intermediate row tensors
+				//std::cerr << "Splitting unsplit row " << i+1 << "..." << std::endl;
+				prior_aux.clear();
+				for(int j = 0; j < _Ny; j++){
+					itensor::IndexSet forward_indices = itensor::commonInds(unsplit_MPS.MPS[j], _site_tensors[i+1][j][2]);
+					if(j < _Ny-1){forward_indices = itensor::unionInds(forward_indices, itensor::commonInds(unsplit_MPS.MPS[j], unsplit_MPS.MPS[j+1]));};
+					auto [forward, sing_vals, back] = safesvd(unsplit_MPS.MPS[j], forward_indices, {"MaxDim", _Dc});
+					prior_aux.add_tensor(back);
+					forward *= sing_vals;
+					prior_aux.add_tensor(forward);
+				}
+			}
+			return prior_aux;
+		}
+
+		//Gets the environment of every site 
+		std::vector<itensor::ITensor> environments(const itensor::IndexSet &site_indices, const std::vector<int> &spin_config, double wavefunction_normalization = 1., const bool siteless = false){
+			AuxMPS up_aux(2*_Ny);
+			AuxMPS old_up_aux(2*_Ny);
+			std::vector<itensor::ITensor> envs(_num_sites);
+			std::list<AuxMPS> down_auxes = get_vd_auxiliaries();
+			auto down_aux_it = down_auxes.begin();
+			down_aux_it++; //Want to start with the down aux for row 1, not row 0
+			int prior_index = -1;
+			for(int i = 0; i < _Nx; i++){
+				//Get the up aux at row i-1 and the down aux at row i+1
+				//std::cerr << "      Getting up auxiliary...";
+				if(i > 0){
+					up_aux = get_vu_auxiliary(i-1, old_up_aux, i-2);
+					//up_aux.print_self("UP_AUX");
+					old_up_aux = AuxMPS(up_aux);
+					//Contract the up aux with the rest of row i-1
+					for(int j = 0; j < _Ny; j++){
+						up_aux.MPS.at(2*j) *= _site_tensors[i-1][j][1];
+						up_aux.MPS.at(2*j+1) *= _site_tensors[i-1][j][2];
+					}
+					//up_aux.print_self("UP_AUX_COMB");
+					up_aux.truncate(_Dc);
+					//up_aux.print_self("UP_AUX_TRUNC");
+				}
+				//Get the list of right auxiliaries
+				//std::cerr << "Getting right auxiliaries...";
+				std::vector<itensor::ITensor> right_auxes(_Ny+1);
+				itensor::ITensor blank(1);
+				right_auxes[_Ny] = blank;
+				for(int j = _Ny-1; j > 0; j--){
+					itensor::ITensor upper_int = up_aux.MPS[2*j+1];
+					if(j < _Ny-1){upper_int *= up_aux.MPS[2*j+2];}
+					upper_int *= _site_tensors[i][j][0]; //Be
+					itensor::ITensor right_int = right_auxes[j+1]*down_aux_it->MPS[2*j];
+					right_int *= _site_tensors[i][j][2];
+					itensor::ITensor left_int = right_int*upper_int;
+					left_int *= _site_tensors[i][j][1];
+					if(j > 0){left_int *= down_aux_it->MPS[2*j-1];}
+					right_auxes[j] = left_int;
+				}
+				//Get the three environments
+				//std::cerr << "Getting the environments..." << std::endl;
+				itensor::ITensor left_aux = up_aux.MPS[0];
+				for(int j = 0; j < _Ny; j++){
+					//Get the k=0 environment
+					itensor::ITensor left_int = left_aux;
+					itensor::ITensor right_int = right_auxes[j+1]*down_aux_it->MPS[2*j];
+					if(j > 0){left_int *= down_aux_it->MPS[2*j-1];}
+					left_int *= _site_tensors[i][j][1];//The k=1 intermediate, contracted with nearby tensors
+					right_int *= _site_tensors[i][j][2];//The k=2 intermediate, contracted with nearby tensors
+					itensor::ITensor k0env = right_int*left_int;
+					itensor::ITensor top_int = up_aux.MPS[2*j+1];//The k=0 intermediate, contracted with nearby tensors
+					if(j < _Ny-1){top_int *= up_aux.MPS[2*j+2];}
+					k0env *= top_int;
+					int site_index = site_index_from_position(i,j,0);
+					if(!siteless){
+						k0env *= itensor::setElt(site_indices[site_index]=(spin_config[site_index]+1))/wavefunction_normalization;//Multiplies with a tensor containing the physical index
+					}
+					envs[site_index] = k0env;
+					//Get the k=1 environment
+					site_index ++;
+					top_int *= _site_tensors[i][j][0];
+					itensor::ITensor k1env = top_int*right_int;
+					if(j>0){k1env *= (left_aux*down_aux_it->MPS[2*j-1]);}
+					else{k1env *= left_aux;}
+					if(!siteless){
+						k1env *= itensor::setElt(site_indices[site_index]=(spin_config[site_index]+1))/wavefunction_normalization;
+					}
+					envs[site_index] = k1env;
+					//Get the k=2 environment
+					site_index++;
+					itensor::ITensor k2env = top_int*left_int;
+					k2env *= (right_auxes[j+1]*down_aux_it->MPS[2*j]);
+					if(!siteless){
+						k2env *= itensor::setElt(site_indices[site_index]=(spin_config[site_index]+1))/wavefunction_normalization;
+					}
+					envs[site_index] = k2env;
+					//Get new left auxiliary
+					left_aux = left_int*top_int;
+					left_aux *= _site_tensors[i][j][2];
+					left_aux *= down_aux_it->MPS[2*j];
+				}
+				down_aux_it++;
+			}
+			return envs;
+		}
+		
+		//Siteless version
+		std::vector<itensor::ITensor> environments(){
+			itensor::IndexSet dummy_sites;
+			std::vector<int> dummy_spin_config;
+			return environments(dummy_sites, dummy_spin_config, 1., true);
+		}
+
+};
+
+//PEPS with no site indices, but with exactly one link index between all nearest neighbors
+class NoSitePEPS : public ArbitraryPEPS
 {
 	protected:
 		int _Nx;
@@ -79,15 +426,7 @@ class NoSitePEPS
 			_link_indices = input_link_indices;
 		}
 
-		void set_log_file(std::string log_file){
-			_log_file = log_file;
-		}
-
-		int size(){ return _num_sites; }
-		int Dc(){ return _Dc; }
-		int Chi(){ return _Dc; }
-		int Nx(){ return _Nx; }
-		int Ny(){ return _Ny; }
+		
 
 		//Prime all the link indices
 		void prime(int inc = 1){
@@ -151,227 +490,10 @@ class NoSitePEPS
 			return prior_aux;
 		}
 
-		//Gets the upper boundary auxiliary at row target_index, with an optional starting point
-		AuxMPS get_vu_auxiliary(const int target_index, AuxMPS prior_aux = AuxMPS(), int prior_index = -1){
-			AuxMPS unsplit_MPS;
-			AuxMPS previous_row; //Previous row is the row formed from (i,:,1) & (i,:,2) at the start of the contraction step
-			if(prior_index == -1){
-				//Create the VU auxiliary for the first row (this should also be returnable if target_index=0)
-				prior_index = 0;
-				prior_aux = AuxMPS(AuxType::VU);
-				for(int j = 0; j < _Ny; j++){
-					itensor::IndexSet forward_index = itensor::commonInds(_site_tensors[0][j][0], _site_tensors[0][j][2]);
-					auto [forward, sing_vals, back] = itensor::svd(_site_tensors[0][j][0], forward_index, {"MaxDim", _Dc});
-					prior_aux.add_tensor(back);
-					forward *= sing_vals;
-					prior_aux.add_tensor(forward);
-				}
-			}
-			for(int i = prior_index; i < target_index; i++){
-				//First step: Contracting the old AuxMPS into the current row
-				//std::cerr << "Contracting old AuxMPS into row " << i << "..." << std::endl;
-				previous_row.clear();
-				for(int j = 0; j < _Ny; j++){
-					previous_row.add_tensor(_site_tensors[i][j][1]);
-					previous_row.add_tensor(_site_tensors[i][j][2]);
-				}
-				//previous_row.print_self("PREV_ROW_UNCONTRACTED");
-				for(int aux_index = 0; aux_index < prior_aux.length; aux_index++){
-					previous_row.MPS[aux_index] *= prior_aux.MPS[aux_index];
-				}
-				//previous_row.print_self("PREV_ROW");
-				//Second step: Truncating the row
-				//std::cerr << "Truncating row " << i << "..." << std::endl;
-				previous_row.truncate(_Dc);
-				//previous_row.print_self("PREV_ROW");
-				//Third step: Contracting the row into the intermediate row below
-				//std::cerr << "Contracting row " << i << " with row " << i+1 << std::endl;
-				unsplit_MPS.clear();
-				unsplit_MPS.add_tensor(_site_tensors[i+1][0][0]);
-				unsplit_MPS.MPS[0] *= (previous_row.MPS[0]*previous_row.MPS[1]);
-				unsplit_MPS.MPS[0] *= previous_row.MPS[2];
-				for(int j = 1; j < _Ny-1; j++){
-					unsplit_MPS.add_tensor(_site_tensors[i+1][j][0]);
-					unsplit_MPS.MPS[j] *= previous_row.MPS[2*j+1];
-					unsplit_MPS.MPS[j] *= previous_row.MPS[2*j+2];
-				}
-				unsplit_MPS.add_tensor(_site_tensors[i+1][_Ny-1][0]);
-				unsplit_MPS.MPS[_Ny-1] *= previous_row.MPS[2*_Ny-1];
-				//unsplit_MPS.print_self("UNSPLIT_MPS");
-				//Fourth step: Splitting the intermediate row tensors
-				//std::cerr << "Splitting unsplit row " << i+1 << "..." << std::endl;
-				prior_aux.clear();
-				for(int j = 0; j < _Ny; j++){
-					itensor::IndexSet forward_indices = itensor::commonInds(unsplit_MPS.MPS[j], _site_tensors[i+1][j][2]);
-					if(j < _Ny-1){forward_indices = itensor::unionInds(forward_indices, itensor::commonInds(unsplit_MPS.MPS[j], unsplit_MPS.MPS[j+1]));};
-					auto [forward, sing_vals, back] = itensor::svd(unsplit_MPS.MPS[j], forward_indices, {"MaxDim", _Dc});
-					prior_aux.add_tensor(back);
-					forward *= sing_vals;
-					prior_aux.add_tensor(forward);
-				}
-			}
-			return prior_aux;
-		}
 
-		//Gets the environment of every site 
-		std::vector<itensor::ITensor> environments(const itensor::IndexSet &site_indices, const std::vector<int> &spin_config, double wavefunction_normalization = 1.){
-			AuxMPS up_aux(2*_Ny);
-			AuxMPS old_up_aux(2*_Ny);
-			std::vector<itensor::ITensor> envs(_num_sites);
-			std::list<AuxMPS> down_auxes = get_vd_auxiliaries();
-			auto down_aux_it = down_auxes.begin();
-			down_aux_it++; //Want to start with the down aux for row 1, not row 0
-			int prior_index = -1;
-			for(int i = 0; i < _Nx; i++){
-				//Get the up aux at row i-1 and the down aux at row i+1
-				//std::cerr << "      Getting up auxiliary...";
-				if(i > 0){
-					up_aux = get_vu_auxiliary(i-1, old_up_aux, i-2);
-					//up_aux.print_self("UP_AUX");
-					old_up_aux = AuxMPS(up_aux);
-					//Contract the up aux with the rest of row i-1
-					for(int j = 0; j < _Ny; j++){
-						up_aux.MPS.at(2*j) *= _site_tensors[i-1][j][1];
-						up_aux.MPS.at(2*j+1) *= _site_tensors[i-1][j][2];
-					}
-					//up_aux.print_self("UP_AUX_COMB");
-					up_aux.truncate(_Dc);
-					//up_aux.print_self("UP_AUX_TRUNC");
-				}
-				//Get the list of right auxiliaries
-				//std::cerr << "Getting right auxiliaries...";
-				std::vector<itensor::ITensor> right_auxes(_Ny+1);
-				itensor::ITensor blank(1);
-				right_auxes[_Ny] = blank;
-				for(int j = _Ny-1; j > 0; j--){
-					itensor::ITensor upper_int = up_aux.MPS[2*j+1];
-					if(j < _Ny-1){upper_int *= up_aux.MPS[2*j+2];}
-					upper_int *= _site_tensors[i][j][0]; //Be
-					itensor::ITensor right_int = right_auxes[j+1]*down_aux_it->MPS[2*j];
-					right_int *= _site_tensors[i][j][2];
-					itensor::ITensor left_int = right_int*upper_int;
-					left_int *= _site_tensors[i][j][1];
-					if(j > 0){left_int *= down_aux_it->MPS[2*j-1];}
-					right_auxes[j] = left_int;
-				}
-				//Get the three environments
-				//std::cerr << "Getting the environments..." << std::endl;
-				itensor::ITensor left_aux = up_aux.MPS[0];
-				for(int j = 0; j < _Ny; j++){
-					//Get the k=0 environment
-					itensor::ITensor left_int = left_aux;
-					itensor::ITensor right_int = right_auxes[j+1]*down_aux_it->MPS[2*j];
-					if(j > 0){left_int *= down_aux_it->MPS[2*j-1];}
-					left_int *= _site_tensors[i][j][1];//The k=1 intermediate, contracted with nearby tensors
-					right_int *= _site_tensors[i][j][2];//The k=2 intermediate, contracted with nearby tensors
-					itensor::ITensor k0env = right_int*left_int;
-					itensor::ITensor top_int = up_aux.MPS[2*j+1];//The k=0 intermediate, contracted with nearby tensors
-					if(j < _Ny-1){top_int *= up_aux.MPS[2*j+2];}
-					k0env *= top_int;
-					int site_index = site_index_from_position(i,j,0);
-					k0env *= itensor::setElt(site_indices[site_index]=(spin_config[site_index]+1))/wavefunction_normalization;//Multiplies with a tensor containing the physical index
-					envs[site_index] = k0env;
-					//Get the k=1 environment
-					site_index ++;
-					top_int *= _site_tensors[i][j][0];
-					itensor::ITensor k1env = top_int*right_int;
-					if(j>0){k1env *= (left_aux*down_aux_it->MPS[2*j-1]);}
-					else{k1env *= left_aux;}
-					k1env *= itensor::setElt(site_indices[site_index]=(spin_config[site_index]+1))/wavefunction_normalization;
-					envs[site_index] = k1env;
-					//Get the k=2 environment
-					site_index++;
-					itensor::ITensor k2env = top_int*left_int;
-					k2env *= (right_auxes[j+1]*down_aux_it->MPS[2*j]);
-					k2env *= itensor::setElt(site_indices[site_index]=(spin_config[site_index]+1))/wavefunction_normalization;
-					envs[site_index] = k2env;
-					//Get new left auxiliary
-					left_aux = left_int*top_int;
-					left_aux *= _site_tensors[i][j][2];
-					left_aux *= down_aux_it->MPS[2*j];
-				}
-				down_aux_it++;
-			}
-			return envs;
-		}
+		
 
-		//Get the auxiliary MPS's for the vertical, i.e. i, direction
-		//Warning: Only do this on a PEPS with no site indices, to avoid exponentially large tensors at the end
-		std::list<AuxMPS> get_vd_auxiliaries(){
-			bool _log = (_log_file != "");
-			std::streambuf *coutbuf = std::cout.rdbuf();
-			std::ofstream log_file_stream(_log_file, std::ofstream::app);
-			if(_log){
-				std::cout.rdbuf(log_file_stream.rdbuf());
-			}
-			std::list<AuxMPS> out;
-			std::vector<itensor::ITensor> unsplit_MPS;
-			std::vector<itensor::ITensor> previous_row; //Previous row is the row formed from (i,:,1) & (i,:,2) at the start of the contraction step
-			for(int j = 0; j < _Ny; j++){
-				previous_row.push_back(_site_tensors[_Nx-1][j][1]);
-				previous_row.push_back(_site_tensors[_Nx-1][j][2]);
-			}
-
-			//Contract upwards and add each SVD split step into the AuxMPS list. Does not add the very last one.
-			for(int i = _Nx-1; i > 0; i--){
-				//std::cout << "Contracting Row " << i << ":" << std::endl;
-				unsplit_MPS.clear();
-				for(int j = 0; j < _Ny; j++){
-					unsplit_MPS.push_back((_site_tensors[i][j][0]*previous_row[2*j])*previous_row[2*j+1]);
-				}
-				AuxMPS aux(AuxType::VD);
-				//Create auxiliary tensors
-				for(int j = 0; j < _Ny-1; j++){
-					
-					itensor::Index left_upper_link = itensor::commonIndex(unsplit_MPS[j], _site_tensors[i-1][j][2]);
-					itensor::ITensor sing_vals, right_tensor;
-					itensor::ITensor left_tensor(left_upper_link);
-
-					if(j>0){
-						itensor::Index left_link = itensor::commonIndex(unsplit_MPS[j], unsplit_MPS[j-1]);
-						left_tensor = itensor::ITensor(left_upper_link, left_link);
-					}
-					
-					itensor::svd(unsplit_MPS[j], left_tensor, sing_vals, right_tensor, {"MaxDim", _Dc});
-					//std::cout << "SVD Error: " << itensor::sqr(itensor::norm(unsplit_MPS[j]-left_tensor*sing_vals*right_tensor)/itensor::norm(unsplit_MPS[j])) << std::endl;
-					left_tensor *= sing_vals;
-					//std::cout << "Split tensors at i=" << i << ", j=" << j << std::endl;
-					//Print(left_tensor);
-					//Print(right_tensor);
-					aux.add_tensor(left_tensor);
-					aux.add_tensor(right_tensor);
-				}
-				aux.add_tensor(unsplit_MPS[_Ny-1]);
-				out.push_front(aux);
-				//Contract the auxiliary MPS into the next row
-				previous_row.clear();
-				for(int j = 0; j < _Ny; j++){
-					previous_row.push_back(_site_tensors[i-1][j][1]);
-					previous_row.push_back(_site_tensors[i-1][j][2]);
-				}
-				for(int aux_index = 0; aux_index < aux.length; aux_index++){
-					previous_row[aux_index+1] *= aux.MPS[aux_index];
-				}
-				//Use SVD to reduce the bond dimension of the row
-				//Combines pr_index-1 and pr_index, then splits again with reduced BD
-				//Does not need to do the 0,1 link as the auxiliary MPS wasn't contracted into that
-				for(int pr_index = 2; pr_index < previous_row.size(); pr_index++){
-					itensor::ITensor combined_link_tensor = previous_row[pr_index-1]*previous_row[pr_index];
-					auto left_links = itensor::commonInds(combined_link_tensor, previous_row[pr_index-1]);
-					auto [left_tensor, singular_vals, right_tensor] = itensor::svd(combined_link_tensor, left_links, {"MaxDim",_Dc});
-					previous_row[pr_index-1] = left_tensor;
-					previous_row[pr_index] = singular_vals*right_tensor;
-				}
-			}
-			out.push_front(AuxMPS(AuxType::NA)); //The first row is a dummy AuxMPS that shouldn't ever have to be called
-			out.push_back(AuxMPS(2*_Ny-1)); //The last row is a blank AuxMPS of 1-tensors
-			//std::cout << "Row 0 empty auxMPS pushed " << std::endl;
-			if(_log){
-				std::cout.rdbuf(coutbuf);
-				log_file_stream.close();
-			}
-			return out;
-		}
+		
 
 		//Get the auxiliary MPS's for the short, i.e. j, direction
 		std::list<AuxMPS> get_sd_auxiliaries(){
@@ -586,14 +708,7 @@ class NoSitePEPS
 				log_file_stream.close();
 			}
 		}
-		std::tuple<int, int, int> position_of_site(int site_index) const{
-			int k = site_index % UNIT_CELL_SIZE;
-			site_index = (site_index - k)/UNIT_CELL_SIZE;
-			int j = site_index % _Ny;
-			site_index = (site_index - j)/_Ny;
-			int i = site_index % _Nx;
-			return std::make_tuple(i, j, k);
-		}
+		
 
 		itensor::ITensor site_tensor(int i, int j, int k) {
 			return _site_tensors[i][j][k];
@@ -623,9 +738,7 @@ class NoSitePEPS
 			return std::make_tuple(i,j);
 		}
 
-		int site_index_from_position(int i, int j, int k) const{
-			return i*_Ny*UNIT_CELL_SIZE + j*UNIT_CELL_SIZE + k;
-		}
+		
 
 		int link_index_from_position(int i1, int j1, int k1, int i2, int j2, int k2) const{
 			return pair_to_link_index(site_index_from_position(i1, j1, k1), site_index_from_position(i2, j2, k2));
@@ -804,6 +917,24 @@ class MCKPEPS : public NoSitePEPS{
 		/*itensor::ITensor environment(std::vector<int> &spin_config, int site_index){
 
 		}*/
+
+		ArbitraryPEPS combine(const MCKPEPS &other) const{
+			bool _log = (_log_file != "");
+			std::streambuf *coutbuf = std::cout.rdbuf();
+			std::ofstream log_file_stream(_log_file, std::ofstream::app);
+			if(_log){
+				std::cout.rdbuf(log_file_stream.rdbuf());
+			}
+			ArbitraryPEPS combined(_Nx, _Ny, _Dc); 
+			for(int i = 0; i < _Nx; i++){
+				for(int j = 0; j < _Ny; j++){
+					for(int k = 0; k < UNIT_CELL_SIZE; k++){
+						combined._site_tensors[i][j][k] = _site_tensors[i][j][k]*other._site_tensors[i][j][k];
+					}
+				}
+			}
+			return combined;
+		}
 
 		//Combines this PEPS with other but doesn't contract the link indices, instead returning a PEPS with no site indices
 		NoSitePEPS contract(const MCKPEPS &other) const{
