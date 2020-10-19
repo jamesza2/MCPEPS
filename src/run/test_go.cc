@@ -137,12 +137,15 @@ int main(int argc, char *argv[]){
 	}
 	itensor::IndexSet sites(sites_vector);
 
+	std::cerr << "Creating PEPS...";
 	auto PEPS1 = MCKPEPS(sites, Nx, Ny, standard_dims, max_truncation_dims);
-	
+
 	std::vector<int> spin_config(num_sites, 0);
 	Randomizer r;
+	std::cerr << "Creating randomized bias...";
 	randomize_in_sector(spin_config, physical_dims, r.gen, r.dist);
 	std::vector<int> bias_config(spin_config);
+	std::cerr << "Adding bias...";
 	PEPS1.add_bias(bias_config, bias_dropoff);
 	std::cerr << "Biased to spin config ";
 	for(int sc : bias_config){std::cerr << sc << " ";}
