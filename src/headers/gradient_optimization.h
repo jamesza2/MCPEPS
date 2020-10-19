@@ -93,15 +93,17 @@ void optimize(MCKPEPS &psi, std::vector<double> &energies, std::vector<double> &
 	Heisenberg H(psi.Nx(), psi.Ny(), psi.physical_dims());
 	H.set_J(Jvals);
 	double update_size = 0.05;
-	if(update_sizes.size() > 0){update_size = update_sizes[0];}
+	std::cerr << "Initializing updates...";
+	if(update_sizes.size() > 0){update_size = update_sizes.at(0);}
 	else{update_sizes.push_back(0.05);}
 	//double update_size = update_size_init;
 	auto timestart = std::time(NULL);
 	for(int step = 0; step < opt_steps; step ++){
+		std::cerr << "starting step #" << step+1;
 		double energy = update(psi, spin_config, H, M, update_size, r);
 		energies.push_back(energy);
 		std::cerr << "STEP#" << step+1 << " HAS ENERGY " << energy << " (" << std::difftime(std::time(NULL), timestart) << "s)" << std::endl;
-		if(update_sizes.size() > step+1){update_size = update_sizes[step+1];}
+		if(update_sizes.size() > step+1){update_size = update_sizes.at(step+1);}
 		else{
 			update_size *= 0.97;
 			if(step != opt_steps-1){update_sizes.push_back(update_size);}
