@@ -380,8 +380,6 @@ class NoSitePEPS : public ArbitraryPEPS
 		std::map<int, itensor::Index> _link_indices;
 
 	public:
-		std::string _log_file;
-		std::vector<std::vector<std::vector<itensor::ITensor>>> _site_tensors;
 		Neighbors bonds;
 		NoSitePEPS(){}
 		NoSitePEPS(int input_Nx,
