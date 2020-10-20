@@ -121,20 +121,20 @@ class ArbitraryPEPS
 			}
 			std::list<AuxMPS> out;
 			std::vector<itensor::ITensor> unsplit_MPS;
-			std::cerr << "Assembling previous row...";
+			//std::cerr << "Assembling previous row...";
 			AuxMPS previous_row(AuxType::VD); //Previous row is the row formed from (i,:,1) & (i,:,2) at the start of the contraction step
 			for(int j = 0; j < _Ny; j++){
-				std::cerr << "Site tensor size...";
+				/*std::cerr << "Site tensor size...";
 				std::cerr << _site_tensors.size() << "x";
 				std::cerr << _site_tensors.at(_Nx-1).size() << "x";
-				std::cerr << _site_tensors.at(_Nx-1).at(j).size();
+				std::cerr << _site_tensors.at(_Nx-1).at(j).size();*/
 				previous_row.add_tensor(_site_tensors.at(_Nx-1).at(j).at(1));
 				previous_row.add_tensor(_site_tensors.at(_Nx-1).at(j).at(2));
 			}
 
 			//Contract upwards and add each SVD split step into the AuxMPS list. Does not add the very last one.
 			for(int i = _Nx-1; i > 0; i--){
-				std::cerr << "Contracting Row " << i << ":" << std::endl;
+				//std::cerr << "Contracting Row " << i << ":" << std::endl;
 				unsplit_MPS.clear();
 				for(int j = 0; j < _Ny; j++){
 					unsplit_MPS.push_back((_site_tensors[i][j][0]*previous_row.MPS[2*j])*previous_row.MPS[2*j+1]);
@@ -167,7 +167,7 @@ class ArbitraryPEPS
 							left_tensor *= sing_vals;
 						}
 					}
-					std::cerr << "Split tensors at i=" << i << ", j=" << j << std::endl;
+					//std::cerr << "Split tensors at i=" << i << ", j=" << j << std::endl;
 					//Print(left_tensor);
 					//Print(right_tensor);
 					aux.add_tensor(left_tensor);
@@ -201,7 +201,7 @@ class ArbitraryPEPS
 			}
 			out.push_front(AuxMPS(AuxType::NA)); //The first row is a dummy AuxMPS that shouldn't ever have to be called
 			out.push_back(AuxMPS(2*_Ny-1)); //The last row is a blank AuxMPS of 1-tensors
-			std::cerr << "Row 0 empty auxMPS pushed " << std::endl;
+			//std::cerr << "Row 0 empty auxMPS pushed " << std::endl;
 			if(_log){
 				std::cout.rdbuf(coutbuf);
 				log_file_stream.close();

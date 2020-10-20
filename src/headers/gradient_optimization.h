@@ -26,13 +26,13 @@ itensor::ITensor signelts(itensor::ITensor site){
 void get_sample(MCKPEPS &psi, NoSitePEPS &contracted, std::vector<int> &spin_config, const Heisenberg &H, std::vector<itensor::ITensor> &Delta, std::vector<itensor::ITensor> &DeltaE, double &E, const double update_size, Randomizer &r){
 	//std::cerr << "    Taking sample...";
 	//Randomizer r;
-	std::cerr << "v direction...";
+	//std::cerr << "v direction...";
 	sample_v_direction(psi, spin_config, r);
-	std::cerr << "s direction...";
+	//std::cerr << "s direction...";
 	sample_s_direction(psi, spin_config, r);
-	std::cerr << "l direction...";
+	//std::cerr << "l direction...";
 	double wavefn = sample_l_direction(psi, spin_config, r);
-	std::cerr << "finished sampling...";
+	//std::cerr << "finished sampling...";
 	double real_wavefn = wavefunction(spin_config, psi);
 	auto possible_mes = H.possible_matrix_elements(spin_config);
 	double local_energy = 0;
@@ -69,7 +69,7 @@ double update(MCKPEPS &psi, std::vector<int> &spin_config, const Heisenberg &H, 
 	SpinConfigPEPS scp(psi, spin_config, 1);
 	NoSitePEPS nsp = psi.contract(scp);
 	for(int sample = 0; sample < M; sample++){
-		std::cerr << "Getting sample #" << sample+1 << "...";
+		//std::cerr << "Getting sample #" << sample+1 << "...";
 		//std::cerr << "Update step #" << sample+1 << std::endl;
 		get_sample(psi, nsp, spin_config, H, Delta, DeltaE, E, update_size, r);
 
@@ -78,7 +78,7 @@ double update(MCKPEPS &psi, std::vector<int> &spin_config, const Heisenberg &H, 
 	itensor::ITensor grad;
 	double grads_factor = 2./M;
 	for(int site = 0; site < Delta.size(); site++){
-		std::cerr << "Assembling gradient#" << site+1 << "...";
+		//std::cerr << "Assembling gradient#" << site+1 << "...";
 		grad = DeltaE.at(site)*grads_factor - Delta[site]*grads_factor*E;
 		//grad /= norm(grad);
 		grad = signelts(grad);
@@ -96,13 +96,13 @@ void optimize(MCKPEPS &psi, std::vector<double> &energies, std::vector<double> &
 	Heisenberg H(psi.Nx(), psi.Ny(), psi.physical_dims());
 	H.set_J(Jvals);
 	double update_size = 0.05;
-	std::cerr << "Initializing updates...";
+	//std::cerr << "Initializing updates...";
 	if(update_sizes.size() > 0){update_size = update_sizes.at(0);}
 	else{update_sizes.push_back(0.05);}
 	//double update_size = update_size_init;
 	auto timestart = std::time(NULL);
 	for(int step = 0; step < opt_steps; step ++){
-		std::cerr << "starting step #" << step+1;
+		//std::cerr << "starting step #" << step+1;
 		double energy = update(psi, spin_config, H, M, update_size, r);
 		energies.push_back(energy);
 		std::cerr << "STEP#" << step+1 << " HAS ENERGY " << energy << " (" << std::difftime(std::time(NULL), timestart) << "s)" << std::endl;

@@ -167,9 +167,9 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 	//double wavefunction_normalization = WAVEFUNCTION_NORMALIZATION_CONSTANT;
 	SpinConfigPEPS config(psi_sites, spin_config, wavefunction_normalization);
 	NoSitePEPS psi = psi_sites.contract(config);
-	std::cerr << "Getting auxiliaries...";
+	//std::cerr << "Getting auxiliaries...";
 	std::list<AuxMPS> vd_list = psi.get_vd_auxiliaries();
-	std::cout << "Creating up auxiliary..." << std::endl;
+	//std::cout << "Creating up auxiliary..." << std::endl;
 	double old_wavefunction = -1;
 	AuxMPS VUi(AuxType::VU);//Create the up auxiliary (won't have some links between certain sites though)
 	for(int j = 0; j < psi.Ny(); j++){
@@ -183,7 +183,7 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 	auto vd_it = vd_list.begin();
 
 	for(int i = 0; i < psi.Nx(); i++){
-		std::cout << "Sweeping row " << i << std::endl;
+		//std::cout << "Sweeping row " << i << std::endl;
 		vd_it++;
 		//Create right auxiliary tensors
 		std::vector<itensor::ITensor> vr_auxiliaries(psi.Ny()*2+1);
@@ -264,7 +264,7 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			}*/
 		}
 		if(i < psi.Nx()-1){
-			std::cout << "Creating new VU auxiliary... Contracting row i..." << std::endl;
+			//std::cout << "Creating new VU auxiliary... Contracting row i..." << std::endl;
 			//Create new VU auxiliary MPS
 			std::vector<itensor::ITensor> row_i_contracted;
 			for(int j = 0; j < psi.Ny(); j++){

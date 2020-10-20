@@ -127,7 +127,7 @@ int main(int argc, char *argv[]){
 		log_file_name = "../../logs/go_test" + version;
 	}
 
-	std::cerr << "Evaluated input" << std::endl;
+	//std::cerr << "Evaluated input" << std::endl;
 
 	int num_sites = Nx*Ny*UNIT_CELL_SIZE;
 
@@ -137,16 +137,16 @@ int main(int argc, char *argv[]){
 	}
 	itensor::IndexSet sites(sites_vector);
 
-	std::cerr << "Creating " << Nx << "x" << Ny << " PEPS...";
+	//std::cerr << "Creating " << Nx << "x" << Ny << " PEPS...";
 	auto PEPS1 = MCKPEPS(sites, Nx, Ny, standard_dims, max_truncation_dims);
-	std::cerr << PEPS1.Nx() << "x" << PEPS1.Ny() << "x" << UNIT_CELL_SIZE << "...";
+	//std::cerr << PEPS1.Nx() << "x" << PEPS1.Ny() << "x" << UNIT_CELL_SIZE << "...";
 
 	std::vector<int> spin_config(num_sites, 0);
 	Randomizer r;
-	std::cerr << "Creating randomized bias...";
+	//std::cerr << "Creating randomized bias...";
 	randomize_in_sector(spin_config, physical_dims, r.gen, r.dist);
 	std::vector<int> bias_config(spin_config);
-	std::cerr << "Adding bias...";
+	//std::cerr << "Adding bias...";
 	PEPS1.add_bias(bias_config, bias_dropoff);
 	std::cerr << "Biased to spin config ";
 	for(int sc : bias_config){std::cerr << sc << " ";}
