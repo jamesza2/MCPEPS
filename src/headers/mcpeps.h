@@ -121,10 +121,15 @@ class ArbitraryPEPS
 			}
 			std::list<AuxMPS> out;
 			std::vector<itensor::ITensor> unsplit_MPS;
+			std::cerr << "Assembling previous row...";
 			AuxMPS previous_row(AuxType::VD); //Previous row is the row formed from (i,:,1) & (i,:,2) at the start of the contraction step
 			for(int j = 0; j < _Ny; j++){
-				previous_row.add_tensor(_site_tensors[_Nx-1][j][1]);
-				previous_row.add_tensor(_site_tensors[_Nx-1][j][2]);
+				std::cerr << "Site tensor size...";
+				std::cerr << _site_tensors.size() << "x";
+				std::cerr << _site_tensors.at(_Nx-1).size() << "x";
+				std::cerr << _site_tensors.at(_Nx-1).at(j).size();
+				previous_row.add_tensor(_site_tensors.at(_Nx-1).at(j).at(1));
+				previous_row.add_tensor(_site_tensors.at(_Nx-1).at(j).at(2));
 			}
 
 			//Contract upwards and add each SVD split step into the AuxMPS list. Does not add the very last one.
