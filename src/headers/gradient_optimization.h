@@ -26,11 +26,11 @@ itensor::ITensor signelts(itensor::ITensor site){
 void get_sample(MCKPEPS &psi, NoSitePEPS &contracted, std::vector<int> &spin_config, const Heisenberg &H, std::vector<itensor::ITensor> &Delta, std::vector<itensor::ITensor> &DeltaE, double &E, const double update_size, Randomizer &r){
 	//std::cerr << "    Taking sample...";
 	//Randomizer r;
-	//std::cerr << "v direction...";
+	std::cerr << "v direction...";
 	sample_v_direction(psi, spin_config, r);
-	//std::cerr << "s direction...";
+	std::cerr << "s direction...";
 	sample_s_direction(psi, spin_config, r);
-	//std::cerr << "l direction...";
+	std::cerr << "l direction...";
 	double wavefn = sample_l_direction(psi, spin_config, r);
 	std::cerr << "finished sampling...";
 	double real_wavefn = wavefunction(spin_config, psi);
