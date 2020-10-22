@@ -203,6 +203,7 @@ int main(int argc, char *argv[]){
 		double update_size = update_size_init;
 		for(int step = 0; step < opt_steps; step++){
 			normsq = PEPS1.inner_product(PEPS2);
+			std::cerr << "Norm: " << normsq << "...";
 			std::vector<itensor::ITensor> direct_grad(num_sites);
 			double energy = 0;
 			ArbitraryPEPS contracted = PEPS1.combine(PEPS2);
@@ -211,11 +212,14 @@ int main(int argc, char *argv[]){
 			for(int site = 0; site < num_sites; site++){
 				me2[site] *= PEPS2.site_tensor(site);
 			}
+			std::cerr << "Energy terms: ";
 
 			for(Term t : HPEPO.terms){
 				MCKPEPS PEPS_applied = PEPS2;
 				t.apply(PEPS_applied);
-				double energy_part = t.eval(PEPS1, PEPS2)/normsq;
+				double energy_me = t.eval(PEPS1, PEPS2);
+				std::cerr << energy_me << " ";
+				double energy_part = energy_me/normsq;
 				energy += energy_part;
 				ArbitraryPEPS contracted_applied = PEPS1.combine(PEPS_applied);
 				std::vector<itensor::ITensor> capp_envs = contracted_applied.environments();
@@ -223,6 +227,7 @@ int main(int argc, char *argv[]){
 					me1[site] += capp_envs[site]*PEPS_applied.site_tensor(site);
 				}
 			}
+			std::cerr << std::endl;
 			for(int site = 0; site < num_sites; site++){
 				itensor::ITensor direct_gradient = (me1[site] - energy*me2[site])*2/normsq;
 				direct_gradient = signelts(direct_gradient);
