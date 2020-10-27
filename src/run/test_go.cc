@@ -233,6 +233,7 @@ int main(int argc, char *argv[]){
 				direct_gradient = signelts(direct_gradient);
 				PEPS1.site_tensor(site) -= update_size*r.rand()*direct_gradient;
 			}
+			PEPS1 /= std::sqrt(normsq);
 			PEPS2 = PEPS1;
 			PEPS2.prime();
 			//PEPS2.print_self("PEPS2 after update");
