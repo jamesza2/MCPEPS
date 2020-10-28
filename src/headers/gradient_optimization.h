@@ -25,21 +25,22 @@ itensor::ITensor signelts(itensor::ITensor site){
 std::vector<itensor::ITensor> direct_gradient(MCKPEPS &PEPS1, const Heisenberg &H){
 	PEPSop HPEPO = H.toPEPSop();
 	MCKPEPS PEPS2 = PEPS1;
-	std::cerr << "Inner product with copy...";
+	PEPS2.prime();
+	//std::cerr << "Inner product with copy...";
 	double normsq = PEPS1.inner_product(PEPS2);
 	int num_sites = PEPS1.size();
 	std::vector<itensor::ITensor> direct_grad(num_sites);
 	double energy = 0;
-	std::cerr << "Combining with copy...";
+	//std::cerr << "Combining with copy...";
 	ArbitraryPEPS contracted = PEPS1.combine(PEPS2);
 	std::vector<itensor::ITensor> me1(num_sites); //Matrix elements of <psi|H|env>
-	std::cerr << "Computing <psi|env>...";
+	//std::cerr << "Computing <psi|env>...";
 	std::vector<itensor::ITensor> me2 = contracted.environments(); //Matrix elements of <psi|env>
 	for(int site = 0; site < num_sites; site++){
 		me2[site] *= PEPS2.site_tensor(site);
 	}
 
-	std::cerr << "Computing <psi|H|env...";
+	//std::cerr << "Computing <psi|H|env...";
 	for(Term t : HPEPO.terms){
 		MCKPEPS PEPS_applied = PEPS2;
 		t.apply(PEPS_applied);
@@ -52,11 +53,11 @@ std::vector<itensor::ITensor> direct_gradient(MCKPEPS &PEPS1, const Heisenberg &
 			me1[site] += capp_envs[site]*PEPS_applied.site_tensor(site);
 		}
 	}
-	std::cerr << "Computing grads...";
+	//std::cerr << "Computing grads...";
 	std::vector<itensor::ITensor> grads;
 	for(int site = 0; site < num_sites; site++){
 		itensor::ITensor gradient = (me1[site] - energy*me2[site])*2/normsq;
-		PrintData(gradient);
+		//PrintData(gradient);
 		gradient = signelts(gradient);
 		grads.push_back(gradient);
 	}
