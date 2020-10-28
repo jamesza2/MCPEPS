@@ -51,6 +51,7 @@ std::vector<itensor::ITensor> direct_gradient(MCKPEPS &PEPS1, const Heisenberg &
 	std::vector<itensor::ITensor> grads;
 	for(int site = 0; site < num_sites; site++){
 		itensor::ITensor gradient = (me1[site] - energy*me2[site])*2/normsq;
+		PrintData(gradient);
 		gradient = signelts(gradient);
 		grads.push_back(gradient);
 	}
