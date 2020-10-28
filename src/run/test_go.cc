@@ -47,6 +47,19 @@ itensor::ITensor incomplete_inner(MCKPEPS &PEPS1, MCKPEPS &PEPS2, int i_omit, in
 	return product;
 }
 
+std::vector<double> generate_update_sizes(double update_size_init, double update_size_min, double decay, int num_trials, int num_stay=0){
+	std::vector<double> update_sizes_to_return;
+	for(int stay = 0; stay < num_stay; stay++){
+		update_sizes_to_return.push_back(update_size_init);
+	}
+	double update_size = update_size_init;
+	for(int trial = stay; trial < num_trials; trial++){
+		update_size_to_return.push_back(update_size);
+		update_size = std::max(update_size*decay, update_size_min);
+	}
+	return update_size_to_return;
+}
+
 itensor::ITensor create_sz2_op(int site, itensor::IndexSet &sites){
 	std::vector<itensor::ITensor> ops;
 	double s = 0.5*(itensor::dim(sites(1))-1);
@@ -96,7 +109,10 @@ int main(int argc, char *argv[]){
 	int physical_dims = input.testInteger("physical_dims", 4);
 	double bias_dropoff = input.testDouble("bias_dropoff", 0.4);
 	double update_size_init = input.testDouble("update_size_init", 0.05);
+	double update_size_min = input.testDouble("update_size_min", 0.001);
 	int opt_steps = input.testInteger("optimization_steps", 100);
+	double decay = input.testDouble("decay", 0.96);
+	int opt_steps_stay = input.testInteger("optimization_steps_no_decay", static_cast<int>(opt_steps*0.2));
 
 	std::map<std::string, double> Jvals;
 	Jvals["J1"] = input.testDouble("J1", 1);
@@ -167,8 +183,10 @@ int main(int argc, char *argv[]){
 	auto timestart = std::time(NULL);
 
 	std::vector<double> energies;
-	std::vector<double> update_sizes(1, update_size_init);
-	optimize(PEPS1, energies, update_sizes, Jvals, num_trials, opt_steps);
+	std::vector<double> fidelities;
+	std::vector<double> update_sizes = generate_update_sizes(update_size_init, update_size_min, decay, opt_steps, opt_steps_stay);
+
+	optimize(PEPS1, energies, update_sizes, Jvals, num_trials, opt_steps, fidelities);
 
 	double opt_time = std::difftime(std::time(NULL), timestart);
 	timestart = std::time(NULL);
@@ -188,6 +206,7 @@ int main(int argc, char *argv[]){
 	out.addVector("BIAS_CONFIG", bias_config);
 	out.addVector("UPDATE_SIZES", update_sizes);
 	out.addVector("ENERGIES", energies);
+	out.addVector("GRADIENT_FIDELITIES", fidelities);
 
 	//Test gradient optimization by finding the gradient from a direct contraction
 	bool direct_test = input.testBool("direct_test", false);
@@ -203,7 +222,7 @@ int main(int argc, char *argv[]){
 		double update_size = update_size_init;
 		for(int step = 0; step < opt_steps; step++){
 			normsq = PEPS1.inner_product(PEPS2);
-			std::cerr << "Norm: " << normsq << "...";
+			//std::cerr << "Norm: " << normsq << "...";
 			std::vector<itensor::ITensor> direct_grad(num_sites);
 			double energy = 0;
 			ArbitraryPEPS contracted = PEPS1.combine(PEPS2);
@@ -212,13 +231,13 @@ int main(int argc, char *argv[]){
 			for(int site = 0; site < num_sites; site++){
 				me2[site] *= PEPS2.site_tensor(site);
 			}
-			std::cerr << "Energy terms: ";
+			//std::cerr << "Energy terms: ";
 
 			for(Term t : HPEPO.terms){
 				MCKPEPS PEPS_applied = PEPS2;
 				t.apply(PEPS_applied);
 				double energy_me = t.eval(PEPS1, PEPS2);
-				std::cerr << energy_me << " ";
+				//std::cerr << energy_me << " ";
 				double energy_part = energy_me/normsq;
 				energy += energy_part;
 				ArbitraryPEPS contracted_applied = PEPS1.combine(PEPS_applied);
@@ -227,7 +246,7 @@ int main(int argc, char *argv[]){
 					me1[site] += capp_envs[site]*PEPS_applied.site_tensor(site);
 				}
 			}
-			std::cerr << std::endl;
+			//std::cerr << std::endl;
 			for(int site = 0; site < num_sites; site++){
 				itensor::ITensor direct_gradient = (me1[site] - energy*me2[site])*2/normsq;
 				direct_gradient = signelts(direct_gradient);
@@ -237,7 +256,7 @@ int main(int argc, char *argv[]){
 			PEPS2 = PEPS1;
 			PEPS2.prime();
 			//PEPS2.print_self("PEPS2 after update");
-			update_size *= 0.97;
+			update_size = std::max(update_size*0.95, update_size_min);
 			direct_energies.push_back(energy);
 			std::cerr << "DIRECT STEP #" << step+1 << " HAS ENERGY " << energy << " AND NORM " << normsq << std::endl;
 		}

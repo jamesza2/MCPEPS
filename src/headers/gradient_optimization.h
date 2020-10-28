@@ -22,6 +22,41 @@ itensor::ITensor signelts(itensor::ITensor site){
 	return site;
 }
 
+std::vector<itensor::ITesnor> direct_gradient(const MCKPEPS &PEPS1, const Heisenberg &H){
+	PEPSop HPEPO = H.toPEPSop();
+	MCKPEPS PEPS2 = PEPS1;
+	normsq = PEPS1.inner_product(PEPS2);
+	int num_sites = PEPS1.size();
+	std::vector<itensor::ITensor> direct_grad(num_sites);
+	double energy = 0;
+	ArbitraryPEPS contracted = PEPS1.combine(PEPS2);
+	std::vector<itensor::ITensor> me1(num_sites); //Matrix elements of <psi|H|env>
+	std::vector<itensor::ITensor> me2 = contracted.environments(); //Matrix elements of <psi|env>
+	for(int site = 0; site < num_sites; site++){
+		me2[site] *= PEPS2.site_tensor(site);
+	}
+
+	for(Term t : HPEPO.terms){
+		MCKPEPS PEPS_applied = PEPS2;
+		t.apply(PEPS_applied);
+		double energy_me = t.eval(PEPS1, PEPS2);
+		double energy_part = energy_me/normsq;
+		energy += energy_part;
+		ArbitraryPEPS contracted_applied = PEPS1.combine(PEPS_applied);
+		std::vector<itensor::ITensor> capp_envs = contracted_applied.environments();
+		for(int site = 0; site < num_sites; site++){
+			me1[site] += capp_envs[site]*PEPS_applied.site_tensor(site);
+		}
+	}
+	std::vector<itensor::ITensor> grads;
+	for(int site = 0; site < num_sites; site++){
+		itensor::ITensor gradient = (me1[site] - energy*me2[site])*2/normsq;
+		gradient = signelts(gradient);
+		grads.push_back(gradient);
+	}
+	return grads;
+}
+
 //Gets samples of Delta, DeltaE, etc. for one step
 void get_sample(MCKPEPS &psi, NoSitePEPS &contracted, std::vector<int> &spin_config, const Heisenberg &H, std::vector<itensor::ITensor> &Delta, std::vector<itensor::ITensor> &DeltaE, double &E, const double update_size, Randomizer &r){
 	//std::cerr << "    Taking sample...";
@@ -61,7 +96,7 @@ void get_sample(MCKPEPS &psi, NoSitePEPS &contracted, std::vector<int> &spin_con
 }
 
 //Updates the PEPS for one gradient optimization step. Returns the average energy.
-double update(MCKPEPS &psi, std::vector<int> &spin_config, const Heisenberg &H, const int M, const double update_size, Randomizer &r){
+double update(MCKPEPS &psi, std::vector<int> &spin_config, const Heisenberg &H, const int M, const double update_size, Randomizer &r, double &gradient_fidelity){
 	//std::cerr << "Performing update..." << std::endl;
 	std::vector<itensor::ITensor> Delta(psi.size());
 	std::vector<itensor::ITensor> DeltaE(psi.size());
@@ -77,19 +112,31 @@ double update(MCKPEPS &psi, std::vector<int> &spin_config, const Heisenberg &H, 
 	E /= M;
 	itensor::ITensor grad;
 	double grads_factor = 2./M;
+	std::vector<itensor::ITensor> grads;
 	for(int site = 0; site < Delta.size(); site++){
 		//std::cerr << "Assembling gradient#" << site+1 << "...";
 		grad = DeltaE.at(site)*grads_factor - Delta[site]*grads_factor*E;
 		//grad /= norm(grad);
 		grad = signelts(grad);
-		auto [i,j,k] = psi.position_of_site(site);
-		psi._site_tensors[i][j][k] -= update_size*r.rand()*grad;
+		grads.push_back(grad);
 	}
+
+	std::vector<itensor::ITensor> direct_grads = direct_gradient(psi, H);
+
+	for(int site = 0; site < Delta.size(); site++){
+		auto [i,j,k] = psi.position_of_site(site);
+		psi._site_tensors[i][j][k] -= update_size*r.rand()*grads[site];
+
+		double fidelity = itensor::norm(direct_grads[site]*grads[site])/itensor::norm(grads[site]*grads[site]);
+		gradient_fidelity += fidelity;
+	}
+	gradient_fidelity /= Delta.size();
+
 	return E;
 }
 
 //Optimizes psi, storing the vector in energies
-void optimize(MCKPEPS &psi, std::vector<double> &energies, std::vector<double> &update_sizes, const std::map<std::string, double> &Jvals, const int M, const int opt_steps = 100){
+void optimize(MCKPEPS &psi, std::vector<double> &energies, std::vector<double> &update_sizes, const std::map<std::string, double> &Jvals, const int M, const int opt_steps, std::vector<double> &fidelities){
 	std::vector<int> spin_config(psi.size(), 0);
 	Randomizer r;
 	randomize_in_sector(spin_config, psi.physical_dims(), r.gen, r.dist);
@@ -103,7 +150,9 @@ void optimize(MCKPEPS &psi, std::vector<double> &energies, std::vector<double> &
 	auto timestart = std::time(NULL);
 	for(int step = 0; step < opt_steps; step ++){
 		//std::cerr << "starting step #" << step+1;
-		double energy = update(psi, spin_config, H, M, update_size, r);
+		double fidelity;
+		double energy = update(psi, spin_config, H, M, update_size, r, fidelity);
+		fidelities.push_back(fidelity);
 		energies.push_back(energy);
 		std::cerr << "STEP#" << step+1 << " HAS ENERGY " << energy << " (" << std::difftime(std::time(NULL), timestart) << "s)" << std::endl;
 		if(update_sizes.size() > step+1){update_size = update_sizes.at(step+1);}
