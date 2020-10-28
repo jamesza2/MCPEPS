@@ -141,7 +141,7 @@ class Heisenberg : public MCOperator{
 				return matrix_element;
 			}
 		}
-		PEPSop toPEPSop();
+		PEPSop toPEPSop() const;
 };
 
 class Sz2 : public MCOperator{
