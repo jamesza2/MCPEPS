@@ -22,10 +22,10 @@ itensor::ITensor signelts(itensor::ITensor site){
 	return site;
 }
 
-std::vector<itensor::ITesnor> direct_gradient(const MCKPEPS &PEPS1, const Heisenberg &H){
+std::vector<itensor::ITensor> direct_gradient(MCKPEPS &PEPS1, const Heisenberg &H){
 	PEPSop HPEPO = H.toPEPSop();
 	MCKPEPS PEPS2 = PEPS1;
-	normsq = PEPS1.inner_product(PEPS2);
+	double normsq = PEPS1.inner_product(PEPS2);
 	int num_sites = PEPS1.size();
 	std::vector<itensor::ITensor> direct_grad(num_sites);
 	double energy = 0;

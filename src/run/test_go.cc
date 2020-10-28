@@ -53,11 +53,11 @@ std::vector<double> generate_update_sizes(double update_size_init, double update
 		update_sizes_to_return.push_back(update_size_init);
 	}
 	double update_size = update_size_init;
-	for(int trial = stay; trial < num_trials; trial++){
-		update_size_to_return.push_back(update_size);
+	for(int trial = num_stay; trial < num_trials; trial++){
+		update_sizes_to_return.push_back(update_size);
 		update_size = std::max(update_size*decay, update_size_min);
 	}
-	return update_size_to_return;
+	return update_sizes_to_return;
 }
 
 itensor::ITensor create_sz2_op(int site, itensor::IndexSet &sites){

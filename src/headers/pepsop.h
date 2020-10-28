@@ -219,7 +219,7 @@ class PEPSop{
 		}
 };
 
-PEPSop Heisenberg::toPEPSop(){
+PEPSop Heisenberg::toPEPSop() const{
 	PEPSop pop;
 	std::vector<double> J{0, _J1, _J2, _Jd};
 	for(int site_1 = 0; site_1 < _num_sites; site_1 ++){
