@@ -131,6 +131,7 @@ double update(MCKPEPS &psi, std::vector<int> &spin_config, const Heisenberg &H, 
 		current_grad.visit(printElt);
 		std::cerr << "\r";
 	}
+	std::cerr << std::endl;
 	E /= M;
 	itensor::ITensor grad;
 	double grads_factor = 2./M;
