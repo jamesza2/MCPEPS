@@ -6,6 +6,7 @@
 #include "auxiliary_sampling.h"
 #include "inner_sampling.h"
 #include <ctime>
+#include <iomanip>
 
 itensor::ITensor signelts(itensor::ITensor site){
 	auto signelt = [](itensor::Real r) {
@@ -117,7 +118,7 @@ double update(MCKPEPS &psi, std::vector<int> &spin_config, const Heisenberg &H, 
 	auto printElt = [](itensor::Real r){std::cerr << r << " ";};
 	direct_grads[target_site].visit(printElt);
 	std::cerr << std::setprecision(3);
-	std::cerr << "\nCurrent sampled gradient of (1,1,2):\n";
+	std::cerr << "\nCurrent sampled gradient of (1,1,2):\n\r";
 	for(int sample = 0; sample < M; sample++){
 		//std::cerr << "Getting sample #" << sample+1 << "...";
 		//std::cerr << "Update step #" << sample+1 << std::endl;
