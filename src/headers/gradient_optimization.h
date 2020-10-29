@@ -110,11 +110,22 @@ double update(MCKPEPS &psi, std::vector<int> &spin_config, const Heisenberg &H, 
 	double E = 0;
 	SpinConfigPEPS scp(psi, spin_config, 1);
 	NoSitePEPS nsp = psi.contract(scp);
+
+	int target_site = psi.site_index_from_position(1,1,2);
+	std::vector<itensor::ITensor> direct_grads = direct_gradient(psi, H);
+	std::cerr << "Direct gradient of (1,1,2):\n";
+	auto printElt = [](itensor::Real r){std::cerr << r << " ";};
+	direct_grads[target_site].visit(printElt);
+	std::cerr << "\nCurrent sampled gradient of (1,1,2):\n"
+
 	for(int sample = 0; sample < M; sample++){
 		//std::cerr << "Getting sample #" << sample+1 << "...";
 		//std::cerr << "Update step #" << sample+1 << std::endl;
 		get_sample(psi, nsp, spin_config, H, Delta, DeltaE, E, update_size, r);
 
+		itensor::ITensor current_grad = DeltaE.at(target_site)*2./(sample+1) - Delta.at(target_site)*E*2./((sample+1)*(sample+1));
+		current_grad.visit(printElt);
+		std::cerr << "\r";
 	}
 	E /= M;
 	itensor::ITensor grad;
@@ -122,13 +133,13 @@ double update(MCKPEPS &psi, std::vector<int> &spin_config, const Heisenberg &H, 
 	std::vector<itensor::ITensor> grads;
 	for(int site = 0; site < Delta.size(); site++){
 		//std::cerr << "Assembling gradient#" << site+1 << "...";
-		grad = DeltaE.at(site)*grads_factor - Delta[site]*grads_factor*E;
+		grad = DeltaE.at(site)*grads_factor - Delta.at(site)*grads_factor*E;
 		//grad /= norm(grad);
 		grad = signelts(grad);
 		grads.push_back(grad);
 	}
 
-	std::vector<itensor::ITensor> direct_grads = direct_gradient(psi, H);
+	
 
 	for(int site = 0; site < Delta.size(); site++){
 		auto [i,j,k] = psi.position_of_site(site);
