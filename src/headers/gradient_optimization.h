@@ -126,7 +126,7 @@ double update(MCKPEPS &psi, std::vector<int> &spin_config, const Heisenberg &H, 
 		//std::cerr << "Update step #" << sample+1 << std::endl;
 		get_sample(psi, nsp, spin_config, H, Delta, DeltaE, E, update_size, r);
 		//itensor::ITensor current_grad = DeltaE.at(target_site)*2./(sample+1) - Delta.at(target_site)*E*2./((sample+1)*(sample+1));
-		itensor::ITensor current_grad = DeltaE.at(target_site)*2./(sample+1);
+		itensor::ITensor current_grad = Delta.at(target_site)*E*2./((sample+1)*(sample+1));
 		std::cerr << "Sample#" << sample+1 << ": ";
 		current_grad.visit(printElt);
 		std::cerr << "\r";
@@ -153,8 +153,10 @@ double update(MCKPEPS &psi, std::vector<int> &spin_config, const Heisenberg &H, 
 
 		double fidelity = itensor::norm(direct_grads[site]*grads[site])/itensor::norm(grads[site]*grads[site]);
 		gradient_fidelity += fidelity;
+		psi._site_tensors[i][j][k] /= itensor::norm(psi._site_tensors[i][j][k]);
 	}
 	gradient_fidelity /= Delta.size();
+
 
 	return E;
 }
