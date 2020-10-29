@@ -117,7 +117,7 @@ double update(MCKPEPS &psi, std::vector<int> &spin_config, const Heisenberg &H, 
 	std::cerr << "Direct gradient of (1,1,2):\n";
 	auto printElt = [](itensor::Real r){std::cerr << r << " ";};
 	direct_grads[target_site].visit(printElt);
-	std::cerr << std::setprecision(3);
+	std::cerr << std::setprecision(3) << std::fixed;
 	std::cerr << "\nCurrent sampled gradient of (1,1,2):\n\r";
 	for(int sample = 0; sample < M; sample++){
 		//std::cerr << "Getting sample #" << sample+1 << "...";
@@ -140,6 +140,7 @@ double update(MCKPEPS &psi, std::vector<int> &spin_config, const Heisenberg &H, 
 		grad = signelts(grad);
 		grads.push_back(grad);
 	}
+	std::cerr << std::setprecision(6) << std::defaultfloat;
 
 	
 
