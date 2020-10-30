@@ -121,6 +121,12 @@ double update(MCKPEPS &psi, std::vector<int> &spin_config, const Heisenberg &H, 
 		std::cerr << r << " ";};
 	direct_grads[target_site].visit(printElt);
 	std::cerr << "\nCurrent sampled gradient of (1,1,2):\n\r";
+	for(int eq_step = 0; eq_step < 10; eq_step++){
+		std::vector<itensor::ITensor> dud_Delta, dud_DeltaE;
+		double dudE;
+		get_sample(psi, nsp, spin_config, H, dud_Delta, dud_DeltaE, dudE, update_size, r);
+	}
+
 	for(int sample = 0; sample < M; sample++){
 		//std::cerr << "Getting sample #" << sample+1 << "...";
 		//std::cerr << "Update step #" << sample+1 << std::endl;
@@ -130,7 +136,9 @@ double update(MCKPEPS &psi, std::vector<int> &spin_config, const Heisenberg &H, 
 		std::cerr << "Sample#" << sample+1 << ": ";
 		current_grad.visit(printElt);
 		std::cerr << "\r";
+		
 	}
+
 	std::cerr << std::endl;
 	E /= M;
 	itensor::ITensor grad;
@@ -157,7 +165,7 @@ double update(MCKPEPS &psi, std::vector<int> &spin_config, const Heisenberg &H, 
 	}
 	gradient_fidelity /= Delta.size();
 
-
+	randomize_in_sector(spin_config, psi.physical_dims(), r.gen, r.dist, 0);
 	return E;
 }
 
