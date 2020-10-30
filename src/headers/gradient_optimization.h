@@ -122,7 +122,8 @@ double update(MCKPEPS &psi, std::vector<int> &spin_config, const Heisenberg &H, 
 	direct_grads[target_site].visit(printElt);
 	std::cerr << "\nCurrent sampled gradient of (1,1,2):\n\r";
 	for(int eq_step = 0; eq_step < 10; eq_step++){
-		std::vector<itensor::ITensor> dud_Delta, dud_DeltaE;
+		std::vector<itensor::ITensor> dud_Delta(psi.size());
+		std::vector<itensor::ITensor> dud_DeltaE(psi.size());
 		double dudE;
 		get_sample(psi, nsp, spin_config, H, dud_Delta, dud_DeltaE, dudE, update_size, r);
 	}
