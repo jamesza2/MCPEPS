@@ -23,6 +23,14 @@ itensor::ITensor signelts(itensor::ITensor site){
 	return site;
 }
 
+itensor::ITensor density_matrix(MCKPEPS &PEPS1, int target_site){
+	MCKPEPS PEPS2 = PEPS1;
+	PEPS2.prime();
+	PEPS2.site_tensor.setPrime(1);
+	ArbitraryPEPS contracted = PEPS1.combine(PEPS2);
+
+}
+
 std::vector<itensor::ITensor> direct_gradient(MCKPEPS &PEPS1, const Heisenberg &H){
 	PEPSop HPEPO = H.toPEPSop();
 	MCKPEPS PEPS2 = PEPS1;
@@ -36,10 +44,26 @@ std::vector<itensor::ITensor> direct_gradient(MCKPEPS &PEPS1, const Heisenberg &
 	ArbitraryPEPS contracted = PEPS1.combine(PEPS2);
 	std::vector<itensor::ITensor> me1(num_sites); //Matrix elements of <psi|H|env>
 	//std::cerr << "Computing <psi|env>...";
+
+	
 	std::vector<itensor::ITensor> me2 = contracted.environments(); //Matrix elements of <psi|env>
+
 	for(int site = 0; site < num_sites; site++){
 		me2[site] *= PEPS2.site_tensor(site);
 	}
+	int target_site = PEPS1.site_index_from_position(1,1,2);
+	std::cerr << std::setprecision(3) << std::fixed;
+	std::cerr << "Environment of (1,1,2):\nSample#0000: ";
+	auto printElt = [](itensor::Real r){
+		if(r >= 0){std::cerr << "+"; r+= 0.00001;}
+		std::cerr << r << " ";};
+	me2[target_site].visit(printElt);
+
+	std::cerr << "\nSite tensor at (1,1,2):\nSample#0000: ";
+	auto printElt = [](itensor::Real r){
+		if(r >= 0){std::cerr << "+"; r+= 0.00001;}
+		std::cerr << r << " ";};
+	PEPS1.site_tensor(target_site).visit(printElt);
 
 	//std::cerr << "Computing <psi|H|env...";
 	for(Term t : HPEPO.terms){
@@ -56,8 +80,18 @@ std::vector<itensor::ITensor> direct_gradient(MCKPEPS &PEPS1, const Heisenberg &
 	}
 	//std::cerr << "Computing grads...";
 	std::vector<itensor::ITensor> grads;
+	
+
 	for(int site = 0; site < num_sites; site++){
 		itensor::ITensor gradient = (me1[site] - energy*me2[site])*2/normsq;
+		if(site == target_site){
+			std::cerr << std::setprecision(3) << std::fixed;
+			std::cerr << "\nDirect gradient of (1,1,2):\nSample#0000: ";
+			auto printElt = [](itensor::Real r){
+				if(r >= 0){std::cerr << "+"; r+= 0.00001;}
+				std::cerr << r << " ";};
+			gradient.visit(printElt);
+		}
 		//PrintData(gradient);
 		gradient = signelts(gradient);
 		grads.push_back(gradient);
@@ -104,7 +138,15 @@ void get_sample(MCKPEPS &psi, NoSitePEPS &contracted, std::vector<int> &spin_con
 }
 
 //Updates the PEPS for one gradient optimization step. Returns the average energy.
-double update(MCKPEPS &psi, std::vector<int> &spin_config, const Heisenberg &H, const int M, const double update_size, Randomizer &r, double &gradient_fidelity){
+double update(MCKPEPS &psi, 
+	std::vector<int> &spin_config, 
+	const Heisenberg &H, 
+	const int M, 
+	const double update_size, 
+	Randomizer &r, 
+	double &gradient_fidelity,
+	const itensor::Args &optimize_args)
+{
 	//std::cerr << "Performing update..." << std::endl;
 	std::vector<itensor::ITensor> Delta(psi.size());
 	std::vector<itensor::ITensor> DeltaE(psi.size());
@@ -114,12 +156,7 @@ double update(MCKPEPS &psi, std::vector<int> &spin_config, const Heisenberg &H, 
 
 	int target_site = psi.site_index_from_position(1,1,2);
 	std::vector<itensor::ITensor> direct_grads = direct_gradient(psi, H);
-	std::cerr << std::setprecision(3) << std::fixed;
-	std::cerr << "Direct gradient of (1,1,2):\nSample#000: ";
-	auto printElt = [](itensor::Real r){
-		if(r >= 0){std::cerr << "+";}
-		std::cerr << r << " ";};
-	direct_grads[target_site].visit(printElt);
+	
 	std::cerr << "\nCurrent sampled gradient of (1,1,2):\n\r";
 	for(int eq_step = 0; eq_step < 10; eq_step++){
 		std::vector<itensor::ITensor> dud_Delta(psi.size());
@@ -154,8 +191,6 @@ double update(MCKPEPS &psi, std::vector<int> &spin_config, const Heisenberg &H, 
 	}
 	std::cerr << std::setprecision(6) << std::defaultfloat;
 
-	
-
 	for(int site = 0; site < Delta.size(); site++){
 		auto [i,j,k] = psi.position_of_site(site);
 		psi._site_tensors[i][j][k] -= update_size*r.rand()*grads[site];
@@ -171,7 +206,15 @@ double update(MCKPEPS &psi, std::vector<int> &spin_config, const Heisenberg &H, 
 }
 
 //Optimizes psi, storing the vector in energies
-void optimize(MCKPEPS &psi, std::vector<double> &energies, std::vector<double> &update_sizes, const std::map<std::string, double> &Jvals, const int M, const int opt_steps, std::vector<double> &fidelities){
+void optimize(MCKPEPS &psi, 
+	std::vector<double> &energies, 
+	std::vector<double> &update_sizes, 
+	const std::map<std::string, double> &Jvals, 
+	const int M, 
+	const int opt_steps, 
+	std::vector<double> &fidelities, 
+	const itensor::Args &optimize_args)
+{
 	std::vector<int> spin_config(psi.size(), 0);
 	Randomizer r;
 	randomize_in_sector(spin_config, psi.physical_dims(), r.gen, r.dist);
@@ -186,7 +229,7 @@ void optimize(MCKPEPS &psi, std::vector<double> &energies, std::vector<double> &
 	for(int step = 0; step < opt_steps; step ++){
 		//std::cerr << "starting step #" << step+1;
 		double fidelity;
-		double energy = update(psi, spin_config, H, M, update_size, r, fidelity);
+		double energy = update(psi, spin_config, H, M, update_size, r, fidelity, optimize_args);
 		fidelities.push_back(fidelity);
 		energies.push_back(energy);
 		std::cerr << "STEP#" << step+1 << " HAS ENERGY " << energy << " (" << std::difftime(std::time(NULL), timestart) << "s)" << std::endl;

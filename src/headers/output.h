@@ -25,6 +25,9 @@ class Output
 			_output += format_name(name) + "\n" + out_string;
 		}
 		template<typename T>
+		void addVar(std::string name, T var){
+			_output += format_name(name) + "\n" + std::to_string(var);
+		}
 		void addVector(std::string name, std::vector<T> &out_vector){
 			_output += format_name(name) + "\n";
 			for(T elem : out_vector){

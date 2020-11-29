@@ -112,6 +112,7 @@ int main(int argc, char *argv[]){
 	double update_size_min = input.testDouble("update_size_min", 0.001);
 	int opt_steps = input.testInteger("optimization_steps", 100);
 	double decay = input.testDouble("decay", 0.96);
+	std::string gradient_file_name = input.testString("gradient_file", ""); //If it exists, print the gradients to that output
 	int opt_steps_stay = input.testInteger("optimization_steps_no_decay", static_cast<int>(opt_steps*0.2));
 
 	std::map<std::string, double> Jvals;
@@ -186,7 +187,10 @@ int main(int argc, char *argv[]){
 	std::vector<double> fidelities;
 	std::vector<double> update_sizes = generate_update_sizes(update_size_init, update_size_min, decay, opt_steps, opt_steps_stay);
 
-	optimize(PEPS1, energies, update_sizes, Jvals, num_trials, opt_steps, fidelities);
+	itensor::Args optimize_args = itensor::Args("GradientFile=", gradient_file)
+	optimize_args
+
+	optimize(PEPS1, energies, update_sizes, Jvals, num_trials, opt_steps, fidelities, optimize_args);
 
 	double opt_time = std::difftime(std::time(NULL), timestart);
 	timestart = std::time(NULL);
