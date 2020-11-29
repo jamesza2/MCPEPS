@@ -23,14 +23,6 @@ itensor::ITensor signelts(itensor::ITensor site){
 	return site;
 }
 
-itensor::ITensor density_matrix(MCKPEPS &PEPS1, int target_site){
-	MCKPEPS PEPS2 = PEPS1;
-	PEPS2.prime();
-	PEPS2.site_tensor.setPrime(1);
-	ArbitraryPEPS contracted = PEPS1.combine(PEPS2);
-
-}
-
 std::vector<itensor::ITensor> direct_gradient(MCKPEPS &PEPS1, const Heisenberg &H){
 	PEPSop HPEPO = H.toPEPSop();
 	MCKPEPS PEPS2 = PEPS1;
@@ -171,6 +163,9 @@ double update(MCKPEPS &psi,
 		get_sample(psi, nsp, spin_config, H, Delta, DeltaE, E, update_size, r);
 		itensor::ITensor current_grad = DeltaE.at(target_site)*2./(sample+1) - Delta.at(target_site)*E*2./((sample+1)*(sample+1));
 		//itensor::ITensor current_grad = Delta.at(target_site)*E*2./((sample+1)*(sample+1));
+		auto printElt = [](itensor::Real r){
+				if(r >= 0){std::cerr << "+"; r+= 0.00001;}
+				std::cerr << r << " ";};
 		std::cerr << "Sample#" << sample+1 << ": ";
 		current_grad.visit(printElt);
 		std::cerr << "\r";

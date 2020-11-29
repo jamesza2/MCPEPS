@@ -24,16 +24,20 @@ class Output
 		void addString(std::string name, std::string out_string){
 			_output += format_name(name) + "\n" + out_string;
 		}
+
 		template<typename T>
 		void addVar(std::string name, T var){
 			_output += format_name(name) + "\n" + std::to_string(var);
 		}
+
+		template<typename T>
 		void addVector(std::string name, std::vector<T> &out_vector){
 			_output += format_name(name) + "\n";
 			for(T elem : out_vector){
 				_output += std::to_string(elem) + " ";
 			}
 		}
+
 		template<typename T>
 		void addVectorVector(std::string name, std::vector<std::vector<T>> &out_vv){
 			_output += format_name(name);

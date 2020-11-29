@@ -187,8 +187,7 @@ int main(int argc, char *argv[]){
 	std::vector<double> fidelities;
 	std::vector<double> update_sizes = generate_update_sizes(update_size_init, update_size_min, decay, opt_steps, opt_steps_stay);
 
-	itensor::Args optimize_args = itensor::Args("GradientFile=", gradient_file)
-	optimize_args
+	itensor::Args optimize_args = itensor::Args("GradientFile=", gradient_file);
 
 	optimize(PEPS1, energies, update_sizes, Jvals, num_trials, opt_steps, fidelities, optimize_args);
 
