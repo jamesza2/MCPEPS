@@ -52,9 +52,6 @@ std::vector<itensor::ITensor> direct_gradient(MCKPEPS &PEPS1, const Heisenberg &
 	me2[target_site].visit(printElt);
 
 	std::cerr << "\nSite tensor at (1,1,2):\nSample#0000: ";
-	auto printElt = [](itensor::Real r){
-		if(r >= 0){std::cerr << "+"; r+= 0.00001;}
-		std::cerr << r << " ";};
 	PEPS1.site_tensor(target_site).visit(printElt);
 
 	//std::cerr << "Computing <psi|H|env...";
