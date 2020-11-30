@@ -175,7 +175,7 @@ double update(MCKPEPS &psi,
 
 	int target_site = psi.site_index_from_position(1,1,2);
 	std::vector<itensor::ITensor> direct_grads = direct_gradient(psi, H);
-	std::vector<std::vector<int>> num_spin_choices(psi.size());
+	std::vector<std::vector<int>> num_spin_choices;
 	for(int site = 0; site < psi.size(); site++){std::vector<int> choices(psi.physical_dims(), 0); num_spin_choices.push_back(choices);}
 	
 	std::cerr << "\nCurrent sampled gradient of (1,1,2):\n\r";
@@ -187,19 +187,19 @@ double update(MCKPEPS &psi,
 	}
 
 	for(int sample = 0; sample < M; sample++){
-		std::cerr << "Getting sample #" << sample+1 << "...";
+		//std::cerr << "Getting sample #" << sample+1 << "...";
 		get_sample(psi, nsp, spin_config, H, Delta, DeltaE, E, update_size, r);
-		std::cerr << "1";
+		//std::cerr << "1";
 		for(int site = 0; site < psi.size(); site++){num_spin_choices.at(site).at(spin_config.at(site)) += 1;}
-		std::cerr << "2";
+		//std::cerr << "2";
 		itensor::ITensor grads_factors(psi.site_indices[target_site], itensor::prime(psi.site_indices[target_site]));
-		std::cerr << "3";
+		//std::cerr << "3";
 		for(int d = 0; d < psi.physical_dims(); d++){
 			double grads_factor = 0;
 			if(num_spin_choices.at(target_site).at(d) != 0){grads_factor = 2./num_spin_choices.at(target_site).at(d);}
 			grads_factors.set(d+1, d+1, grads_factor);
 		}
-		std::cerr << "4";
+		//std::cerr << "4";
 		itensor::ITensor current_grad = DeltaE.at(target_site)*grads_factors - Delta.at(target_site)*E*grads_factors/(sample+1);
 		//itensor::ITensor current_grad = Delta.at(target_site)*E*2./((sample+1)*(sample+1));
 		auto printElt = [](itensor::Real r){
