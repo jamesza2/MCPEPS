@@ -200,7 +200,7 @@ int main(int argc, char *argv[]){
 	std::vector<int> squared_distances;
 	std::vector<double> szs;
 	PEPS2 = PEPS1;
-	for(int site : num_sites){
+	for(int site = 0; site < num_sites; site++){
 		PEPSop single_site = singleSiteSz(site);
 		double szval = single_site.eval(PEPS1, PEPS2);
 		szs.push_back(szval);
