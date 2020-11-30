@@ -198,6 +198,13 @@ int main(int argc, char *argv[]){
 	std::vector<double> wavefunctions;
 	std::vector<double> values;
 	std::vector<int> squared_distances;
+	std::vector<double> szs;
+	PEPS2 = PEPS1;
+	for(int site : num_sites){
+		PEPSop single_site = singleSiteSz(site);
+		double szval = single_site.eval(PEPS1, PEPS2);
+		szs.push_back(szval);
+	}
 	
 	Output out;
 	out.addInteger("NX", Nx);
@@ -210,6 +217,7 @@ int main(int argc, char *argv[]){
 	out.addVector("UPDATE_SIZES", update_sizes);
 	out.addVector("ENERGIES", energies);
 	out.addVector("GRADIENT_FIDELITIES", fidelities);
+	out.addVector("SZS", szs);
 
 	//Test gradient optimization by finding the gradient from a direct contraction
 	bool direct_test = input.testBool("direct_test", false);

@@ -23,6 +23,36 @@ itensor::ITensor signelts(itensor::ITensor site){
 	return site;
 }
 
+std::string scientific_notation(double num, double upper_threshhold = 1000, double lower_threshhold = 0.001, int precision = 3){
+	int exp = 0;
+	std::stringstream return_stream;
+	return_stream << std::fixed << std::setprecision(precision);
+	if(num != 0){
+		if(num > upper_threshhold){
+			while(num > 1){
+				num /= 10;
+				exp += 1;
+			}
+			num *= 10;
+			exp -= 1;
+			return_stream << num << "E+" << exp;
+			return return_stream.str();
+		}
+		else if(num < lower_threshhold){
+			while(num < 10){
+				num *= 10;
+				exp += 1;
+			}
+			num /= 10;
+			exp -= 1;
+			return_stream << num << "E-" << exp;
+			return return_stream.str();
+		}
+	}
+	return_stream << num;
+	return return_stream.str();
+}
+
 std::vector<itensor::ITensor> direct_gradient(MCKPEPS &PEPS1, const Heisenberg &H){
 	PEPSop HPEPO = H.toPEPSop();
 	MCKPEPS PEPS2 = PEPS1;
@@ -48,7 +78,7 @@ std::vector<itensor::ITensor> direct_gradient(MCKPEPS &PEPS1, const Heisenberg &
 	std::cerr << "Environment of (1,1,2):\nSample#0000: ";
 	auto printElt = [](itensor::Real r){
 		if(r >= 0){std::cerr << "+"; r+= 0.00001;}
-		std::cerr << r << " ";};
+		std::cerr << scientific_notation(r) << " ";};
 	me2[target_site].visit(printElt);
 
 	std::cerr << "\nSite tensor at (1,1,2):\nSample#0000: ";
@@ -145,6 +175,8 @@ double update(MCKPEPS &psi,
 
 	int target_site = psi.site_index_from_position(1,1,2);
 	std::vector<itensor::ITensor> direct_grads = direct_gradient(psi, H);
+	std::vector<std::vector<int>> num_spin_choices(psi.size());
+	for(int site = 0; site < psi.size(); site++){std::vector<int> choices(psi.physical_dims(), 0); num_spin_choices.push_back(choices);}
 	
 	std::cerr << "\nCurrent sampled gradient of (1,1,2):\n\r";
 	for(int eq_step = 0; eq_step < 10; eq_step++){
@@ -158,7 +190,14 @@ double update(MCKPEPS &psi,
 		//std::cerr << "Getting sample #" << sample+1 << "...";
 		//std::cerr << "Update step #" << sample+1 << std::endl;
 		get_sample(psi, nsp, spin_config, H, Delta, DeltaE, E, update_size, r);
-		itensor::ITensor current_grad = DeltaE.at(target_site)*2./(sample+1) - Delta.at(target_site)*E*2./((sample+1)*(sample+1));
+		for(int site = 0; site < psi.size(); site++){num_spin_choices[site][spin_config[site]] += 1;}
+		itensor::ITensor grads_factors(psi.site_indices[target_site], itensor::prime(psi.site_indices[target_site]));
+		for(int d = 0; d < psi.physical_dims(); d++){
+			double grads_factor = 0;
+			if(num_spin_choices[target_site][d] != 0){grads_factor = 2./num_spin_choices[target_site][d];}
+			grads_factors.set(d+1, d+1, grads_factor);
+		}
+		itensor::ITensor current_grad = DeltaE.at(target_site)*grads_factors - Delta.at(target_site)*E*grads_factors/(sample+1);
 		//itensor::ITensor current_grad = Delta.at(target_site)*E*2./((sample+1)*(sample+1));
 		auto printElt = [](itensor::Real r){
 				if(r >= 0){std::cerr << "+"; r+= 0.00001;}
@@ -175,10 +214,17 @@ double update(MCKPEPS &psi,
 	double grads_factor = 2./M;
 	std::vector<itensor::ITensor> grads;
 	for(int site = 0; site < Delta.size(); site++){
+		itensor::ITensor grads_factors(psi.site_indices[site], itensor::prime(psi.site_indices[site]));
+		for(int d = 0; d < psi.physical_dims(); d++){
+			double grads_factor = 0;
+			if(num_spin_choices[site][d] != 0){grads_factor = 2./num_spin_choices[site][d];}
+			grads_factors.set(d+1, d+1, grads_factor);
+		}
 		//std::cerr << "Assembling gradient#" << site+1 << "...";
-		grad = DeltaE.at(site)*grads_factor - Delta.at(site)*grads_factor*E;
+		grad = DeltaE.at(site)*grads_factors - Delta.at(site)*grads_factors*E;
 		//grad /= norm(grad);
 		grad = signelts(grad);
+		grad.prime(-1, itensor::prime(psi.site_indices[site]));
 		grads.push_back(grad);
 	}
 	std::cerr << std::setprecision(6) << std::defaultfloat;

@@ -207,6 +207,12 @@ class PEPSop{
 			t1.add_site(site_2, OpType::SZ);
 			terms.push_back(t1);
 		}
+
+		void add_sz(int site, double factor){
+			Term t1(factor);
+			t1.add_site(site, OpType::SZ);
+			terms.push_back(t1);
+		}
 		//Evaluates using a brute force method (i.e. taking the sum of <Psi|Hi|Psi> for all the terms Hi in the operator)
 		double eval(MCKPEPS &PEPS1, MCKPEPS &PEPS2){
 			double result = 0;
@@ -218,6 +224,12 @@ class PEPSop{
 			return result;
 		}
 };
+
+PEPSop singleSiteSz(int site){
+	PEPSop single_site_term;
+	single_site_term.add_sz(site, 1);
+	return single_site_term;
+}
 
 PEPSop Heisenberg::toPEPSop() const{
 	PEPSop pop;
