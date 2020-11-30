@@ -32,6 +32,7 @@ std::string scientific_notation(double num, double upper_threshhold = 1000, doub
 			while(num > 1){
 				num /= 10;
 				exp += 1;
+				if(exp > 50){break;}
 			}
 			num *= 10;
 			exp -= 1;
@@ -42,6 +43,7 @@ std::string scientific_notation(double num, double upper_threshhold = 1000, doub
 			while(num < 10){
 				num *= 10;
 				exp += 1;
+				if(exp > 50){break;}
 			}
 			num /= 10;
 			exp -= 1;
