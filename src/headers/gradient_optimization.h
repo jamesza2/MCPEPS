@@ -192,7 +192,7 @@ double update(MCKPEPS &psi,
 		std::cerr << "1";
 		for(int site = 0; site < psi.size(); site++){num_spin_choices.at(site).at(spin_config.at(site)) += 1;}
 		std::cerr << "2";
-		itensor::ITensor grads_factors(psi.site_indices.at(target_site), itensor::prime(psi.site_indices[target_site]));
+		itensor::ITensor grads_factors(psi.site_indices[target_site], itensor::prime(psi.site_indices[target_site]));
 		std::cerr << "3";
 		for(int d = 0; d < psi.physical_dims(); d++){
 			double grads_factor = 0;
