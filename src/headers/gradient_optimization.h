@@ -190,11 +190,11 @@ double update(MCKPEPS &psi,
 		//std::cerr << "Getting sample #" << sample+1 << "...";
 		//std::cerr << "Update step #" << sample+1 << std::endl;
 		get_sample(psi, nsp, spin_config, H, Delta, DeltaE, E, update_size, r);
-		for(int site = 0; site < psi.size(); site++){num_spin_choices[site][spin_config[site]] += 1;}
-		itensor::ITensor grads_factors(psi.site_indices[target_site], itensor::prime(psi.site_indices[target_site]));
+		for(int site = 0; site < psi.size(); site++){num_spin_choices.at(site).at(spin_config.at(site)) += 1;}
+		itensor::ITensor grads_factors(psi.site_indices.at(target_site), itensor::prime(psi.site_indices.at(target_site)));
 		for(int d = 0; d < psi.physical_dims(); d++){
 			double grads_factor = 0;
-			if(num_spin_choices[target_site][d] != 0){grads_factor = 2./num_spin_choices[target_site][d];}
+			if(num_spin_choices.at(target_site).at(d) != 0){grads_factor = 2./num_spin_choices.at(target_site).at(d);}
 			grads_factors.set(d+1, d+1, grads_factor);
 		}
 		itensor::ITensor current_grad = DeltaE.at(target_site)*grads_factors - Delta.at(target_site)*E*grads_factors/(sample+1);
