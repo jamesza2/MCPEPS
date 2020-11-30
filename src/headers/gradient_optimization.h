@@ -29,7 +29,7 @@ std::string scientific_notation(double num, double upper_threshhold = 1000, doub
 	return_stream << std::fixed << std::setprecision(precision);
 	if(num != 0){
 		if(num > upper_threshhold){
-			while(num > 1){
+			while(std::abs(num) > 1){
 				num /= 10;
 				exp += 1;
 				if(exp > 50){break;}
@@ -40,7 +40,7 @@ std::string scientific_notation(double num, double upper_threshhold = 1000, doub
 			return return_stream.str();
 		}
 		else if(num < lower_threshhold){
-			while(num < 10){
+			while(std::abs(num) < 10){
 				num *= 10;
 				exp += 1;
 				if(exp > 50){break;}
