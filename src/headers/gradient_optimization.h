@@ -28,7 +28,7 @@ std::string scientific_notation(double num, double upper_threshhold = 1000, doub
 	std::stringstream return_stream;
 	return_stream << std::fixed << std::setprecision(precision);
 	if(num != 0){
-		if(num > upper_threshhold){
+		if(std::abs(num) > upper_threshhold){
 			while(std::abs(num) > 1){
 				num /= 10;
 				exp += 1;
@@ -39,7 +39,7 @@ std::string scientific_notation(double num, double upper_threshhold = 1000, doub
 			return_stream << num << "E+" << exp;
 			return return_stream.str();
 		}
-		else if(num < lower_threshhold){
+		else if(std::abs(num) < lower_threshhold){
 			while(std::abs(num) < 10){
 				num *= 10;
 				exp += 1;
@@ -234,16 +234,17 @@ double update(MCKPEPS &psi,
 	}
 
 	std::cerr << std::setprecision(6) << std::defaultfloat;
-	std::cerr << "DeltaE norm: " << itensor::norm(DeltaE.at(target_site)) << ", Delta*E norm: " << itensor::norm(Delta.at(target_site)*E);
+	std::cerr << "DeltaE norm: " << itensor::norm(DeltaE.at(target_site)) << ", Delta*E norm: " << itensor::norm(Delta.at(target_site)*E) << "\n";
 	for(int site = 0; site < Delta.size(); site++){
 		auto [i,j,k] = psi.position_of_site(site);
 		psi._site_tensors[i][j][k] -= update_size*r.rand()*grads[site];
 
-		double fidelity = itensor::norm(direct_grads[site]*grads[site])/itensor::norm(grads[site]*grads[site]);
+		double fidelity = itensor::norm(direct_grads[site]*grads[site])/std::sqrt(itensor::norm(grads[site]*grads[site])*itensor::norm(direct_grads[site]*direct_grads[site]));
 		gradient_fidelity += fidelity;
 		psi._site_tensors[i][j][k] /= (itensor::norm(psi._site_tensors[i][j][k])*WAVEFUNCTION_NORMALIZATION_CONSTANT);
 	}
 	gradient_fidelity /= Delta.size();
+	std::cerr << "Average Gradient Fidelity: " << gradient_fidelity << "\n";
 
 	randomize_in_sector(spin_config, psi.physical_dims(), r.gen, r.dist, 0);
 	return E;
