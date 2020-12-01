@@ -234,7 +234,7 @@ double update(MCKPEPS &psi,
 	}
 
 	std::cerr << std::setprecision(6) << std::defaultfloat;
-	std::cerr << "DeltaE norm: " << itensor::norm(DeltaE.at(site)) << ", Delta*E norm: " << itensor::norm(Delta.at(site)*E);
+	std::cerr << "DeltaE norm: " << itensor::norm(DeltaE.at(target_site)) << ", Delta*E norm: " << itensor::norm(Delta.at(target_site)*E);
 	for(int site = 0; site < Delta.size(); site++){
 		auto [i,j,k] = psi.position_of_site(site);
 		psi._site_tensors[i][j][k] -= update_size*r.rand()*grads[site];
