@@ -211,7 +211,7 @@ double update(MCKPEPS &psi,
 			std::cerr << "Sample#" << sample+1 << ": \n";
 			std::cerr << "Spin Config: ";
 			for(int site = 0; site < spin_config.size(); site++){
-				if(site == target_site){std::cerr << "X"};
+				if(site == target_site){std::cerr << "X";}
 				std::cerr << spin_config[site] << " ";
 			}
 			
