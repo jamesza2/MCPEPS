@@ -149,14 +149,12 @@ void get_sample(MCKPEPS &psi, NoSitePEPS &contracted, std::vector<int> &spin_con
 	contracted = psi.contract(scp);
 	auto envs = contracted.environments(psi.site_indices, spin_config);
 
-	std::cerr << "Spin Config: "
+	std::cerr << "Spin Config: ";
 	for(int site = 0; site < spin_config.size(); site++){
 		if(site == target_site){std::cerr << "X";}
 		std::cerr << spin_config[site] << " ";
 	}
 	std::cerr << std::endl;
-	
-	DeltaTimesEGrad.visit(printElt);
 	std::cerr << "Wavefunction: " << wavefn;
 	std::cerr << " Real Wavefunction: " << real_wavefn;
 	std::cerr << " Local Energy: " << local_energy << std::endl;
