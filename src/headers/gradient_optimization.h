@@ -191,6 +191,10 @@ double update(MCKPEPS &psi,
 	for(int sample = 0; sample < M; sample++){
 		//std::cerr << "Getting sample #" << sample+1 << "...";
 		get_sample(psi, nsp, spin_config, H, Delta, DeltaE, E, update_size, r);
+		auto printElt = [](itensor::Real r){
+				if(r >= 0){std::cerr << "+"; r+= 0.00001;}
+				std::cerr << r << " ";};
+
 		//std::cerr << "1";
 		for(int site = 0; site < psi.size(); site++){num_spin_choices.at(site).at(spin_config.at(site)) += 1;}
 		//std::cerr << "2";
@@ -203,20 +207,31 @@ double update(MCKPEPS &psi,
 		}
 		//std::cerr << "4";
 		itensor::ITensor current_grad = DeltaE.at(target_site)*grads_factors - Delta.at(target_site)*E*grads_factors/(sample+1);
+		if(sample % 10 == 9){
+			std::cerr << "Sample#" << sample+1 << ": \n";
+			std::cerr << "Spin Config: ";
+			for(int s : spin_config){std::cerr << s << " ";}
+			
+			itensor::ITensor DeltaEGrad = DeltaE.at(target_site)*grads_factors;
+			itensor::ITenosr DeltaTimesEGrad = Delta.at(target_site)*E*grads_factors/(sample+1);
+			std::cerr << "\nDeltaE: ";
+			DeltaEGrad.visit(printElt);
+			std::cerr << "\nDelta*E: ";
+			DeltaTimesEGrad.visit(printElt);
+			std::cerr << "\nCurrent Grad: ";
+			current_grad.visit(printElt);
+		}
 		//itensor::ITensor current_grad = Delta.at(target_site)*E*2./((sample+1)*(sample+1));
-		auto printElt = [](itensor::Real r){
-				if(r >= 0){std::cerr << "+"; r+= 0.00001;}
-				std::cerr << r << " ";};
-		std::cerr << "Sample#" << sample+1 << ": ";
-		current_grad.visit(printElt);
-		std::cerr << "\r";
+		
+		//std::cerr << "Sample#" << sample+1 << ": ";
+		//current_grad.visit(printElt);
+		//std::cerr << "\r";
 		
 	}
 
 	std::cerr << std::endl;
 	E /= M;
 	itensor::ITensor grad;
-	double grads_factor = 2./M;
 	std::vector<itensor::ITensor> grads;
 	for(int site = 0; site < Delta.size(); site++){
 		itensor::ITensor grads_factors(psi.site_indices[site], itensor::prime(psi.site_indices[site]));
