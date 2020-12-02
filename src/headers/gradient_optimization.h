@@ -134,7 +134,6 @@ void get_sample(MCKPEPS &psi, NoSitePEPS &contracted, std::vector<int> &spin_con
 	int target_site = psi.site_index_from_position(1,1,2);
 
 	auto printElt = [](itensor::Real r){
-		if(r >= 0){std::cerr << "+"; r+= 0.00001;}
 		std::cerr << scientific_notation(r) << " ";};
 	//std::cerr << "finished sampling...";
 	double real_wavefn = wavefunction(spin_config, psi);
@@ -165,6 +164,8 @@ void get_sample(MCKPEPS &psi, NoSitePEPS &contracted, std::vector<int> &spin_con
 		DeltaE[site_index] += envs[site_index]*local_energy/wavefn;
 	}
 
+	E += local_energy;
+
 	std::cerr<< "Environment: ";
 	envs[target_site].visit(printElt);
 	std::cerr << "\nDelta*E: ";
@@ -177,7 +178,7 @@ void get_sample(MCKPEPS &psi, NoSitePEPS &contracted, std::vector<int> &spin_con
 
 	/*std::cerr << "E=" << local_energy << ", W=" << wavefn << std::endl;
 	PrintData(envs[0]);*/
-	E += local_energy;
+	
 }
 
 //Updates the PEPS for one gradient optimization step. Returns the average energy.
