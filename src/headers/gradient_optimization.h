@@ -207,10 +207,13 @@ double update(MCKPEPS &psi,
 		}
 		//std::cerr << "4";
 		itensor::ITensor current_grad = DeltaE.at(target_site)*grads_factors - Delta.at(target_site)*E*grads_factors/(sample+1);
-		if(sample % 10 == 9){
+		if(sample % 5 == 4){
 			std::cerr << "Sample#" << sample+1 << ": \n";
 			std::cerr << "Spin Config: ";
-			for(int s : spin_config){std::cerr << s << " ";}
+			for(int site = 0; site < spin_config.size(); site++){
+				if(site == target_site){std::cerr << "X"};
+				std::cerr << spin_config[site] << " ";
+			}
 			
 			itensor::ITensor DeltaEGrad = DeltaE.at(target_site)*grads_factors;
 			itensor::ITensor DeltaTimesEGrad = Delta.at(target_site)*E*grads_factors/(sample+1);
@@ -220,6 +223,7 @@ double update(MCKPEPS &psi,
 			DeltaTimesEGrad.visit(printElt);
 			std::cerr << "\nCurrent Grad: ";
 			current_grad.visit(printElt);
+			std::cerr << "\n";
 		}
 		//itensor::ITensor current_grad = Delta.at(target_site)*E*2./((sample+1)*(sample+1));
 		
