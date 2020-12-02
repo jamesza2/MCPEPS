@@ -213,7 +213,7 @@ double update(MCKPEPS &psi,
 			for(int s : spin_config){std::cerr << s << " ";}
 			
 			itensor::ITensor DeltaEGrad = DeltaE.at(target_site)*grads_factors;
-			itensor::ITenosr DeltaTimesEGrad = Delta.at(target_site)*E*grads_factors/(sample+1);
+			itensor::ITensor DeltaTimesEGrad = Delta.at(target_site)*E*grads_factors/(sample+1);
 			std::cerr << "\nDeltaE: ";
 			DeltaEGrad.visit(printElt);
 			std::cerr << "\nDelta*E: ";
