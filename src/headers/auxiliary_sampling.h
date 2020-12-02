@@ -469,7 +469,7 @@ double sample_l_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			std::vector<itensor::ITensor> row_h_contracted;
 			for(int i = imin; i < imax; i++){
 				//std::cout << "  i=" << i << std::endl;
-				int H = 2*(i-imin);
+				int H = 2*(i-imin); 
 				int j = h-i;
 				row_h_contracted.push_back(LUi.MPS[H]*psi._site_tensors[i][j][0]);
 				row_h_contracted.push_back(LUi.MPS[H+1]*psi._site_tensors[i][j][1]);
