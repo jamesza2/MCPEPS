@@ -130,6 +130,12 @@ void get_sample(MCKPEPS &psi, NoSitePEPS &contracted, std::vector<int> &spin_con
 	sample_s_direction(psi, spin_config, r);
 	//std::cerr << "l direction...";
 	double wavefn = sample_l_direction(psi, spin_config, r);
+
+	int target_site = psi.site_index_from_position(1,1,2);
+
+	auto printElt = [](itensor::Real r){
+		if(r >= 0){std::cerr << "+"; r+= 0.00001;}
+		std::cerr << scientific_notation(r) << " ";};
 	//std::cerr << "finished sampling...";
 	double real_wavefn = wavefunction(spin_config, psi);
 	auto possible_mes = H.possible_matrix_elements(spin_config);
@@ -142,17 +148,35 @@ void get_sample(MCKPEPS &psi, NoSitePEPS &contracted, std::vector<int> &spin_con
 	SpinConfigPEPS scp(psi, spin_config, 1);
 	contracted = psi.contract(scp);
 	auto envs = contracted.environments(psi.site_indices, spin_config);
-	/*std::cerr << "Env0 norm: " << itensor::norm(envs[0]);
-	std::cerr << " Product norm: " << itensor::elt(envs[0]*adapt_tensor(contracted, psi, 0));
-	std::cerr << " Wavefunction: " << wavefn;
+
+	std::cerr << "Spin Config: "
+	for(int site = 0; site < spin_config.size(); site++){
+		if(site == target_site){std::cerr << "X";}
+		std::cerr << spin_config[site] << " ";
+	}
+	std::cerr << std::endl;
+	
+	DeltaTimesEGrad.visit(printElt);
+	std::cerr << "Wavefunction: " << wavefn;
 	std::cerr << " Real Wavefunction: " << real_wavefn;
-	std::cerr << " Local Energy: " << local_energy << std::endl;*/
+	std::cerr << " Local Energy: " << local_energy << std::endl;
 
 	for(int site_index = 0; site_index < psi.size(); site_index++){
 		adapt_tensor(psi, contracted, envs[site_index], site_index);
 		Delta[site_index] += envs[site_index]/wavefn;
 		DeltaE[site_index] += envs[site_index]*local_energy/wavefn;
 	}
+
+	std::cerr<< "Environment: ";
+	envs[target_site].visit(printElt);
+	std::cerr << "\nDelta*E: ";
+	itensor::ITensor DTimesE = Delta[target_site]*E;
+	DTimesE.visit(printElt);
+	std::cerr << "\nDeltaE: ";
+	DeltaE[target_site].visit(printElt);
+	std::cerr << "\n";
+
+
 	/*std::cerr << "E=" << local_energy << ", W=" << wavefn << std::endl;
 	PrintData(envs[0]);*/
 	E += local_energy;
@@ -207,7 +231,7 @@ double update(MCKPEPS &psi,
 		}
 		//std::cerr << "4";
 		itensor::ITensor current_grad = DeltaE.at(target_site)*grads_factors - Delta.at(target_site)*E*grads_factors/(sample+1);
-		if(sample % 5 == 4){
+		/*if(sample % 5 == 4){
 			std::cerr << "Sample#" << sample+1 << ": \n";
 			std::cerr << "Spin Config: ";
 			for(int site = 0; site < spin_config.size(); site++){
@@ -224,11 +248,12 @@ double update(MCKPEPS &psi,
 			std::cerr << "\nCurrent Grad: ";
 			current_grad.visit(printElt);
 			std::cerr << "\n";
-		}
+		}*/
 		//itensor::ITensor current_grad = Delta.at(target_site)*E*2./((sample+1)*(sample+1));
 		
-		//std::cerr << "Sample#" << sample+1 << ": ";
-		//current_grad.visit(printElt);
+		std::cerr << "Sample#" << sample+1 << ": ";
+		current_grad.visit(printElt);
+		std::cerr << std::endl;
 		//std::cerr << "\r";
 		
 	}
