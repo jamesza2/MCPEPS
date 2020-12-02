@@ -119,7 +119,7 @@ double test_bond(NoSitePEPS &no_site, MCKPEPS &original, std::vector<int> &spin_
 		new_product_2 *= d_aux_2;
 		itensor::ITensor total_product = new_product_1*new_product_2;
 		//Print(total_product);
-		double new_wavefunction = itensor::norm(total_product);
+		double new_wavefunction = itensor::elt(total_product);
 		/* Shouldn't have to worry about number of choices in the sequential case, because selection probability is always 1/2
 		if((old_sz_1 > 0) && (old_sz_2 < spin_max-1)){ new_num_choices -= 1; }
 		if((old_sz_1 < spin_max-1) && (old_sz_2 > 0)){ new_num_choices -= 1; }
@@ -203,7 +203,7 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			}
 		}
 		//Evaluate the old wavefunction
-		old_wavefunction = itensor::norm(vr_auxiliaries[0]);
+		old_wavefunction = itensor::elt(vr_auxiliaries[0]);
 		//std::cout << "Old wavefunction: " << old_wavefunction << std::endl;
 		itensor::ITensor vl_auxiliary(1);
 		//Sweep the horizontal (1-2) links from left to right
@@ -360,7 +360,7 @@ double sample_s_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			}
 		}
 		//Evaluate the old wavefunction
-		old_wavefunction = itensor::norm(sr_auxiliaries[0]);
+		old_wavefunction = itensor::elt(sr_auxiliaries[0]);
 		//std::cout << "original wavefunction: " << old_wavefunction << std::endl;
 		//double old_num_choices = config.num_choices();
 		itensor::ITensor sl_auxiliary(1);
@@ -452,7 +452,7 @@ double sample_l_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			}
 		}
 		//Print(lr_auxiliaries[0]);
-		old_wavefunction = itensor::norm(lr_auxiliaries[0]);
+		old_wavefunction = itensor::elt(lr_auxiliaries[0]);
 		//std::cerr << "Testing bonds..." << std::endl;
 		itensor::ITensor ll_auxiliary(1);
 		for(int i = imin; i < imax; i++){
