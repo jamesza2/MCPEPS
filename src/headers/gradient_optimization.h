@@ -155,9 +155,9 @@ void get_sample(MCKPEPS &psi, NoSitePEPS &contracted, std::vector<int> &spin_con
 		std::cerr << spin_config[site] << " ";
 	}
 	std::cerr << std::endl;
-	std::cerr << "Wavefunction: " << wavefn;
-	std::cerr << " Real Wavefunction: " << real_wavefn;
-	std::cerr << " Local Energy: " << local_energy << std::endl;
+	std::cerr << "Wavefunction: " << scientific_notation(wavefn);
+	std::cerr << " Real Wavefunction: " << scientific_notation(real_wavefn);
+	std::cerr << " Local Energy: " << scientific_notation(local_energy) << std::endl;
 
 	for(int site_index = 0; site_index < psi.size(); site_index++){
 		adapt_tensor(psi, contracted, envs[site_index], site_index);
