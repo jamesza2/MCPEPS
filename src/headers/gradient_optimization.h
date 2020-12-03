@@ -224,9 +224,10 @@ double update(MCKPEPS &psi,
 		itensor::ITensor grads_factors(psi.site_indices[target_site], itensor::prime(psi.site_indices[target_site]));
 		//std::cerr << "3";
 		for(int d = 0; d < psi.physical_dims(); d++){
-			double grads_factor = 0;
-			if(num_spin_choices.at(target_site).at(d) != 0){grads_factor = 2./num_spin_choices.at(target_site).at(d);}
-			grads_factors.set(d+1, d+1, grads_factor);
+			//double grads_factor = 0;
+			//if(num_spin_choices.at(target_site).at(d) != 0){grads_factor = 2./num_spin_choices.at(target_site).at(d);}
+			//grads_factors.set(d+1, d+1, grads_factor);
+			grads_factors.set(d+1,d+1,2./(sample+1));
 		}
 		//std::cerr << "4";
 		itensor::ITensor current_grad = DeltaE.at(target_site)*grads_factors - Delta.at(target_site)*E*grads_factors/(sample+1);
