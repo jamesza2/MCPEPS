@@ -148,7 +148,7 @@ void get_sample(MCKPEPS &psi, NoSitePEPS &contracted, std::vector<int> &spin_con
 	contracted = psi.contract(scp);
 	auto envs = contracted.environments(psi.site_indices, spin_config);
 
-	std::cerr << "Spin Config: ";
+	/*std::cerr << "Spin Config: ";
 	for(int site = 0; site < spin_config.size(); site++){
 		if(site == target_site){std::cerr << "X";}
 		std::cerr << spin_config[site] << " ";
@@ -156,7 +156,7 @@ void get_sample(MCKPEPS &psi, NoSitePEPS &contracted, std::vector<int> &spin_con
 	std::cerr << std::endl;
 	std::cerr << "Wavefunction: " << scientific_notation(wavefn);
 	std::cerr << " Real Wavefunction: " << scientific_notation(real_wavefn);
-	std::cerr << " Local Energy: " << scientific_notation(local_energy) << std::endl;
+	std::cerr << " Local Energy: " << scientific_notation(local_energy) << std::endl;*/
 
 	for(int site_index = 0; site_index < psi.size(); site_index++){
 		adapt_tensor(psi, contracted, envs[site_index], site_index);
@@ -166,14 +166,14 @@ void get_sample(MCKPEPS &psi, NoSitePEPS &contracted, std::vector<int> &spin_con
 
 	E += local_energy;
 
-	std::cerr<< "Environment: ";
+	/*std::cerr<< "Environment: ";
 	envs[target_site].visit(printElt);
 	std::cerr << "\nDelta*E: ";
 	itensor::ITensor DTimesE = Delta[target_site]*E;
 	DTimesE.visit(printElt);
 	std::cerr << "\nDeltaE: ";
 	DeltaE[target_site].visit(printElt);
-	std::cerr << "\n";
+	std::cerr << "\n";*/
 
 
 	/*std::cerr << "E=" << local_energy << ", W=" << wavefn << std::endl;
@@ -252,8 +252,8 @@ double update(MCKPEPS &psi,
 		
 		std::cerr << "Sample#" << sample+1 << ": ";
 		current_grad.visit(printElt);
-		std::cerr << std::endl;
-		//std::cerr << "\r";
+		//std::cerr << std::endl;
+		std::cerr << "\r";
 		
 	}
 
