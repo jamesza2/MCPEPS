@@ -199,12 +199,12 @@ double update(MCKPEPS &psi,
 	NoSitePEPS nsp = psi.contract(scp);
 
 	int target_site = psi.site_index_from_position(1,1,2);
-	std::vector<itensor::ITensor> direct_grads = direct_gradient(psi, H);
+	//std::vector<itensor::ITensor> direct_grads = direct_gradient(psi, H);
 	std::vector<std::vector<int>> num_spin_choices;
 	for(int site = 0; site < psi.size(); site++){std::vector<int> choices(psi.physical_dims(), 0); num_spin_choices.push_back(choices);}
 	
-	std::cerr << "\nCurrent sampled gradient of (1,1,2):\n\r";
-	for(int eq_step = 0; eq_step < 10; eq_step++){
+	//std::cerr << "\nCurrent sampled gradient of (1,1,2):\n\r";
+	for(int eq_step = 0; eq_step < 100; eq_step++){
 		std::vector<itensor::ITensor> dud_Delta(psi.size());
 		std::vector<itensor::ITensor> dud_DeltaE(psi.size());
 		double dudE;
@@ -214,23 +214,18 @@ double update(MCKPEPS &psi,
 	for(int sample = 0; sample < M; sample++){
 		//std::cerr << "Getting sample #" << sample+1 << "...";
 		get_sample(psi, nsp, spin_config, H, Delta, DeltaE, E, update_size, r);
-		auto printElt = [](itensor::Real r){
+		/*auto printElt = [](itensor::Real r){
 				if(r >= 0){std::cerr << "+"; r+= 0.00001;}
-				std::cerr << r << " ";};
-
-		//std::cerr << "1";
+				std::cerr << r << " ";};*/
 		for(int site = 0; site < psi.size(); site++){num_spin_choices.at(site).at(spin_config.at(site)) += 1;}
-		//std::cerr << "2";
-		itensor::ITensor grads_factors(psi.site_indices[target_site], itensor::prime(psi.site_indices[target_site]));
-		//std::cerr << "3";
-		for(int d = 0; d < psi.physical_dims(); d++){
+		//itensor::ITensor grads_factors(psi.site_indices[target_site], itensor::prime(psi.site_indices[target_site]));
+		//for(int d = 0; d < psi.physical_dims(); d++){
 			//double grads_factor = 0;
 			//if(num_spin_choices.at(target_site).at(d) != 0){grads_factor = 2./num_spin_choices.at(target_site).at(d);}
 			//grads_factors.set(d+1, d+1, grads_factor);
-			grads_factors.set(d+1,d+1,2./(sample+1));
-		}
-		//std::cerr << "4";
-		itensor::ITensor current_grad = DeltaE.at(target_site)*grads_factors - Delta.at(target_site)*E*grads_factors/(sample+1);
+			//grads_factors.set(d+1,d+1,2./(sample+1));
+		//}
+		//itensor::ITensor current_grad = DeltaE.at(target_site)*grads_factors - Delta.at(target_site)*E*grads_factors/(sample+1);
 		/*if(sample % 5 == 4){
 			std::cerr << "Sample#" << sample+1 << ": \n";
 			std::cerr << "Spin Config: ";
@@ -251,10 +246,10 @@ double update(MCKPEPS &psi,
 		}*/
 		//itensor::ITensor current_grad = Delta.at(target_site)*E*2./((sample+1)*(sample+1));
 		
-		std::cerr << "Sample#" << sample+1 << ": ";
+		/*std::cerr << "Sample#" << sample+1 << ": ";
 		current_grad.visit(printElt);
 		//std::cerr << std::endl;
-		std::cerr << "\r";
+		std::cerr << "\r";*/
 		
 	}
 
@@ -277,18 +272,19 @@ double update(MCKPEPS &psi,
 		grads.push_back(grad);
 	}
 
-	std::cerr << std::setprecision(6) << std::defaultfloat;
-	std::cerr << "DeltaE norm: " << itensor::norm(DeltaE.at(target_site)) << ", Delta*E norm: " << itensor::norm(Delta.at(target_site)*E) << "\n";
+	//std::cerr << std::setprecision(6) << std::defaultfloat;
+	//std::cerr << "DeltaE norm: " << itensor::norm(DeltaE.at(target_site)) << ", Delta*E norm: " << itensor::norm(Delta.at(target_site)*E) << "\n";
 	for(int site = 0; site < Delta.size(); site++){
 		auto [i,j,k] = psi.position_of_site(site);
 		psi._site_tensors[i][j][k] -= update_size*r.rand()*grads[site];
 
-		double fidelity = itensor::norm(direct_grads[site]*grads[site])/std::sqrt(itensor::norm(grads[site]*grads[site])*itensor::norm(direct_grads[site]*direct_grads[site]));
-		gradient_fidelity += fidelity;
+		//double fidelity = itensor::norm(direct_grads[site]*grads[site])/std::sqrt(itensor::norm(grads[site]*grads[site])*itensor::norm(direct_grads[site]*direct_grads[site]));
+		//gradient_fidelity += fidelity;
 		psi._site_tensors[i][j][k] /= (itensor::norm(psi._site_tensors[i][j][k])*WAVEFUNCTION_NORMALIZATION_CONSTANT);
 	}
-	gradient_fidelity /= Delta.size();
-	std::cerr << "Average Gradient Fidelity: " << gradient_fidelity << "\n";
+	gradient_fidelity = -1; 
+	//gradient_fidelity /= Delta.size();
+	//std::cerr << "Average Gradient Fidelity: " << gradient_fidelity << "\n";
 
 	randomize_in_sector(spin_config, psi.physical_dims(), r.gen, r.dist, 0);
 	return E;
