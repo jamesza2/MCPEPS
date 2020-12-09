@@ -135,13 +135,13 @@ class Heisenberg : public MCOperator{
 					}
 					//S1z S2z component
 					if((m1 == m1p) && (m2 == m2p)){
-						matrix_element += 0.5*J[bond.second]*_Jz*m1*m2;
+						matrix_element += J[bond.second]*_Jz*m1*m2;
 					}
 				}
 				return matrix_element;
 			}
 		}
-		PEPSop toPEPSop();
+		PEPSop toPEPSop() const;
 };
 
 class Sz2 : public MCOperator{

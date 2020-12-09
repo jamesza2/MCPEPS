@@ -156,8 +156,12 @@ class Term{
 			for(auto ops_it = ops.begin(); ops_it != ops.end(); ops_it++){
 				itensor::ITensor T = ops_it->tensor(PEPS1.site_indices[*sites_it]);
 				auto [i,j,k] = PEPS1.position_of_site(*sites_it);
+				//std::cerr << "Original tensor: " << std::endl;
+				//PrintData(PEPS1._site_tensors[i][j][k]);
 				PEPS1._site_tensors[i][j][k] *= T;
 				PEPS1._site_tensors[i][j][k] *= itensor::delta(PEPS1.site_indices[*sites_it], itensor::prime(PEPS1.site_indices[*sites_it]));
+				//std::cerr << "Tensor after " << to_string() << std::endl;
+				//PrintData(PEPS1._site_tensors[i][j][k]);
 				sites_it++;
 			}
 			
@@ -203,6 +207,12 @@ class PEPSop{
 			t1.add_site(site_2, OpType::SZ);
 			terms.push_back(t1);
 		}
+
+		void add_sz(int site, double factor){
+			Term t1(factor);
+			t1.add_site(site, OpType::SZ);
+			terms.push_back(t1);
+		}
 		//Evaluates using a brute force method (i.e. taking the sum of <Psi|Hi|Psi> for all the terms Hi in the operator)
 		double eval(MCKPEPS &PEPS1, MCKPEPS &PEPS2){
 			double result = 0;
@@ -215,7 +225,13 @@ class PEPSop{
 		}
 };
 
-PEPSop Heisenberg::toPEPSop(){
+PEPSop singleSiteSz(int site){
+	PEPSop single_site_term;
+	single_site_term.add_sz(site, 1);
+	return single_site_term;
+}
+
+PEPSop Heisenberg::toPEPSop() const{
 	PEPSop pop;
 	std::vector<double> J{0, _J1, _J2, _Jd};
 	for(int site_1 = 0; site_1 < _num_sites; site_1 ++){

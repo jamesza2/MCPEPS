@@ -132,7 +132,7 @@ int main(int argc, char *argv[]){
 		t.apply(PEPS_applied);
 		auto me1 = incomplete_inner(PEPS_applied, PEPS1, target_i, target_j, target_k);
 		auto me2 = incomplete_inner(PEPS2, PEPS1, target_i, target_j, target_k);
-		double energy_part = t.eval(PEPS_applied, PEPS1);
+		double energy_part = t.eval(PEPS2, PEPS1);
 		me2 *= energy_part;
 		energy += energy_part/normsq;
 		me2 /= normsq;
@@ -159,18 +159,16 @@ int main(int argc, char *argv[]){
 	int target_site = PEPS1.site_index_from_position(target_i, target_j, target_k);
 	itensor::ITensor approx_grad = DeltaE.at(target_site)*grads_factor - Delta.at(target_site)*grads_factor*E;
 	
-	
 	PrintData(exact_grad);
 	PrintData(approx_grad);
 	std::cerr << "Energies: " << energy << std::endl;
 	std::cerr << "Exact OOM estimate: " << grad_oom_estimate << std::endl;
-	std::cerr << "Delta norms: ";
-	for(auto d : Delta){
-		std::cerr << itensor::norm(d) << " ";
-	}
-	std::cerr << "\nDeltaE norms: ";
-	for(auto d : DeltaE){
-		std::cerr << itensor::norm(d) << " ";
+	std::cerr << "Delta norms: " << std::endl;
+
+	for(int delta_index = 0; delta_index < Delta.size(); delta_index ++){
+		std::cerr << itensor::norm(Delta.at(delta_index))*grads_factor << " | ";
+		std::cerr << itensor::norm(DeltaE.at(delta_index))*grads_factor << " | ";
+		std::cerr << itensor::norm(DeltaE.at(delta_index)*grads_factor - Delta.at(delta_index)*grads_factor*E) << std::endl;
 	}
 	std::cerr << "\nApprox grad norm: " << itensor::norm(approx_grad) << std::endl;
 	return 0;

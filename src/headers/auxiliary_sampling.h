@@ -119,7 +119,7 @@ double test_bond(NoSitePEPS &no_site, MCKPEPS &original, std::vector<int> &spin_
 		new_product_2 *= d_aux_2;
 		itensor::ITensor total_product = new_product_1*new_product_2;
 		//Print(total_product);
-		double new_wavefunction = itensor::norm(total_product);
+		double new_wavefunction = itensor::elt(total_product);
 		/* Shouldn't have to worry about number of choices in the sequential case, because selection probability is always 1/2
 		if((old_sz_1 > 0) && (old_sz_2 < spin_max-1)){ new_num_choices -= 1; }
 		if((old_sz_1 < spin_max-1) && (old_sz_2 > 0)){ new_num_choices -= 1; }
@@ -167,6 +167,7 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 	//double wavefunction_normalization = WAVEFUNCTION_NORMALIZATION_CONSTANT;
 	SpinConfigPEPS config(psi_sites, spin_config, wavefunction_normalization);
 	NoSitePEPS psi = psi_sites.contract(config);
+	//std::cerr << "Getting auxiliaries...";
 	std::list<AuxMPS> vd_list = psi.get_vd_auxiliaries();
 	//std::cout << "Creating up auxiliary..." << std::endl;
 	double old_wavefunction = -1;
@@ -202,7 +203,7 @@ double sample_v_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			}
 		}
 		//Evaluate the old wavefunction
-		old_wavefunction = itensor::norm(vr_auxiliaries[0]);
+		old_wavefunction = itensor::elt(vr_auxiliaries[0]);
 		//std::cout << "Old wavefunction: " << old_wavefunction << std::endl;
 		itensor::ITensor vl_auxiliary(1);
 		//Sweep the horizontal (1-2) links from left to right
@@ -359,7 +360,7 @@ double sample_s_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			}
 		}
 		//Evaluate the old wavefunction
-		old_wavefunction = itensor::norm(sr_auxiliaries[0]);
+		old_wavefunction = itensor::elt(sr_auxiliaries[0]);
 		//std::cout << "original wavefunction: " << old_wavefunction << std::endl;
 		//double old_num_choices = config.num_choices();
 		itensor::ITensor sl_auxiliary(1);
@@ -451,7 +452,7 @@ double sample_l_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			}
 		}
 		//Print(lr_auxiliaries[0]);
-		old_wavefunction = itensor::norm(lr_auxiliaries[0]);
+		old_wavefunction = itensor::elt(lr_auxiliaries[0]);
 		//std::cerr << "Testing bonds..." << std::endl;
 		itensor::ITensor ll_auxiliary(1);
 		for(int i = imin; i < imax; i++){
@@ -468,7 +469,7 @@ double sample_l_direction(MCKPEPS &psi_sites, std::vector<int> &spin_config, Ran
 			std::vector<itensor::ITensor> row_h_contracted;
 			for(int i = imin; i < imax; i++){
 				//std::cout << "  i=" << i << std::endl;
-				int H = 2*(i-imin);
+				int H = 2*(i-imin); 
 				int j = h-i;
 				row_h_contracted.push_back(LUi.MPS[H]*psi._site_tensors[i][j][0]);
 				row_h_contracted.push_back(LUi.MPS[H+1]*psi._site_tensors[i][j][1]);
