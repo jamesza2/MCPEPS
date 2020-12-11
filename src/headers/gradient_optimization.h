@@ -253,7 +253,7 @@ double update(MCKPEPS &psi,
 		
 	}
 
-	std::cerr << std::endl;
+	//std::cerr << std::endl;
 	E /= M;
 	itensor::ITensor grad;
 	std::vector<itensor::ITensor> grads;
